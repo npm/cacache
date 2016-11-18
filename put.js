@@ -1,107 +1,83 @@
 var crypto = require('crypto')
+var dezalgo = require('dezalgo')
+var fs = require('fs')
 var get = require('./get')
 var mkdirp = require('mkdirp')
 var mv = require('mv')
 var path = require('path')
 var pumpify = require('pumpify')
-var tar = require('tar')
 var through = require('through2')
 var randomstring = require('randomstring')
 var rimraf = require('rimraf')
 var writeStreamAtomic = require('fs-write-stream-atomic')
-var zlib = require('zlib')
 
-module.exports = put
+module.exports.file = putFile
+function putFile (cache, filePath, opts, cb) {
+  if (!cb) {
+    cb = opts
+    opts = null
+  }
+  cb = dezalgo(cb)
+  try {
+    var stream = fs.createReadStream(filePath)
+  } catch (e) {
+    return cb(e)
+  }
+  return putStream(cache, stream, opts, cb)
+}
 
-// Returns a writable stream to write a tarball to
-function put (cache, opts) {
+module.exports.stream = putStream
+function putStream (cache, inputStream, opts, cb) {
+  if (!cb) {
+    cb = opts
+    opts = null
+  }
   opts = opts || {}
-  var logger = function () { console.log.apply(console, arguments) }
-  var tmp = path.join(cache, 'tmp', (opts.prefix || '') + randomstring.generate())
-  var tmpFile = path.join(tmp, 'files.tgz')
-  var tmpDir = path.join(tmp, 'files')
-
-  var hash = crypto.createHash(opts.algorithm || 'sha256')
-  var stream = through(function (chunk, enc, cb) {
-    hash.update(chunk, enc)
-    cb(null, chunk)
-  })
-
-  // debugging
-  stream.on('error', function (err) {
-    logger('error', err)
-  })
-  stream.on('close', function () {
-    logger('closed read stream')
-  })
-
-  mkdirp(tmpDir, function (err) {
-    if (err) { return stream.emit('error', err) }
+  var startTime = +(new Date())
+  var logger = opts.logger || noop
+  var tmpFile = path.join(cache, 'tmp', (opts.prefix || '') + randomstring.generate())
+  mkdirp(path.dirname(tmpFile), function (err) {
+    if (err) { return cb(err) }
     var outStream = writeStreamAtomic(tmpFile)
-    var extractStream = pumpify(zlib.Unzip(), tar.Extract({
-      path: tmpDir,
-      strip: 1
-    }).on('entry', function (e) { stream.emit('entry', e) }))
-    var teeStream = through(function (chunk, enc, next) {
-      outStream.write(chunk, enc, function () {
-        next(null, chunk)
+    var hash = crypto.createHash(opts.algorithm || 'sha256')
+    var hashStream = through(function (chunk, enc, cb) {
+      hash.update(chunk, enc)
+      cb(null, chunk)
+    })
+    pumpify(
+      inputStream, hashStream, outStream
+    ).on('error', function () {
+      rimraf(tmpFile, function (err) {
+        if (err) { cb(err) }
       })
     })
-
-    var errEmitted = false
-    linkStreams(teeStream, outStream, function () { errEmitted = true })
-    pumpify(
-      stream, teeStream, extractStream
-    ).on('end', function () {
-      logger('silly', 'streams closed.')
-      if (!errEmitted) { outStream.end() }
-    }).on('error', function () {
-      rimraf(tmp, function (err) {
-        if (err) { throw err }
-      })
-    }).on('data', function () {})
     outStream.on('close', moveToDestination)
 
     function moveToDestination () {
-      logger('verbose', 'Temporary files written. Moving to main cache.')
+      logger('verbose', 'Temporary file written. Moving to main cache.')
       var digest = hash.digest('hex')
-      var destination = get.tarball(cache, digest)
-      mv(tmp, path.dirname(destination), {
+      var destination = get.path(cache, digest)
+      mv(tmpFile, destination, {
         mkdirp: true, clobber: !!opts.clobber
       }, function (err) {
         if (err) {
           if (err.code === 'EEXIST') {
             logger('verbose', digest, 'already has an entry in the cache. Skipping move')
+          } else if (err.code === 'EBUSY') {
+            logger('verbose', digest, 'exists and is already being accessed. Skipping move.')
           } else {
-            return stream.emit('error', err)
+            return cb(err)
           }
         }
-        rimraf(tmp, function (err) {
-          if (err) { return stream.emit('error', err) }
-          logger('verbose', 'done processing', digest)
-          stream.emit('digest', digest)
+        rimraf(tmpFile, function (err) {
+          if (err) { return cb(err) }
+          var timeDiff = +(new Date()) - startTime
+          logger('verbose', 'processed', digest, 'in', timeDiff + 'ms')
+          cb(null, digest)
         })
       })
     }
   })
-
-  return stream
 }
 
-function linkStreams (a, b, cb) {
-  var lastError = null
-  a.on('error', function (err) {
-    if (err !== lastError) {
-      lastError = err
-      b.emit('error', err)
-      cb && cb(err)
-    }
-  })
-  b.on('error', function (err) {
-    if (err !== lastError) {
-      lastError = err
-      a.emit('error', err)
-      cb && cb(err)
-    }
-  })
-}
+function noop () {}
