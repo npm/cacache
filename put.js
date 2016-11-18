@@ -39,7 +39,7 @@ function putStream (cache, inputStream, opts, cb) {
   mkdirp(path.dirname(tmpFile), function (err) {
     if (err) { return cb(err) }
     var outStream = writeStreamAtomic(tmpFile)
-    var hash = crypto.createHash(opts.algorithm || 'sha256')
+    var hash = crypto.createHash(opts.hash || 'sha256')
     var hashStream = through(function (chunk, enc, cb) {
       hash.update(chunk, enc)
       cb(null, chunk)
