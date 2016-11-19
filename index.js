@@ -1,5 +1,5 @@
 module.exports = {
-  clear: require('./clear'),
+  rm: require('./rm'),
   get: require('./get'),
   put: require('./put')
 }
