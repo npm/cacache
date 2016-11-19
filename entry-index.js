@@ -14,6 +14,9 @@ function insert (cache, key, digest, cb) {
     digest: digest,
     time: +(new Date())
   }
+  // TODO - do this in a single atomic streaming operation
+  // that leans on `graceful-fs` to insert on the fly or
+  // something.
   find(cache, key, function (err, entryDigest) {
     if (err) { return cb(err) }
     if (digest === entryDigest) {
@@ -62,6 +65,10 @@ function del (cache, key, address, cb) {
     cb = address
     address = null
   }
+  // NOTE - `del` is *not* concurrency-safe if find/ls/insert
+  //        could be happening at the same time!
+  //        But it's not meant to be used in situations
+  //        where that would be the case. So don't do it.
   if (!address) {
     insert(cache, key, null, cb)
   } else {
