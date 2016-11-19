@@ -125,14 +125,15 @@ function makeTarStream (target, opts) {
   return tar.extract(target, {
     map: function (header) {
       if (process.platform !== 'win32') {
-        header.uid = opts.uid || header.uid
-        header.gid = opts.gid || header.gid
+        header.uid = typeof opts.uid === 'number' ? opts.uid : header.uid
+        header.gid = typeof opts.gid === 'number' ? opts.gid : header.gid
       }
       return header
     },
     ignore: opts.ignore,
     dmode: opts.dmode,
     fmode: opts.fmode,
+    umask: opts.umask,
     strip: opts.strip
   })
 }
