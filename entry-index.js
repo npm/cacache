@@ -8,8 +8,11 @@ var split = require('split')
 module.exports.insert = insert
 function insert (cache, key, digest, cb) {
   var bucket = indexPath(cache, key)
-  var line = {}
-  line[key] = digest
+  var entry = {
+    key: key,
+    digest: digest,
+    time: +(new Date())
+  }
   find(cache, key, function (err, entryDigest) {
     if (err) { return cb(err) }
     if (digest === entryDigest) {
@@ -18,7 +21,7 @@ function insert (cache, key, digest, cb) {
     }
     mkdirp(path.dirname(bucket), function (err) {
       if (err) { return cb(err) }
-      fs.appendFile(bucket, JSON.stringify(line) + '\n', function (err) {
+      fs.appendFile(bucket, JSON.stringify(entry) + '\n', function (err) {
         if (err) { return cb(err) }
         cb()
       })
@@ -38,7 +41,9 @@ function find (cache, key, cb) {
     } catch (e) {
       return
     }
-    digest = obj[key] || digest
+    if (obj && (obj.key === key)) {
+      digest = obj.digest
+    }
   }).on('close', function () {
     cb(null, digest)
   })).on('error', function (e) {
