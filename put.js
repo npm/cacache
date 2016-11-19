@@ -1,7 +1,7 @@
+var contentPath = require('./util').contentPath
 var crypto = require('crypto')
 var dezalgo = require('dezalgo')
 var fs = require('fs')
-var get = require('./get')
 var mkdirp = require('mkdirp')
 var mv = require('mv')
 var path = require('path')
@@ -9,7 +9,8 @@ var pumpify = require('pumpify')
 var through = require('through2')
 var randomstring = require('randomstring')
 var rimraf = require('rimraf')
-var writeStreamAtomic = require('fs-write-stream-atomic')
+var tar = require('tar-fs')
+var zlib = require('zlib')
 
 module.exports.file = putFile
 function putFile (cache, filePath, opts, cb) {
@@ -34,30 +35,33 @@ function putStream (cache, inputStream, opts, cb) {
   }
   opts = opts || {}
   var startTime = +(new Date())
-  var logger = opts.logger || noop
-  var tmpFile = path.join(cache, 'tmp', (opts.prefix || '') + randomstring.generate())
-  mkdirp(path.dirname(tmpFile), function (err) {
+  var logger = wrapLogger(opts.logger || noop)
+  var tmpTarget = path.join(cache, 'tmp', (opts.prefix || '') + randomstring.generate())
+  mkdirp(tmpTarget, function (err) {
     if (err) { return cb(err) }
-    var outStream = writeStreamAtomic(tmpFile)
     var hash = crypto.createHash(opts.hash || 'sha256')
     var hashStream = through(function (chunk, enc, cb) {
       hash.update(chunk, enc)
       cb(null, chunk)
     })
+    var outStream = tar.extract(tmpTarget)
     pumpify(
-      inputStream, hashStream, outStream
+      inputStream,
+      hashStream,
+      zlib.Unzip(),
+      outStream
     ).on('error', function () {
-      rimraf(tmpFile, function (err) {
+      rimraf(tmpTarget, function (err) {
         if (err) { cb(err) }
       })
     })
-    outStream.on('close', moveToDestination)
+    outStream.on('finish', moveToDestination)
 
     function moveToDestination () {
       logger('verbose', 'Temporary file written. Moving to main cache.')
       var digest = hash.digest('hex')
-      var destination = get.path(cache, digest)
-      mv(tmpFile, destination, {
+      var destination = contentPath(cache, digest)
+      mv(tmpTarget, destination, {
         mkdirp: true, clobber: !!opts.clobber
       }, function (err) {
         if (err) {
@@ -69,7 +73,7 @@ function putStream (cache, inputStream, opts, cb) {
             return cb(err)
           }
         }
-        rimraf(tmpFile, function (err) {
+        rimraf(tmpTarget, function (err) {
           if (err) { return cb(err) }
           var timeDiff = +(new Date()) - startTime
           logger('verbose', 'processed', digest, 'in', timeDiff + 'ms')
@@ -81,3 +85,15 @@ function putStream (cache, inputStream, opts, cb) {
 }
 
 function noop () {}
+
+function wrapLogger (logObj) {
+  return function () {
+    if (logObj[arguments[0]]) {
+      logObj[arguments[0]].apply(logObj, [].slice.call(arguments, 1))
+    } else if (logObj.log) {
+      logObj.log.apply(logObj, arguments)
+    } else if (typeof logObj === 'function') {
+      logObj.apply(null, arguments)
+    }
+  }
+}
