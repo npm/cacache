@@ -1,5 +1,6 @@
 module.exports = {
-  rm: require('./rm'),
+  index: require('./entry-index'),
   get: require('./get'),
-  put: require('./put')
+  put: require('./put'),
+  rm: require('./rm')
 }
