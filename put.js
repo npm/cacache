@@ -40,7 +40,7 @@ function putStream (cache, key, inputStream, opts, _cb) {
   if (!_cb) { return }
 
   var startTime = +(new Date())
-  var logger = wrapLogger(opts.logger || noop)
+  var logger = wrapLogger(opts.logger || Function.prototype)
   var tmpTarget = path.join(cache, 'tmp', (opts.tmpPrefix || '') + randomstring.generate())
   var cb = dezalgo(function (err, digest) {
     rimraf(tmpTarget, function (err2) {
@@ -80,8 +80,6 @@ function putStream (cache, key, inputStream, opts, _cb) {
     })
   })
 }
-
-function noop () {}
 
 function wrapLogger (logObj) {
   return function () {
