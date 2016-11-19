@@ -1,7 +1,9 @@
-var contentPath = require('./util').contentPath
 var crypto = require('crypto')
 var dezalgo = require('dezalgo')
-var fs = require('fs')
+var fs = require('graceful-fs')
+var get = require('./get')
+var index = require('./entry-index')
+var inflight = require('inflight')
 var mkdirp = require('mkdirp')
 var mv = require('mv')
 var path = require('path')
@@ -13,7 +15,7 @@ var tar = require('tar-fs')
 var zlib = require('zlib')
 
 module.exports.file = putFile
-function putFile (cache, filePath, opts, cb) {
+function putFile (cache, key, filePath, opts, cb) {
   if (!cb) {
     cb = opts
     opts = null
@@ -24,36 +26,54 @@ function putFile (cache, filePath, opts, cb) {
   } catch (e) {
     return cb(e)
   }
-  return putStream(cache, stream, opts, cb)
+  return putStream(cache, key, stream, opts, cb)
 }
 
 module.exports.stream = putStream
-function putStream (cache, inputStream, opts, cb) {
-  if (!cb) {
-    cb = opts
+function putStream (cache, key, inputStream, opts, _cb) {
+  if (!_cb) {
+    _cb = opts
     opts = null
   }
   opts = opts || {}
-  cb = dezalgo(cb)
+  _cb = inflight('cacache.put.stream: ' + key, _cb)
+  if (!_cb) { return }
+
   var startTime = +(new Date())
   var logger = wrapLogger(opts.logger || noop)
   var tmpTarget = path.join(cache, 'tmp', (opts.tmpPrefix || '') + randomstring.generate())
-  mkdirp(tmpTarget, function (err) {
+  var cb = dezalgo(function (err, digest) {
+    rimraf(tmpTarget, function (err2) {
+      _cb(err2 || err, digest)
+    })
+  })
+
+  get.hasContent(cache, opts.digest, function (err, exists) {
     if (err) { return cb(err) }
-    pipeToTmp(inputStream, tmpTarget, opts, function (err, digest) {
+    // Fast-path-shortcut this if it's already been written.
+    if (exists) {
+      logger('verbose', 'content already present. Simply adding to index')
+      return index.insert(cache, key, opts.digest, function (err) {
+        cb(err, opts.digest)
+      })
+    }
+    mkdirp(tmpTarget, function (err) {
       if (err) { return cb(err) }
-      logger('verbose', 'Temporary file written. Verifying.')
-      var verifier = opts.verify || function (target, digest, cb) { cb() }
-      verifier(tmpTarget, digest, function (err) {
+      pipeToTmp(inputStream, tmpTarget, opts, function (err, digest) {
         if (err) { return cb(err) }
-        logger('verbose', 'Verified. Moving to final cache destination')
-        moveToDestination(tmpTarget, cache, digest, logger, opts, function (err) {
+        logger('verbose', 'Temporary file written. Verifying.')
+        var verifier = opts.verify || function (target, digest, cb) { cb() }
+        verifier(tmpTarget, digest, function (err) {
           if (err) { return cb(err) }
-          rimraf(tmpTarget, function (err) {
+          logger('verbose', 'Verified. Moving to final cache destination')
+          moveToDestination(tmpTarget, cache, digest, logger, opts, function (err) {
             if (err) { return cb(err) }
-            var timeDiff = +(new Date()) - startTime
-            logger('verbose', 'processed', digest, 'in', timeDiff + 'ms')
-            cb(null, digest)
+            index.insert(cache, key, digest, function (err) {
+              if (err) { return cb(err) }
+              var timeDiff = +(new Date()) - startTime
+              logger('verbose', 'processed', digest, 'in', timeDiff + 'ms')
+              cb(null, digest)
+            })
           })
         })
       })
@@ -155,7 +175,7 @@ function hasTarHeader (c) {
 }
 
 function moveToDestination (tmpTarget, cache, digest, logger, opts, cb) {
-  var destination = contentPath(cache, digest)
+  var destination = get.path(cache, digest)
   mv(tmpTarget, destination, {
     mkdirp: true, clobber: !!opts.clobber
   }, function (err) {
