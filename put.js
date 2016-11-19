@@ -82,7 +82,9 @@ function pipeToTmp (inputStream, tmpTarget, opts, cb) {
     cb(null, chunk)
   })
 
+  var gotData = false
   inputStream.on('data', function headerCheck (c) {
+    gotData = true
     pumpify(
       inputStream,
       hashStream,
@@ -98,6 +100,12 @@ function pipeToTmp (inputStream, tmpTarget, opts, cb) {
     // remove and re-emit
     inputStream.removeListener('data', headerCheck)
     inputStream.emit('data', c)
+  }).on('close', function () {
+    if (!gotData) {
+      var err = new Error('Input stream empty')
+      err.code = 'ENODATA'
+      cb(new Error('input stream empty'))
+    }
   })
 }
 
