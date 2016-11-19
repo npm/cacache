@@ -50,6 +50,19 @@ function find (cache, key, cb) {
   })
 }
 
+module.exports.delete = del
+function del (cache, key, address, cb) {
+  if (!cb) {
+    cb = address
+    address = null
+  }
+  if (!address) {
+    insert(cache, key, null, cb)
+  } else {
+    cb(new Error('deleting by address not yet supported`dd`'))
+  }
+}
+
 function indexPath (cache, key) {
   return path.join(cache, 'index', hashKey(key))
 }
