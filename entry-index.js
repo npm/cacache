@@ -3,6 +3,7 @@ var fs = require('graceful-fs')
 var mkdirp = require('mkdirp')
 var path = require('path')
 var pumpify = require('pumpify')
+var asyncMap = require('slide').asyncMap
 var split = require('split')
 
 module.exports.insert = insert
@@ -66,6 +67,37 @@ function del (cache, key, address, cb) {
   } else {
     cb(new Error('deleting by address not yet supported`dd`'))
   }
+}
+
+module.exports.ls = ls
+function ls (cache, cb) {
+  var indexPath = path.join(cache, 'index')
+  fs.readdir(indexPath, function (err, files) {
+    if (err && err.code !== 'ENOENT') {
+      return cb(err)
+    } else if (err && err.code === 'ENOENT') {
+      return cb(null, [])
+    } else {
+      var entries = {}
+      asyncMap(files, function (f, cb) {
+        fs.readFile(path.join(indexPath, f), 'utf8', function (err, data) {
+          if (err) { return cb(err) }
+          data.split('\n').forEach(function (entry) {
+            try {
+              var parsed = JSON.parse(entry)
+            } catch (e) {
+            }
+            if (parsed) {
+              entries[parsed.key] = parsed
+            }
+            cb()
+          })
+        })
+      }, function (err) {
+        cb(err, entries)
+      })
+    }
+  })
 }
 
 function indexPath (cache, key) {
