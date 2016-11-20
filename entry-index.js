@@ -80,10 +80,10 @@ module.exports.ls = ls
 function ls (cache, cb) {
   var indexPath = path.join(cache, 'index')
   fs.readdir(indexPath, function (err, files) {
-    if (err && err.code !== 'ENOENT') {
+    if (err && err.code === 'ENOENT') {
+      return cb(null, {})
+    } else if (err) {
       return cb(err)
-    } else if (err && err.code === 'ENOENT') {
-      return cb(null, [])
     } else {
       var entries = {}
       asyncMap(files, function (f, cb) {
