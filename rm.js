@@ -1,5 +1,5 @@
-var get = require('./get')
-var index = require('./index')
+var rmContent = require('./lib/content/rm')
+var index = require('./lib/entry-index')
 var rimraf = require('rimraf')
 
 module.exports.all = all
@@ -8,13 +8,13 @@ function all (cache, cb) {
 }
 
 module.exports.entry = entry
-function entry (cache, key, address, cb) {
-  index.delete(cache, key, address, cb)
+function entry (cache, key, cb) {
+  index.delete(cache, key, cb)
 }
 
 module.exports.content = content
 function content (cache, address, cb) {
-  rimraf(get.path(cache, address), cb)
+  rmContent(cache, address, cb)
 }
 
 module.exports.gc = gc
