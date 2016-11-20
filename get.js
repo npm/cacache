@@ -1,4 +1,4 @@
-var copy = require('fs-extra').copy
+var copy = require('fs-extra/lib/copy')
 var dezalgo = require('dezalgo')
 var fs = require('graceful-fs')
 var path = require('path')

@@ -3,7 +3,7 @@ var fs = require('graceful-fs')
 var mkdirp = require('mkdirp')
 var path = require('path')
 var pumpify = require('pumpify')
-var asyncMap = require('slide').asyncMap
+var asyncMap = require('slide/lib/async-map')
 var split = require('split')
 
 module.exports.insert = insert
