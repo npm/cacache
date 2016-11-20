@@ -1,4 +1,5 @@
 var dezalgo = require('dezalgo')
+var from = require('from2')
 var fs = require('graceful-fs')
 var index = require('./lib/entry-index')
 var inflight = require('inflight')
@@ -16,6 +17,24 @@ function putFile (cache, key, filePath, opts, cb) {
   } catch (e) {
     return cb(e)
   }
+  return putStream(cache, key, stream, opts, cb)
+}
+
+module.exports.data = putData
+function putData (cache, key, filename, data, opts, cb) {
+  if (!cb) {
+    cb = opts
+    opts = null
+  }
+  cb = dezalgo(cb)
+  opts = Object.create(opts || {})
+  opts.filename = filename
+  var stream = from(function (size, next) {
+    if (data.length <= 0) return next(null, null)
+    var chunk = data.slice(0, size)
+    data = data.slice(size)
+    next(null, chunk)
+  })
   return putStream(cache, key, stream, opts, cb)
 }
 
