@@ -1,5 +1,5 @@
 module.exports = {
-  ls: require('./lib/entry-index').ls,
+  ls: require('./ls'),
   get: require('./get'),
   put: require('./put'),
   rm: require('./rm')
