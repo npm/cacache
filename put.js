@@ -3,6 +3,7 @@ var from = require('from2')
 var fs = require('graceful-fs')
 var index = require('./lib/entry-index')
 var inflight = require('inflight')
+var path = require('path')
 var putContentStream = require('./lib/content/put-stream')
 
 module.exports.file = putFile
@@ -12,6 +13,8 @@ function putFile (cache, key, filePath, opts, cb) {
     opts = null
   }
   cb = dezalgo(cb)
+  opts = Object.create(opts || {})
+  opts.filename = opts.filename || path.basename(filePath)
   try {
     var stream = fs.createReadStream(filePath)
   } catch (e) {
