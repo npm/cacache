@@ -2,6 +2,7 @@ var index = require('./lib/entry-index')
 var read = require('./lib/content/read')
 
 module.exports.directory = directory
+module.exports.directory.byDigest = read.asDirectory
 function directory (cache, key, destination, opts, cb) {
   index.find(cache, key, function (err, data) {
     if (err) { return cb(err) }
@@ -11,6 +12,7 @@ function directory (cache, key, destination, opts, cb) {
 }
 
 module.exports.tarball = tarball
+module.exports.tarball.byDigest = read.asTarball
 function tarball (cache, key, destination, opts, cb) {
   index.find(cache, key, function (err, data) {
     if (err) { return cb(err) }
