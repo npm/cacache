@@ -17,7 +17,7 @@ module.exports.hasContent = hasContent
 function hasContent (cache, address, cb) {
   cb = dezalgo(cb)
   if (!address) { return cb(null, false) }
-  fs.stat(contentPath(cache, address), function (err) {
+  fs.lstat(contentPath(cache, address), function (err) {
     if (err && err.code === 'ENOENT') {
       return cb(null, false)
     } else if (err) {
