@@ -37,11 +37,15 @@ function putStream (cache, key, inputStream, opts, _cb) {
     opts = null
   }
   opts = opts || {}
+  var logger = wrapLogger(opts.logger || Function.prototype)
+
   _cb = inflight('cacache.put.stream: ' + key, _cb)
-  if (!_cb) { return }
+  if (!_cb) {
+    logger('verbose', key, 'is inflight. Waiting.')
+    return
+  }
 
   var startTime = +(new Date())
-  var logger = wrapLogger(opts.logger || Function.prototype)
   var tmpTarget = path.join(cache, 'tmp', (opts.tmpPrefix || '') + randomstring.generate())
   var cb = dezalgo(function (err, digest) {
     rimraf(tmpTarget, function (err2) {
