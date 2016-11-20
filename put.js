@@ -64,9 +64,7 @@ function putMetadata (cache, key, metadata, opts, cb) {
   opts = Object.create(opts || {})
   opts.metadata = metadata
   opts.override = true
-  console.log('what the fuck tho')
   index.find(cache, key, function (err, info) {
-    console.log('ok i read the thing', err, info)
     if (err) { return cb(err) }
     if (!info) { return cb(index.notFoundError(cache, key)) }
     index.insert(cache, key, info.digest, opts, cb)
