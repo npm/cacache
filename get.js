@@ -18,10 +18,10 @@ function hasContent (cache, address, cb) {
   cb = dezalgo(cb)
   if (!address) { return cb(null, false) }
   fs.stat(contentPath(cache, address), function (err) {
-    if (err && err.code !== 'ENOENT') {
-      return cb(err)
-    } else if (err && err.code === 'ENOENT') {
+    if (err && err.code === 'ENOENT') {
       return cb(null, false)
+    } else if (err) {
+      return cb(err)
     } else {
       return cb(null, true)
     }
