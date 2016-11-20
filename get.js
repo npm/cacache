@@ -9,5 +9,10 @@ function directory (cache, key, destination, opts, cb) {
   })
 }
 
+module.exports.tarball = tarball
+function tarball (cache, key, destination, opts, cb) {
+  index.find(cache, key, function (err, digest) {
+    if (err) { return cb(err) }
+    read.asTarball(cache, digest, destination, opts, cb)
   })
 }
