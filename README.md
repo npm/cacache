@@ -20,11 +20,19 @@ that stored content is shared by different keys if they point to the same data.
   * [Querying the Cache](#queries)
   * [Cleaning Up](#cleanup)
 * [API](#api)
+  * [`ls`](#ls)
+  * [`get.directory`](#get-directory)
+  * [`get.tarball`](#get-tarball)
+  * [`get.info`](#get-info)
   * [`put.file`](#put-file)
   * [`put.data`](#put-data)
   * [`put.stream`](#put-stream)
   * [`put.metadata`](#put-metadata)
   * [`put options`](#put-options)
+  * [`rm.all`](#rm-all)
+  * [`rm.entry`](#rm-entry)
+  * [`rm.content`](#rm-content)
+  * [`rm.gc`](#rm-gc)
 
 ### Example
 
@@ -44,7 +52,7 @@ cacache.put.file(cachePath, key, tarball, (err, digest) => {
 const destination = '/tmp/extract-to-here'
 
 // Copy the contents out of the cache and into their destination!
-cacache.get.copy(cachePath, key, destination, (err) => {
+cacache.get.directory(cachePath, key, destination, (err) => {
   if (err) { return console.error('Error extracting data!', err.code) }
   console.log(`data extracted to ${cachePath}.`)
 })
@@ -65,6 +73,120 @@ cacache.get.copy(cachePath, key, destination, (err) => {
 #### Introduction
 
 ### API
+
+#### <a name="ls"></a> `> cacache.ls(cache, cb)`
+
+Lists info for all entries currently in the cache as a single large object. Each
+entry in the object will be keyed by the unique index key, with corresponding
+`get.info` objects as the values.
+
+##### Example
+
+```javascript
+cacache.ls(cachePath, (err, allEntries) => {
+  if (err) { throw err }
+  console.log(info)
+})
+// Output
+{
+  'my-thing': {
+    key: 'my-thing',
+    digest: 'deadbeef',
+    path: '~/.testcache/content/deadbeef',
+    time: 12345698490,
+    metadata: {
+      name: 'blah',
+      version: '1.2.3',
+      description: 'this was once a package but now it is my-thing'
+    }
+  },
+  'other-thing': {
+    key: 'other-thing',
+    digest: 'bada55',
+    path: '~/.testcache/content/bada55',
+    time: 11992309289
+  }
+}
+```
+
+#### <a name="get-directory"></a> `> cacache.get.directory(cache, key, destination, [opts], cb)`
+
+Copies cached data identified by `key` to a directory named `destination`. The
+latter will be created if it does not already exist.
+
+If there is no content identified by `key`, it will error.
+
+A sub-function, `get.directory.byDigest` may be used for identical behavior,
+except lookup will happen by content digest, bypassing the index entirely.
+
+##### Example
+
+```javascript
+cacache.get.directory(cachePath, 'my-thing', './put/it/here', (err) => {
+  if (err) { throw err }
+  console.log(`my-thing contents extracted to ./put/it/here`)
+})
+
+cacache.get.directory.byDigest(cachePath, pkg.sha, './put/it/here', (err) => {
+  if (err) { throw err }
+  console.log(`pkg contents extracted to ./put/it/here`)
+})
+```
+
+#### <a name="get-tarball"></a> `> cacache.get.tarball(cache, key, destination, [opts], cb)`
+
+Creates a tarball from cached data identified by `key` and writes it to a file
+named by `destination`.
+
+If there is no content identified by `key`, it will error.
+
+A sub-function, `get.tarball.byDigest` may be used for identical behavior,
+except lookup will happen by content digest, bypassing the index entirely.
+
+**NOTE**: The extracted tarball is not guaranteed to have an identical digest to
+          a tarball that was inserted into the cache. What you get out is not
+          necessarily what you put in.
+
+##### Example
+
+```javascript
+cacache.get.directory(cachePath, 'my-thing', './put/it/here', (err) => {
+  if (err) { throw err }
+  console.log(`my-thing contents extracted to ./put/it/here`)
+})
+
+cacache.get.directory.byDigest(cachePath, pkg.sha, './put/it/here', (err) => {
+  if (err) { throw err }
+  console.log(`pkg contents extracted to ./put/it/here`)
+})
+```
+
+#### <a name="get-info"></a> `> cacache.get.info(cache, key, cb)`
+
+Looks up `key` in the cache index, returning information about the entry if
+one exists. If an entry does not exist, the second argument to `cb` will be
+falsy.
+
+##### Example
+
+```javascript
+cacache.get.info(cachePath, 'my-thing', (err, info) => {
+  if (err) { throw err }
+  console.log(info)
+})
+// Output
+{
+  key: 'my-thing',
+  digest: 'deadbeef',
+  path: '~/.testcache/content/deadbeef',
+  time: 12345698490,
+  metadata: {
+    name: 'blah',
+    version: '1.2.3',
+    description: 'this was once a package but now it is my-thing'
+  }
+}
+```
 
 #### <a name="put-file"></a> `> cacache.put.file(cache, key, file, [opts], cb)`
 
@@ -221,3 +343,59 @@ verifier: (path, digest, cb) => {
 
 Useful for debugging the cache -- prefix to use for randomly-named temporary
 cache directories.
+
+#### <a name="rm-all"></a> `> cacache.rm.all(cache, cb)`
+
+Clears the entire cache. Mainly by blowing away the cache directory itself.
+
+##### Example
+
+```javascript
+cacache.rm.all(cachePath, (err) => {
+  if (err) { throw err }
+  console.log('THE APOCALYPSE IS UPON US 😱')
+})
+```
+
+#### <a name="rm-entry"></a> `> cacache.rm.entry(cache, key, cb)`
+
+Removes the index entry for `key`. Content will still be accessible if
+requested directly.
+
+##### Example
+
+```javascript
+cacache.rm.entry(cachePath, 'my-thing', (err) => {
+  if (err) { throw err }
+  console.log('I did not like it anyway')
+})
+```
+
+#### <a name="rm-content"></a> `> cacache.rm.content(cache, digest, cb)`
+
+Removes the content identified by `digest`. Any index entries referring to it
+will not be usable again until the content is re-added to the cache with an
+identical digest.
+
+##### Example
+
+```javascript
+cacache.rm.content(cachePath, 'deadbeef', (err) => {
+  if (err) { throw err }
+  console.log('data for my-thing is gone!')
+})
+```
+
+#### <a name="rm-gc"></a> `> cacache.rm.gc(cache, cb)`
+
+Navigates the entry index, cleaning up inaccessible entries (due to appends),
+and removes any content entries that are no longer reachable from index entries.
+
+##### Example
+
+```javascript
+cacache.rm.gc(cachePath, (err) => {
+  if (err) { throw err }
+  console.log('less data in the cache now, and everything still works')
+})
+```
