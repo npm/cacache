@@ -47,7 +47,7 @@ function putStream (cache, key, inputStream, opts, cb) {
   }
   cb = inflight('cacache.put.stream: ' + key, cb)
   if (!cb) { return }
-  putContentStream(cache, inputStream, opts, function (err, digest) {
+  return putContentStream(cache, inputStream, opts, function (err, digest) {
     if (err) { cb(err) }
     index.insert(cache, key, digest, cb)
   })
