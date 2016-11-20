@@ -38,7 +38,6 @@ function putData (cache, key, filename, data, opts, cb) {
   return putStream(cache, key, stream, opts, cb)
 }
 
-// TODO - tag cache dir to make sure we're not clobbering?
 module.exports.stream = putStream
 function putStream (cache, key, inputStream, opts, cb) {
   if (!cb) {
