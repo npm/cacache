@@ -21,6 +21,7 @@
   "author": "Kat Marchán <kzm@sykosomatic.org>",
   "license": "CC0-1.0",
   "dependencies": {
+    "chownr": "^1.0.1",
     "dezalgo": "^1.0.3",
     "from2": "^2.3.0",
     "fs-extra": "^1.0.0",
