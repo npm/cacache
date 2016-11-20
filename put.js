@@ -48,6 +48,6 @@ function putStream (cache, key, inputStream, opts, cb) {
   if (!cb) { return }
   return putContentStream(cache, inputStream, opts, function (err, digest) {
     if (err) { cb(err) }
-    index.insert(cache, key, digest, cb)
+    index.insert(cache, key, digest, opts, cb)
   })
 }
