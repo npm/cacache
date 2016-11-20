@@ -4,7 +4,10 @@
   "description": "General content-addressable cache system that maintains a filesystem registry of file data.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "preversion": "npm t",
+    "postversion": "npm publish && git push --follow-tags",
+    "pretest": "standard",
+    "test": "nyc -- tap test/*.js"
   },
   "keywords": [
     "cache",
@@ -30,7 +33,16 @@
     "through2": "^2.0.1"
   },
   "devDependencies": {
+    "nyc": "^9.0.1",
     "standard": "^8.5.0",
     "tap": "^8.0.1"
+  },
+  "config": {
+    "nyc": {
+      "exclude": [
+        "node_modules/**",
+        "test/**"
+      ]
+    }
   }
 }
