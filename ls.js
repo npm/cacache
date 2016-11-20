@@ -20,6 +20,7 @@ function ls (cache, cb) {
         )),
         time: info[k].time
       }
+      info[k].metadata && (ret[k].metadata = info[k].metadata)
     }
     cb(null, ret)
   })
