@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "General content-addressable cache system that maintains a filesystem registry of file data.",
   "main": "index.js",
+  "files": [
+    "*.js"
+  ],
   "scripts": {
     "preversion": "npm t",
     "postversion": "npm publish && git push --follow-tags",
