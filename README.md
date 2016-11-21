@@ -79,7 +79,7 @@ cacache.get.directory(cachePath, key, destination, (err) => {
 
 Lists info for all entries currently in the cache as a single large object. Each
 entry in the object will be keyed by the unique index key, with corresponding
-`get.info` objects as the values.
+[`get.info`](#get-info) objects as the values.
 
 ##### Example
 
@@ -93,7 +93,7 @@ cacache.ls(cachePath, (err, allEntries) => {
   'my-thing': {
     key: 'my-thing',
     digest: 'deadbeef',
-    path: '~/.testcache/content/deadbeef',
+    path: '.testcache/content/deadbeef',
     time: 12345698490,
     metadata: {
       name: 'blah',
@@ -104,7 +104,7 @@ cacache.ls(cachePath, (err, allEntries) => {
   'other-thing': {
     key: 'other-thing',
     digest: 'bada55',
-    path: '~/.testcache/content/bada55',
+    path: '.testcache/content/bada55',
     time: 11992309289
   }
 }
@@ -168,6 +168,14 @@ Looks up `key` in the cache index, returning information about the entry if
 one exists. If an entry does not exist, the second argument to `cb` will be
 falsy.
 
+##### Fields
+
+* `key` - Key the entry was looked up under. Matches the `key` argument.
+* `digest` - Content digest the entry refers to.
+* `path` - Filesystem path relative to `cache` argument where content is stored.
+* `time` - Timestamp the entry was first added on.
+* `metadata` - User-assigned metadata associated with the entry/content.
+
 ##### Example
 
 ```javascript
@@ -179,7 +187,7 @@ cacache.get.info(cachePath, 'my-thing', (err, info) => {
 {
   key: 'my-thing',
   digest: 'deadbeef',
-  path: '~/.testcache/content/deadbeef',
+  path: '.testcache/content/deadbeef',
   time: 12345698490,
   metadata: {
     name: 'blah',
