@@ -13,11 +13,16 @@ function CacheIndex (entries) {
   var index = {}
   Object.keys(entries).forEach(function (k) {
     var lines = entries[k]
-    if (typeof lines.length !== 'number') {
-      lines = [lines]
-    }
     var hashed = hashKey(k)
-    var serialised = lines.map(JSON.stringify).join('\n')
+    var serialised
+    if (typeof lines === 'string') {
+      serialised = lines
+    } else {
+      if (typeof lines.length !== 'number') {
+        lines = [lines]
+      }
+      serialised = lines.map(JSON.stringify).join('\n')
+    }
     index[hashed] = index[hashed]
     ? [index[hashed], serialised].join('\n')
     : serialised
