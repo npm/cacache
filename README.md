@@ -288,7 +288,7 @@ stored.
 
 ##### `extract`
 
-Default: true
+Default: false
 
 If false, tarball input will not be extracted, and the tarball will be treated
 as a regular standalone file when added to the cache. Use `opts.filename` to
