@@ -43,7 +43,7 @@ test('get.info cache miss', function (t) {
   fixture.create(CACHE)
   get.info(CACHE, 'whatever', function (err, info) {
     if (err) { throw err }
-    t.ok(!info, 'if there is no cache dir, behaves like a cache miss')
+    t.ok(!info, 'cache miss when specific key not present')
     t.end()
   })
 })
