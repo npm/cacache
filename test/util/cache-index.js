@@ -1,4 +1,4 @@
-var crypto = require('crypto')
+var hashKey = require('../../lib/entry-index')._hashKey
 var Tacks = require('tacks')
 
 var Dir = Tacks.Dir
@@ -12,12 +12,12 @@ module.exports = CacheIndex
 function CacheIndex (entries) {
   var index = {}
   Object.keys(entries).forEach(function (k) {
-    var hashed = crypto.createHash(
-      'sha1'
-    ).update(
-      entries[k].key
-    ).digest('hex')
-    var serialised = JSON.stringify(entries[k])
+    var lines = entries[k]
+    if (typeof lines.length !== 'number') {
+      lines = [lines]
+    }
+    var hashed = hashKey(k)
+    var serialised = lines.map(JSON.stringify).join('\n')
     index[hashed] = index[hashed]
     ? [index[hashed], serialised].join('\n')
     : serialised
