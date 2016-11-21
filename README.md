@@ -281,8 +281,18 @@ serious errors for running processes.
 
 ##### `filename`
 
+Defaut: 'index.js'
+
 When inserting non-tarball data, the filename to use for the sole file to be
 stored.
+
+##### `extract`
+
+Default: true
+
+If false, tarball input will not be extracted, and the tarball will be treated
+as a regular standalone file when added to the cache. Use `opts.filename` to
+set the filename to be used.
 
 ##### `digest`
 
