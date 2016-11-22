@@ -292,21 +292,12 @@ Default: 'sha256'
 Hashing algorithm to use when calculating the digest for inserted data. Can use
 any algorithm supported by Node.js' `crypto` module.
 
-##### `logger`
-
-Will be called with a loglevel as its first argument on any internal log events.
-
 ##### `uid`/`gid`
 
 If provided, cacache will do its best to make sure any new files added to the
 cache use this particular `uid`/`gid` combination. This can be used,
 for example, to drop permissions when someone uses `sudo`, but cacache makes
 no assumptions about your needs here.
-
-##### `tmpPrefix`
-
-Useful for debugging the cache -- prefix to use for randomly-named temporary
-cache files.
 
 #### <a name="rm-all"></a> `> cacache.rm.all(cache, cb)`
 
