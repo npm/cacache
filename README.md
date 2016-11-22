@@ -265,19 +265,6 @@ cacache.put.metadata(cachePath, 'registry.npmjs.org|cacache@1.0.0', {
 
 Arbitrary metadata to be attached to the inserted key.
 
-##### `clobber`
-
-Default: false
-
-If true, this insertion will overwrite the existing content in case of a race.
-Note that in general, content digests are treated as absolute identifiers for
-all content data, and verified both on insertion and extraction, so cacache
-assumes it doesn't need to touch anything that was already written.
-
-If false, will likely prevent race conditions where cache contents might already
-be in the process of being read when the new cache content is renamed, causing
-serious errors for running processes.
-
 ##### `digest`
 
 If present, the pre-calculated digest for the inserted content. If this option
