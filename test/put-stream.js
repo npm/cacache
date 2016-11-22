@@ -6,18 +6,15 @@ var testDir = require('./util/test-dir')(__filename)
 
 var CACHE = path.join(testDir, 'cache')
 var contentPath = require('../lib/content/path')
-// This test uses `put.stream` for most of its tests
-// because it's the function the other writers call.
-var put = require('../put')
+var putStream = require('../lib/content/put-stream')
 
-test('basic file put', function (t) {
+test('basic put', function (t) {
   var CONTENT = 'foobarbaz'
   var DIGEST = crypto.createHash('sha256').update(CONTENT).digest('hex')
   fs.writeFile('foo.txt', CONTENT, function (err) {
     if (err) { throw err }
-    var key = 'whatever'
     var stream = fs.createReadStream('foo.txt')
-    put.stream(CACHE, key, stream, function (err, foundDigest) {
+    putStream(CACHE, stream, function (err, foundDigest) {
       if (err) { throw err }
       var cpath = contentPath(CACHE, foundDigest)
       t.plan(3)
