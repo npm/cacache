@@ -13,6 +13,7 @@
     "pretest": "standard lib test *.js",
     "test": "nyc -- tap test/*.js"
   },
+  "repository": "https://github.com/zkat/cacache",
   "keywords": [
     "cache",
     "content-addressable cache",
