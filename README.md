@@ -33,7 +33,6 @@ that stored content is shared by different keys if they point to the same data.
   * [`rm.entry`](#rm-entry)
   * [`rm.content`](#rm-content)
   * [`rm.gc`](#rm-gc)
-  * [`chownr`](#chownr)
 
 ### Example
 
@@ -339,19 +338,5 @@ and removes any content entries that are no longer reachable from index entries.
 cacache.rm.gc(cachePath, (err) => {
   if (err) { throw err }
   console.log('less data in the cache now, and everything still works')
-})
-```
-
-#### <a name="chownr"></a> `> cacache.chownr(cache, uid, gid, cb)`
-
-Fixes ownership for the entire cache, including contents, such that it belongs
-to a specific user.
-
-##### Example
-
-```javascript
-cacache.chownr(cachePath, uid, gid, (err) => {
-  if (err) { throw err }
-  console.log('fewer permission issues now')
 })
 ```
