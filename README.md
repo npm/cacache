@@ -283,9 +283,9 @@ serious errors for running processes.
 If present, the pre-calculated digest for the inserted content. If this option
 if provided and does not match the post-insertion digest, insertion will fail.
 
-To control the hashing algorithm, use `opts.hash`.
+To control the hashing algorithm, use `opts.hashAlgorithm`.
 
-##### `hash`
+##### `hashAlgorithm`
 
 Default: 'sha256'
 
