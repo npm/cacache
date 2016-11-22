@@ -29,7 +29,6 @@ function putData (cache, key, filename, data, opts, cb) {
     cb = opts
     opts = null
   }
-  cb = dezalgo(cb)
   opts = Object.create(opts || {})
   opts.filename = filename
   var stream = from(function (size, next) {
