@@ -8,10 +8,10 @@ var cacheDir = path.resolve(__dirname, '../cache')
 module.exports = testDir
 function testDir (filename) {
   var dir = path.join(cacheDir, path.basename(filename, '.js'))
-  mkdirp.sync(dir)
-  process.chdir(dir)
+  reset(dir)
   if (!process.env.KEEPCACHE) {
     tap.tearDown(function () {
+      process.chdir(__dirname)
       rimraf.sync(cacheDir)
     })
     tap.afterEach(function (cb) {
@@ -24,5 +24,8 @@ function testDir (filename) {
 
 module.exports.reset = reset
 function reset (testDir) {
-  rimraf.sync(testDir + '/*')
+  process.chdir(__dirname)
+  rimraf.sync(testDir)
+  mkdirp.sync(testDir)
+  process.chdir(testDir)
 }
