@@ -43,17 +43,25 @@ const cacache = require('cacache')
 const tarball = '/path/to/mytar.tgz'
 const cachePath = '/tmp/my-toy-cache'
 const key = 'my-unique-key-1234'
+let tarballDigest = null
 
 // Cache it! Use `cachePath` as the root of the content cache
 cacache.put.file(cachePath, key, tarball, (err, digest) => {
   if (err) { return console.error('Error saving your file!', err.code) }
+  tarballDigest = digest // we'll use this later
   console.log(`Saved ${tarball} to ${cachePath} as ${digest}.`)
 })
 
-const destination = '/tmp/extract-to-here'
+const destination = '/tmp/mytar.tgz'
 
 // Copy the contents out of the cache and into their destination!
-cacache.get.directory(cachePath, key, destination, (err) => {
+cacache.get.file(cachePath, key, destination, (err) => {
+  if (err) { return console.error('Error extracting data!', err.code) }
+  console.log(`data extracted to ${cachePath}.`)
+})
+
+// The same thing, but skip the key index.
+cacache.get.file.byDigest(cachePath, tarballDigest, destination, (err) => {
   if (err) { return console.error('Error extracting data!', err.code) }
   console.log(`data extracted to ${cachePath}.`)
 })
@@ -61,13 +69,12 @@ cacache.get.directory(cachePath, key, destination, (err) => {
 
 ### Features
 
-* Stores tarball data (expanded) or single files
 * Extraction by key or by content digest (shasum, etc).
 * Deduplicated content by digest -- two inputs with same key are only saved once
-* Manipulate tarball data on expansion and save the updated version
-* Data validation
-* Streaming support
-* Metadata storage
+* Consistency checks, both on insert and extract.
+* (Kinda) concurrency-safe and fault tolerant.
+* Streaming support.
+* Metadata storage.
 
 ### Guide
 
@@ -110,56 +117,54 @@ cacache.ls(cachePath, (err, allEntries) => {
 }
 ```
 
-#### <a name="get-directory"></a> `> cacache.get.directory(cache, key, destination, [opts], cb)`
+#### <a name="get-file"></a> `> cacache.get.file(cache, key, destination, [opts], cb)`
 
-Copies cached data identified by `key` to a directory named `destination`. The
-latter will be created if it does not already exist.
+Copies cached data identified by `key` to a file named `destination`.
 
-If there is no content identified by `key`, it will error.
+If there is no content identified by `key`, or if the locally-stored data does
+not pass the validity checksum, an error will be returned through the callback.
 
-A sub-function, `get.directory.byDigest` may be used for identical behavior,
+A sub-function, `get.file.byDigest` may be used for identical behavior,
 except lookup will happen by content digest, bypassing the index entirely.
 
 ##### Example
 
 ```javascript
-cacache.get.directory(cachePath, 'my-thing', './put/it/here', (err) => {
+cacache.get.file(cachePath, 'my-thing', './put/it/here', (err) => {
   if (err) { throw err }
-  console.log(`my-thing contents extracted to ./put/it/here`)
+  console.log(`my-thing contents copied to ./put/it/here`)
 })
 
-cacache.get.directory.byDigest(cachePath, pkg.sha, './put/it/here', (err) => {
+cacache.get.file.byDigest(cachePath, pkg.sha, './put/it/here', (err) => {
   if (err) { throw err }
-  console.log(`pkg contents extracted to ./put/it/here`)
+  console.log(`pkg contents copied to ./put/it/here`)
 })
 ```
 
-#### <a name="get-tarball"></a> `> cacache.get.tarball(cache, key, destination, [opts], cb)`
+#### <a name="get-stream"></a> `> cacache.get.stream(cache, key, [opts], cb)`
 
-Creates a tarball from cached data identified by `key` and writes it to a file
-named by `destination`.
+Returns a stream of the cached data identified by `key`.
 
-If there is no content identified by `key`, it will error.
+If there is no content identified by `key`, or if the locally-stored data does
+not pass the validity checksum, an error will be emitted.
 
-A sub-function, `get.tarball.byDigest` may be used for identical behavior,
+A sub-function, `get.stream.byDigest` may be used for identical behavior,
 except lookup will happen by content digest, bypassing the index entirely.
-
-**NOTE**: The extracted tarball is not guaranteed to have an identical digest to
-          a tarball that was inserted into the cache. What you get out is not
-          necessarily what you put in.
 
 ##### Example
 
 ```javascript
-cacache.get.directory(cachePath, 'my-thing', './put/it/here', (err) => {
-  if (err) { throw err }
-  console.log(`my-thing contents extracted to ./put/it/here`)
-})
+cache.get.stream(
+  cachePath, 'my-thing'
+).pipe(
+  fs.createWriteStream('./x.tgz')
+)
 
-cacache.get.directory.byDigest(cachePath, pkg.sha, './put/it/here', (err) => {
-  if (err) { throw err }
-  console.log(`pkg contents extracted to ./put/it/here`)
-})
+cache.get.stream.byDigest(
+  cachePath, 'deadbeef'
+).pipe(
+  fs.createWriteStream('./x.tgz')
+)
 ```
 
 #### <a name="get-info"></a> `> cacache.get.info(cache, key, cb)`
@@ -199,10 +204,7 @@ cacache.get.info(cachePath, 'my-thing', (err, info) => {
 
 #### <a name="put-file"></a> `> cacache.put.file(cache, key, file, [opts], cb)`
 
-Inserts a file into the cache by pathname. If `file` refers to a tarball, it
-will be expanded and stored in the cache that way. The tarball may optionally
-be gzipped. Any other files will be stored as single files inside the cache
-directory.
+Inserts a file into the cache by pathname.
 
 ##### Example
 
@@ -228,10 +230,7 @@ cacache.put.data(cachePath, key, filename, 'wompwomp', (err, digest) => {
 
 #### <a name="put-stream"></a> `> cacache.put.stream(cache, key, stream, [opts], cb)`
 
-Inserts data from a stream into the cache. If the stream contains tarball data,
-it will be expanded and stored in the cache that way. The tar data may
-optionally be gzipped. Any other data type will be stored as single files inside
-the cache directory.
+Inserts data from a stream into the cache.
 
 ##### Example
 
@@ -270,29 +269,14 @@ Arbitrary metadata to be attached to the inserted key.
 
 Default: false
 
-If true, this insertion will overwrite the existing content directory in case
-of a race. Note that in general, content digests are treated as absolute
-identifiers for all content data, so cacache assumes it doesn't need to touch
-anything that was already written.
+If true, this insertion will overwrite the existing content in case of a race.
+Note that in general, content digests are treated as absolute identifiers for
+all content data, and verified both on insertion and extraction, so cacache
+assumes it doesn't need to touch anything that was already written.
 
 If false, will likely prevent race conditions where cache contents might already
 be in the process of being read when the new cache content is renamed, causing
 serious errors for running processes.
-
-##### `filename`
-
-Defaut: 'index.js'
-
-When inserting non-tarball data, the filename to use for the sole file to be
-stored.
-
-##### `extract`
-
-Default: false
-
-If false, tarball input will not be extracted, and the tarball will be treated
-as a regular standalone file when added to the cache. Use `opts.filename` to
-set the filename to be used.
 
 ##### `digest`
 
@@ -312,56 +296,17 @@ any algorithm supported by Node.js' `crypto` module.
 
 Will be called with a loglevel as its first argument on any internal log events.
 
-##### `strip`
-
-Default: 0
-
-When inserting tarballs, the number of directories to strip from the beginning
-of the contents' paths.
-
-##### `dmode`/`fmode`/`umask`
-
-Modes applied to expanded content files. Does not affect the rest of the cache.
-
 ##### `uid`/`gid`
 
-uid and gid for any new content added to the cache.
-
-##### `ignore`
-
-Function that receives the filename and header information for expanded tarball
-files. If it returns true, the file will be skipped during expansion.
-
-```javascript
-ignore: (name, header) => {
-  return name.startsWith('.')
-}
-```
-
-##### `verifier`
-
-Receives the internal path to the expanded cache contents. Can be used to verify
-and arbitrarily modify the data to be stored.
-
-If the callback receives an error, content insertion will fail and the content
-will be deleted.
-
-```javascript
-verifier: (path, digest, cb) => {
-  fs.lstat(path + '/.sekrit', (err) => {
-    if (err) {
-      cb()
-    } else {
-      cb(new Error('sekrit file should not be there!'))
-    }
-  })
-}
-```
+If provided, cacache will do its best to make sure any new files added to the
+cache use this particular `uid`/`gid` combination. This can be used,
+for example, to drop permissions when someone uses `sudo`, but cacache makes
+no assumptions about your needs here.
 
 ##### `tmpPrefix`
 
 Useful for debugging the cache -- prefix to use for randomly-named temporary
-cache directories.
+cache files.
 
 #### <a name="rm-all"></a> `> cacache.rm.all(cache, cb)`
 
