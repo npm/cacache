@@ -2,7 +2,6 @@ var crypto = require('crypto')
 var fromString = require('./util/from-string')
 var fs = require('fs')
 var path = require('path')
-var requireInject = require('require-inject')
 var Tacks = require('tacks')
 var test = require('tap').test
 var testDir = require('./util/test-dir')(__filename)
@@ -114,30 +113,6 @@ test('exits normally if file already open', function (t) {
         t.end()
       })
     })
-  })
-})
-
-test('allows setting a custom uid for cache contents on write', {
-  skip: true // need to figure out how to mock this correctly?
-  // skip: !process.getuid // On a platform that doesn't support uid/gid
-}, function (t) {
-  var NEWUID = process.getuid() + 1
-  var NEWGID = process.getgid() + 1
-  var ps = requireInject('../lib/content/put-stream', {
-    chownr: function (path, uid, gid, cb) {
-      process.nextTick(function () {
-        t.equal(uid, NEWUID, 'new uid set')
-        t.equal(gid, NEWGID, 'new gid set')
-        cb(null)
-      })
-    }
-  })
-  ps(CACHE, fromString('foo'), {
-    uid: NEWUID,
-    gid: NEWGID
-  }, function (err) {
-    if (err) { throw err }
-    t.end()
   })
 })
 
