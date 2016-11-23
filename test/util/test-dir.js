@@ -14,7 +14,11 @@ function testDir (filename) {
       process.chdir(__dirname)
       try {
         rimraf.sync(cacheDir)
-      } catch (e) {}
+      } catch (e) {
+        if (process.platform !== 'win32') {
+          throw e
+        }
+      }
     })
     tap.afterEach(function (cb) {
       reset(dir)
@@ -29,7 +33,11 @@ function reset (testDir) {
   process.chdir(__dirname)
   try {
     rimraf.sync(testDir)
-  } catch (e) {}
+  } catch (e) {
+    if (process.platform !== 'win32') {
+      throw e
+    }
+  }
   mkdirp.sync(testDir)
   process.chdir(testDir)
 }
