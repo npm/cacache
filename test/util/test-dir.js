@@ -12,7 +12,9 @@ function testDir (filename) {
   if (!process.env.KEEPCACHE) {
     tap.tearDown(function () {
       process.chdir(__dirname)
-      rimraf.sync(cacheDir)
+      try {
+        rimraf.sync(cacheDir)
+      } catch (e) {}
     })
     tap.afterEach(function (cb) {
       reset(dir)
@@ -25,7 +27,9 @@ function testDir (filename) {
 module.exports.reset = reset
 function reset (testDir) {
   process.chdir(__dirname)
-  rimraf.sync(testDir)
+  try {
+    rimraf.sync(testDir)
+  } catch (e) {}
   mkdirp.sync(testDir)
   process.chdir(testDir)
 }
