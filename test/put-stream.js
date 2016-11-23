@@ -2,9 +2,11 @@ var crypto = require('crypto')
 var fromString = require('./util/from-string')
 var fs = require('fs')
 var path = require('path')
+var pumpify = require('pumpify')
 var Tacks = require('tacks')
 var test = require('tap').test
 var testDir = require('./util/test-dir')(__filename)
+var through = require('through2')
 
 var CACHE = path.join(testDir, 'cache')
 var contentPath = require('../lib/content/path')
@@ -55,6 +57,21 @@ test('errors if stream ends with no data', function (t) {
     t.ok(err, 'got an error')
     t.ok(!foundDigest, 'no digest returned')
     t.equal(err.code, 'ENODATA', 'returns useful error code')
+    t.end()
+  })
+})
+
+test('errors if input stream errors', function (t) {
+  var stream = pumpify(
+    fromString('foo').on('data', function (d) {
+      stream.emit('error', new Error('bleh'))
+    }),
+    through()
+  )
+  putStream(CACHE, stream, function (err, foundDigest) {
+    t.ok(err, 'got an error')
+    t.ok(!foundDigest, 'no digest returned')
+    t.match(err.message, 'bleh', 'returns the error from input stream')
     t.end()
   })
 })
