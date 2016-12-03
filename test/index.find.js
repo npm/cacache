@@ -8,9 +8,9 @@ var testDir = require('./util/test-dir')(__filename)
 var CACHE = path.join(testDir, 'cache')
 var contentPath = require('../lib/content/path')
 var Dir = Tacks.Dir
-var get = require('../get')
+var index = require('../lib/entry-index')
 
-test('get.info cache hit', function (t) {
+test('index.find cache hit', function (t) {
   var entry = {
     key: 'whatever',
     digest: 'deadbeef',
@@ -23,7 +23,7 @@ test('get.info cache hit', function (t) {
     })
   }))
   fixture.create(CACHE)
-  get.info(CACHE, entry.key, function (err, info) {
+  index.find(CACHE, entry.key, function (err, info) {
     if (err) { throw err }
     t.ok(info, 'cache hit')
     t.equal(info.path, contentPath(CACHE, entry.digest), 'path added to info')
@@ -33,7 +33,7 @@ test('get.info cache hit', function (t) {
   })
 })
 
-test('get.info cache miss', function (t) {
+test('index.find cache miss', function (t) {
   var fixture = new Tacks(Dir({
     'index': CacheIndex({
       'foo': {key: 'foo'},
@@ -41,17 +41,17 @@ test('get.info cache miss', function (t) {
     })
   }))
   fixture.create(CACHE)
-  get.info(CACHE, 'whatever', function (err, info) {
+  index.find(CACHE, 'whatever', function (err, info) {
     if (err) { throw err }
     t.ok(!info, 'cache miss when specific key not present')
     t.end()
   })
 })
 
-test('get.info no cache', function (t) {
+test('index.find no cache', function (t) {
   fs.stat(CACHE, function (err) {
     t.assert(err, 'cache directory does not exist')
-    get.info(CACHE, 'whatever', function (err, info) {
+    index.find(CACHE, 'whatever', function (err, info) {
       if (err) { throw err }
       t.ok(!info, 'if there is no cache dir, behaves like a cache miss')
       t.end()
@@ -59,7 +59,7 @@ test('get.info no cache', function (t) {
   })
 })
 
-test('get.info key case-sensitivity', function (t) {
+test('index.find key case-sensitivity', function (t) {
   var fixture = new Tacks(Dir({
     'index': CacheIndex({
       'jsonstream': {
@@ -76,23 +76,23 @@ test('get.info key case-sensitivity', function (t) {
   }))
   fixture.create(CACHE)
   t.plan(5)
-  get.info(CACHE, 'JSONStream', function (err, info) {
+  index.find(CACHE, 'JSONStream', function (err, info) {
     if (err) { throw err }
     t.ok(info, 'found an entry for JSONStream')
     t.equal(info.key, 'JSONStream', 'fetched the correct entry')
   })
-  get.info(CACHE, 'jsonstream', function (err, info) {
+  index.find(CACHE, 'jsonstream', function (err, info) {
     if (err) { throw err }
     t.ok(info, 'found an entry for jsonstream')
     t.equal(info.key, 'jsonstream', 'fetched the correct entry')
   })
-  get.info(CACHE, 'jsonStream', function (err, info) {
+  index.find(CACHE, 'jsonStream', function (err, info) {
     if (err) { throw err }
     t.ok(!info, 'no entry for jsonStream')
   })
 })
 
-test('get.info path-breaking characters', function (t) {
+test('index.find path-breaking characters', function (t) {
   var entry = {
     key: ';;!registry\nhttps://registry.npmjs.org/back \\ slash@Cool™?',
     digest: 'deadbeef',
@@ -105,7 +105,7 @@ test('get.info path-breaking characters', function (t) {
     'index': CacheIndex(idx)
   }))
   fixture.create(CACHE)
-  get.info(CACHE, entry.key, function (err, info) {
+  index.find(CACHE, entry.key, function (err, info) {
     if (err) { throw err }
     t.ok(info, 'cache hit')
     delete info.path
@@ -118,7 +118,7 @@ test('get.info path-breaking characters', function (t) {
   })
 })
 
-test('get.info multiple index entries for key', function (t) {
+test('index.find multiple index entries for key', function (t) {
   var key = 'whatever'
   var fixture = new Tacks(Dir({
     'index': CacheIndex({
@@ -129,7 +129,7 @@ test('get.info multiple index entries for key', function (t) {
     })
   }))
   fixture.create(CACHE)
-  get.info(CACHE, key, function (err, info) {
+  index.find(CACHE, key, function (err, info) {
     if (err) { throw err }
     t.ok(info, 'cache hit')
     t.equal(info.digest, 'bada55', 'most recent entry wins')
@@ -137,11 +137,11 @@ test('get.info multiple index entries for key', function (t) {
   })
 })
 
-test('get.info garbled data in index file', function (t) {
+test('index.find garbled data in index file', function (t) {
   // Even though `index.insert()` is safe from direct
   // race conditions, it's still possible for individual
   // entries to become corrupted, or to be partially written,
-  // since `get.info` does not acquire a write-preventing lock.
+  // since `index.find` does not acquire a write-preventing lock.
   //
   // Because entries are newline-prepended and only one
   // can be written at a time, the main possible corruption
@@ -159,7 +159,7 @@ test('get.info garbled data in index file', function (t) {
     })
   }))
   fixture.create(CACHE)
-  get.info(CACHE, key, function (err, info) {
+  index.find(CACHE, key, function (err, info) {
     if (err) { throw err }
     t.ok(info, 'cache hit in spite of crash-induced fail')
     t.equal(info.digest, 'deadbeef', ' recent entry wins')
@@ -167,7 +167,7 @@ test('get.info garbled data in index file', function (t) {
   })
 })
 
-test('get.info hash conflict in same bucket', function (t) {
+test('index.find hash conflict in same bucket', function (t) {
   // This... is very unlikely to happen. But hey.
   var entry = {
     key: 'whatever',
@@ -185,7 +185,7 @@ test('get.info hash conflict in same bucket', function (t) {
     })
   }))
   fixture.create(CACHE)
-  get.info(CACHE, entry.key, function (err, info) {
+  index.find(CACHE, entry.key, function (err, info) {
     if (err) { throw err }
     t.ok(info, 'cache hit')
     delete info.path
