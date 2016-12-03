@@ -135,3 +135,27 @@ test('exits normally if file already open', function (t) {
 
 test('cleans up tmp on successful completion')
 test('cleans up tmp on error')
+
+test('checks the size of stream data if opts.size provided', function (t) {
+  var CONTENT = 'foobarbaz'
+  t.plan(7)
+  putStream(CACHE, fromString(CONTENT.slice(3)), {
+    size: CONTENT.length
+  }, function (err, foundDigest) {
+    t.ok(!!err, 'got an error')
+    t.ok(!foundDigest, 'no digest returned')
+    t.equal(err.code, 'EBADSIZE', 'returns a useful error code')
+  })
+  putStream(CACHE, fromString(CONTENT + 'quux'), {
+    size: CONTENT.length
+  }, function (err, foundDigest) {
+    t.ok(!!err, 'got an error')
+    t.ok(!foundDigest, 'no digest returned')
+    t.equal(err.code, 'EBADSIZE', 'returns a useful error code')
+  })
+  putStream(CACHE, fromString(CONTENT), {
+    size: CONTENT.length
+  }, function (err) {
+    t.ok(!err, 'completed without error')
+  })
+})
