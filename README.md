@@ -264,6 +264,12 @@ cacache.put.metadata(cachePath, 'registry.npmjs.org|cacache@1.0.0', {
 
 Arbitrary metadata to be attached to the inserted key.
 
+##### `size`
+
+If provided, the data stream will be verified to check that enough data was
+passed through. If there's more or less data than expected, an `EBADSIZE` error
+will be returned.
+
 ##### `digest`
 
 If present, the pre-calculated digest for the inserted content. If this option
