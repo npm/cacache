@@ -76,7 +76,7 @@ test('errors if input stream errors', function (t) {
   })
 })
 
-test('does not overwrite content if already on disk', function (t) {
+test('overwrites content if already on disk', function (t) {
   var CONTENT = 'foobarbaz'
   var DIGEST = crypto.createHash('sha256').update(CONTENT).digest('hex')
   var contentDir = {}
@@ -94,16 +94,16 @@ test('does not overwrite content if already on disk', function (t) {
     t.equal(foundDigest, DIGEST, 'returns a matching digest')
     fs.readFile(path.join(CACHE, 'content', DIGEST), 'utf8', function (e, d) {
       if (e) { throw e }
-      t.equal(d, 'nope', 'previously-written data intact - no dupe write')
-    })
-  })
-  // Without a digest -- does not clobber
-  putStream(CACHE, fromString('foobarbaz'), function (err, foundDigest) {
-    t.ok(!err, 'completed without error')
-    t.equal(foundDigest, DIGEST, 'returns a matching digest')
-    fs.readFile(path.join(CACHE, 'content', DIGEST), 'utf8', function (e, d) {
-      if (e) { throw e }
-      t.equal(d, 'nope', 'previously-written data intact - no dupe write')
+      t.equal(d, 'nope', 'process short-circuited. Data not written.')
+      // Without a digest -- clobbers
+      putStream(CACHE, fromString(CONTENT), function (err, foundDigest) {
+        t.ok(!err, 'completed without error')
+        t.equal(foundDigest, DIGEST, 'returns a matching digest')
+        fs.readFile(path.join(CACHE, 'content', DIGEST), 'utf8', function (e, d) {
+          if (e) { throw e }
+          t.equal(d, CONTENT, 'previously-written data intact - no dupe write')
+        })
+      })
     })
   })
 })
