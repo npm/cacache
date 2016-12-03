@@ -1,6 +1,6 @@
 var fs = require('graceful-fs')
 var index = require('./lib/entry-index')
-var pipeline = require('mississippi').pipeline
+var pipe = require('mississippi').pipe
 var read = require('./lib/content/read')
 var through = require('mississippi').through
 
@@ -15,7 +15,7 @@ function stream (cache, key, opts) {
         'error', index.notFoundError(cache, key)
       )
     }
-    pipeline(
+    pipe(
       read.readStream(cache, data.digest, opts),
       stream
     )
@@ -29,10 +29,11 @@ function file (cache, key, destination, opts, cb) {
     cb = opts
     opts = {}
   }
-  pipeline(
+  pipe(
     stream(cache, key, opts),
-    fs.createWriteStream(destination)
-  ).on('error', cb).on('finish', cb)
+    fs.createWriteStream(destination),
+    cb
+  )
 }
 
 file.byDigest = fileByDigest
@@ -41,10 +42,11 @@ function fileByDigest (cache, digest, destination, opts, cb) {
     cb = opts
     opts = {}
   }
-  pipeline(
+  pipe(
     stream.byDigest(cache, digest, opts),
-    fs.createWriteStream(destination)
-  ).on('error', cb).on('finish', cb)
+    fs.createWriteStream(destination),
+    cb
+  )
 }
 
 module.exports.info = info

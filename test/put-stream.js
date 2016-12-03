@@ -2,11 +2,9 @@ var crypto = require('crypto')
 var fromString = require('./util/from-string')
 var fs = require('fs')
 var path = require('path')
-var pipeline = require('mississippi').pipeline
 var Tacks = require('tacks')
 var test = require('tap').test
 var testDir = require('./util/test-dir')(__filename)
-var through = require('mississippi').through
 
 var CACHE = path.join(testDir, 'cache')
 var contentPath = require('../lib/content/path')
@@ -62,12 +60,9 @@ test('errors if stream ends with no data', function (t) {
 })
 
 test('errors if input stream errors', function (t) {
-  var stream = pipeline(
-    fromString('foo').on('data', function (d) {
-      stream.emit('error', new Error('bleh'))
-    }),
-    through()
-  )
+  var stream = fromString('foo').on('data', function (d) {
+    stream.emit('error', new Error('bleh'))
+  })
   putStream(CACHE, stream, function (err, foundDigest) {
     t.ok(err, 'got an error')
     t.ok(!foundDigest, 'no digest returned')
