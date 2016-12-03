@@ -64,7 +64,6 @@ function putMetadata (cache, key, metadata, opts, cb) {
   }
   opts = Object.create(opts || {})
   opts.metadata = metadata
-  opts.override = true
   index.find(cache, key, function (err, info) {
     if (err) { return cb(err) }
     if (!info) { return cb(index.notFoundError(cache, key)) }
