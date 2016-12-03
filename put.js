@@ -1,5 +1,5 @@
 var dezalgo = require('dezalgo')
-var from = require('from2')
+var from = require('mississippi').from
 var fs = require('graceful-fs')
 var index = require('./lib/entry-index')
 var inflight = require('inflight')

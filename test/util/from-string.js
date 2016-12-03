@@ -1,4 +1,4 @@
-var through = require('through2')
+var through = require('mississippi').through
 
 module.exports = fromString
 function fromString (str) {

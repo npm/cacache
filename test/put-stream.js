@@ -2,11 +2,11 @@ var crypto = require('crypto')
 var fromString = require('./util/from-string')
 var fs = require('fs')
 var path = require('path')
-var pumpify = require('pumpify')
+var pipeline = require('mississippi').pipeline
 var Tacks = require('tacks')
 var test = require('tap').test
 var testDir = require('./util/test-dir')(__filename)
-var through = require('through2')
+var through = require('mississippi').through
 
 var CACHE = path.join(testDir, 'cache')
 var contentPath = require('../lib/content/path')
@@ -62,7 +62,7 @@ test('errors if stream ends with no data', function (t) {
 })
 
 test('errors if input stream errors', function (t) {
-  var stream = pumpify(
+  var stream = pipeline(
     fromString('foo').on('data', function (d) {
       stream.emit('error', new Error('bleh'))
     }),
