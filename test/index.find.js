@@ -118,6 +118,36 @@ test('index.find path-breaking characters', function (t) {
   })
 })
 
+test('index.find extremely long keys', function (t) {
+  var key = ''
+  for (var i = 0; i < 10000; i++) {
+    key += i
+  }
+  var entry = {
+    key: key,
+    digest: 'deadbeef',
+    time: 12345,
+    metadata: 'woo'
+  }
+  var idx = {}
+  idx[entry.key] = entry
+  var fixture = new Tacks(Dir({
+    'index': CacheIndex(idx)
+  }))
+  fixture.create(CACHE)
+  index.find(CACHE, entry.key, function (err, info) {
+    if (err) { throw err }
+    t.ok(info, 'cache hit')
+    delete info.path
+    t.deepEqual(
+      info,
+      entry,
+      'info remains intact even with absurdly long key'
+    )
+    t.end()
+  })
+})
+
 test('index.find multiple index entries for key', function (t) {
   var key = 'whatever'
   var fixture = new Tacks(Dir({
