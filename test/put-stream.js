@@ -71,7 +71,7 @@ test('errors if input stream errors', function (t) {
   })
 })
 
-test('overwrites content if already on disk', function (t) {
+test('does not overwrite content if already on disk', function (t) {
   var CONTENT = 'foobarbaz'
   var DIGEST = crypto.createHash('sha256').update(CONTENT).digest('hex')
   var contentDir = {}
@@ -82,23 +82,22 @@ test('overwrites content if already on disk', function (t) {
   fixture.create(CACHE)
   t.plan(6)
   // With a digest -- early short-circuiting
-  putStream(CACHE, fromString('foobarbaz'), {
+  putStream(CACHE, fromString(CONTENT), {
     digest: DIGEST
   }, function (err, foundDigest) {
     t.ok(!err, 'completed without error')
-    t.equal(foundDigest, DIGEST, 'returns a matching digest')
+    t.equal(foundDigest, DIGEST, 'short-circuit returns a matching digest')
     fs.readFile(path.join(CACHE, 'content', DIGEST), 'utf8', function (e, d) {
       if (e) { throw e }
       t.equal(d, 'nope', 'process short-circuited. Data not written.')
-      // Without a digest -- clobbers
-      putStream(CACHE, fromString(CONTENT), function (err, foundDigest) {
-        t.ok(!err, 'completed without error')
-        t.equal(foundDigest, DIGEST, 'returns a matching digest')
-        fs.readFile(path.join(CACHE, 'content', DIGEST), 'utf8', function (e, d) {
-          if (e) { throw e }
-          t.equal(d, CONTENT, 'previously-written data intact - no dupe write')
-        })
-      })
+    })
+  })
+  putStream(CACHE, fromString(CONTENT), function (err, foundDigest) {
+    t.ok(!err, 'completed without error')
+    t.equal(foundDigest, DIGEST, 'full write returns a matching digest')
+    fs.readFile(path.join(CACHE, 'content', DIGEST), 'utf8', function (e, d) {
+      if (e) { throw e }
+      t.equal(d, 'nope', 'previously-written data intact - no dupe write')
     })
   })
 })
