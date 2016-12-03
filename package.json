@@ -28,6 +28,7 @@
     "graceful-fs": "^4.1.10",
     "inflight": "^1.0.6",
     "lockfile": "^1.0.2",
+    "mississippi": "^1.2.0",
     "mkdirp": "^0.5.1",
     "mv": "^2.1.1",
     "once": "^1.4.0",
