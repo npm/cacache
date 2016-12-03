@@ -16,8 +16,3 @@ module.exports.content = content
 function content (cache, address, cb) {
   rmContent(cache, address, cb)
 }
-
-module.exports.gc = gc
-function gc (cache) {
-  throw new Error('garbage collection not implemented yet')
-}

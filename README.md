@@ -32,7 +32,6 @@ that stored content is shared by different keys if they point to the same data.
   * [`rm.all`](#rm-all)
   * [`rm.entry`](#rm-entry)
   * [`rm.content`](#rm-content)
-  * [`rm.gc`](#rm-gc)
 
 ### Example
 
@@ -330,19 +329,5 @@ identical digest.
 cacache.rm.content(cachePath, 'deadbeef', (err) => {
   if (err) { throw err }
   console.log('data for my-thing is gone!')
-})
-```
-
-#### <a name="rm-gc"></a> `> cacache.rm.gc(cache, cb)`
-
-Navigates the entry index, cleaning up inaccessible entries (due to appends),
-and removes any content entries that are no longer reachable from index entries.
-
-##### Example
-
-```javascript
-cacache.rm.gc(cachePath, (err) => {
-  if (err) { throw err }
-  console.log('less data in the cache now, and everything still works')
 })
 ```
