@@ -1,5 +1,4 @@
 var crypto = require('crypto')
-var fs = require('fs')
 var path = require('path')
 var Tacks = require('tacks')
 var test = require('tap').test
