@@ -32,6 +32,7 @@ that stored content is shared by different keys if they point to the same data.
   * [`rm.all`](#rm-all)
   * [`rm.entry`](#rm-entry)
   * [`rm.content`](#rm-content)
+  * [`verify`](#verify)
 
 ### Example
 
@@ -329,5 +330,39 @@ identical digest.
 cacache.rm.content(cachePath, 'deadbeef', (err) => {
   if (err) { throw err }
   console.log('data for my-thing is gone!')
+})
+```
+
+#### <a name="verify"></a> `> cacache.verify(cache, opts, cb)`
+
+Checks out and fixes up your cache:
+
+* Cleans up corrupted or invalid index entries.
+* Garbage collects any content entries not referenced by the index.
+* Checks digests for all content entries and removes invalid content.
+* Fixes cache ownership.
+
+When it's done, it'll return an object with various stats about the verification
+process, including amount of storage reclaimed, number of valid entries, number
+of entries removed, etc.
+
+##### Options
+
+* `opts.uid` - uid to assign to cache and its contents
+* `opts.gid` - gid to assign to cache and its contents
+* `opts.hashAlgorithm` - defaults to `'sha256'`. Hash to use for content checks.
+
+
+##### Example
+
+```sh
+echo somegarbage >> $CACHEPATH/content/deadbeef
+```
+
+```javascript
+cacache.verify(cachePath, (err, stats) => {
+  if (err) { throw err }
+  // deadbeef collected, because of invalid checksum.
+  console.log('cache is much nicer now! stats:', stats)
 })
 ```
