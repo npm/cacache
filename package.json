@@ -37,7 +37,7 @@
     "split": "^1.0.0"
   },
   "devDependencies": {
-    "nyc": "^9.0.1",
+    "nyc": "^10.0.0",
     "require-inject": "^1.4.0",
     "standard": "^8.6.0",
     "tacks": "^1.2.2",
