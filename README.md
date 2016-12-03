@@ -33,6 +33,7 @@ that stored content is shared by different keys if they point to the same data.
   * [`rm.entry`](#rm-entry)
   * [`rm.content`](#rm-content)
   * [`verify`](#verify)
+  * [`verify.lastRun`](#verify-last-run)
 
 ### Example
 
@@ -370,5 +371,21 @@ cacache.verify(cachePath, (err, stats) => {
   if (err) { throw err }
   // deadbeef collected, because of invalid checksum.
   console.log('cache is much nicer now! stats:', stats)
+})
+```
+
+#### <a name="verify-last-run"></a> `> cacache.verify.lastRun(cache, cb)`
+
+Returns a `Date` representing the last time `cacache.verify` was run on `cache`.
+
+##### Example
+
+```javascript
+cacache.verify(cachePath, (err) => {
+  if (err) { throw err }
+  cacache.verify.lastRun(cachePath, (err, lastTime) => {
+    if (err) { throw err }
+    console.log('cacache.verify was last called on' + lastTime)
+  })
 })
 ```
