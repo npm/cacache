@@ -7,7 +7,7 @@ that stored content is shared by different keys if they point to the same data.
 
 ## Install
 
-`$ npm install cacache`
+`$ npm install --save cacache`
 
 ## Table of Contents
 
