@@ -127,7 +127,23 @@ test('exits normally if file already open', function (t) {
   })
 })
 
-test('cleans up tmp on successful completion')
+test('cleans up tmp on successful completion', function (t) {
+  var CONTENT = 'foobarbaz'
+  putStream(CACHE, fromString(CONTENT), function (err, foundDigest) {
+    if (err) { throw err }
+    var tmp = path.join(CACHE, 'tmp')
+    fs.readdir(tmp, function (err, files) {
+      if (!err || (err && err.code === 'ENOENT')) {
+        files = files || []
+        t.equal(files.length, 0, 'nothing in the tmp dir!')
+        t.end()
+      } else {
+        throw err
+      }
+    })
+  })
+})
+
 test('cleans up tmp on error')
 
 test('checks the size of stream data if opts.size provided', function (t) {
