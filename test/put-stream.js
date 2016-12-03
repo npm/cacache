@@ -118,7 +118,7 @@ test('exits normally if file already open', function (t) {
   fs.open(PATH, 'r+', function (err, fd) {
     if (err) { throw err }
     putStream(CACHE, fromString(CONTENT), function (err, foundDigest) {
-      t.ok(!err, 'completed without error')
+      t.ifError(err, 'completed without error')
       t.equal(foundDigest, DIGEST, 'returns a matching digest')
       fs.close(fd, function (err) {
         if (err) { throw err }
@@ -151,6 +151,6 @@ test('checks the size of stream data if opts.size provided', function (t) {
   putStream(CACHE, fromString(CONTENT), {
     size: CONTENT.length
   }, function (err) {
-    t.ok(!err, 'completed without error')
+    t.ifError(err, 'completed without error')
   })
 })
