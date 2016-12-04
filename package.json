@@ -1,6 +1,6 @@
 {
   "name": "cacache",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "General content-addressable cache system that maintains a filesystem registry of file data.",
   "main": "index.js",
   "files": [
