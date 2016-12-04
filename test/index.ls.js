@@ -72,3 +72,11 @@ test('separate keys in conflicting buckets', function (t) {
     t.end()
   })
 })
+
+test('works fine on an empty/missing cache', function (t) {
+  index.ls(CACHE, function (err, listing) {
+    if (err) { throw err }
+    t.deepEqual(listing, {})
+    t.end()
+  })
+})
