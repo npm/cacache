@@ -253,8 +253,8 @@ initial insertion, use `opts.metadata` in the other `cacache.put` functions.
 cacache.put.metadata(cachePath, 'registry.npmjs.org|cacache@1.0.0', {
   name: 'cacache', version: '1.0.0'
 }, (err, digest) => {
-  if (err) { throw err }
-  console.log(`Package tarball written to cache. sha: ${digest}`)
+  if (err) { throw err } // will fail if `key` doesn't exist.
+  console.log(`Package metadata added to existing cache entry.`)
 })
 ```
 #### <a name="put-options"></a> `> cacache.put options`
