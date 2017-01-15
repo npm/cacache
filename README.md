@@ -21,13 +21,9 @@ that stored content is shared by different keys if they point to the same data.
   * [Cleaning Up](#cleanup)
 * [API](#api)
   * [`ls`](#ls)
-  * [`get.directory`](#get-directory)
-  * [`get.tarball`](#get-tarball)
+  * [`get.stream`](#get-stream)
   * [`get.info`](#get-info)
-  * [`put.file`](#put-file)
-  * [`put.data`](#put-data)
   * [`put.stream`](#put-stream)
-  * [`put.metadata`](#put-metadata)
   * [`put options`](#put-options)
   * [`rm.all`](#rm-all)
   * [`rm.entry`](#rm-entry)
@@ -117,30 +113,6 @@ cacache.ls(cachePath, (err, allEntries) => {
 }
 ```
 
-#### <a name="get-file"></a> `> cacache.get.file(cache, key, destination, [opts], cb)`
-
-Copies cached data identified by `key` to a file named `destination`.
-
-If there is no content identified by `key`, or if the locally-stored data does
-not pass the validity checksum, an error will be returned through the callback.
-
-A sub-function, `get.file.byDigest` may be used for identical behavior,
-except lookup will happen by content digest, bypassing the index entirely.
-
-##### Example
-
-```javascript
-cacache.get.file(cachePath, 'my-thing', './put/it/here', (err) => {
-  if (err) { throw err }
-  console.log(`my-thing contents copied to ./put/it/here`)
-})
-
-cacache.get.file.byDigest(cachePath, pkg.sha, './put/it/here', (err) => {
-  if (err) { throw err }
-  console.log(`pkg contents copied to ./put/it/here`)
-})
-```
-
 #### <a name="get-stream"></a> `> cacache.get.stream(cache, key, [opts], cb)`
 
 Returns a stream of the cached data identified by `key`.
@@ -200,32 +172,6 @@ cacache.get.info(cachePath, 'my-thing', (err, info) => {
     description: 'this was once a package but now it is my-thing'
   }
 }
-```
-
-#### <a name="put-file"></a> `> cacache.put.file(cache, key, file, [opts], cb)`
-
-Inserts a file into the cache by pathname.
-
-##### Example
-
-```javascript
-cacache.put.file(cachePath, 'my-dotfiles', './tarball.tgz', (err, digest) => {
-  if (err) { throw err }
-  console.log(`Saved as ${digest}.`)
-})
-```
-
-#### <a name="put-data"></a> `> cacache.put.data(cache, key, filename, data, [opts], cb)`
-
-Inserts plain string data into the cache, using `filename` for the cache file.
-
-##### Example
-
-```javascript
-cacache.put.data(cachePath, key, filename, 'wompwomp', (err, digest) => {
-  if (err) { throw err }
-  console.log(`Wrote 'wompwomp' into cache. It will be in ${filename}`)
-})
 ```
 
 #### <a name="put-stream"></a> `> cacache.put.stream(cache, key, stream, [opts], cb)`
