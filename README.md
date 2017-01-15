@@ -226,7 +226,7 @@ To control the hashing algorithm, use `opts.hashAlgorithm`.
 
 ##### `hashAlgorithm`
 
-Default: 'sha256'
+Default: 'sha1'
 
 Hashing algorithm to use when calculating the digest for inserted data. Can use
 any algorithm supported by Node.js' `crypto` module.
