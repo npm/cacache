@@ -11,7 +11,7 @@ var read = require('../lib/content/read')
 
 test('readStream: returns a stream with cache content data', function (t) {
   var CONTENT = 'foobarbaz'
-  var DIGEST = crypto.createHash('sha256').update(CONTENT).digest('hex')
+  var DIGEST = crypto.createHash('sha1').update(CONTENT).digest('hex')
   var dir = {}
   dir[DIGEST] = File(CONTENT)
   var fixture = new Tacks(Dir({
@@ -67,7 +67,7 @@ test('readStream: errors if content missing', function (t) {
 
 test('readStream: errors if content fails checksum', function (t) {
   var CONTENT = 'foobarbaz'
-  var DIGEST = crypto.createHash('sha256').update(CONTENT).digest('hex')
+  var DIGEST = crypto.createHash('sha1').update(CONTENT).digest('hex')
   var dir = {}
   dir[DIGEST] = File(CONTENT.slice(3)) // invalid contents!
   var fixture = new Tacks(Dir({

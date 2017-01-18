@@ -4,7 +4,7 @@ var test = require('tap').test
 var checksumStream = require('../lib/util/checksum-stream')
 
 var CONTENT = 'foobarbazquux'
-var DIGEST = crypto.createHash('sha256').update(CONTENT).digest('hex')
+var DIGEST = crypto.createHash('sha1').update(CONTENT).digest('hex')
 
 test('passes data through and emits a digest', function (t) {
   var stream = checksumStream()

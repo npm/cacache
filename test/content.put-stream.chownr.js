@@ -11,7 +11,7 @@ test('allows setting a custom uid for cache contents on write', {
   skip: !process.getuid // On a platform that doesn't support uid/gid
 }, function (t) {
   var CONTENT = 'foobarbaz'
-  var DIGEST = crypto.createHash('sha256').update(CONTENT).digest('hex')
+  var DIGEST = crypto.createHash('sha1').update(CONTENT).digest('hex')
   var NEWUID = process.getuid() + 1
   var NEWGID = process.getgid() + 1
   var updatedPaths = []
