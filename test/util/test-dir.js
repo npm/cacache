@@ -17,6 +17,8 @@ function testDir (filename) {
       } catch (e) {
         if (process.platform !== 'win32') {
           throw e
+        } else {
+          console.warn('rimraf error on win32: ', e)
         }
       }
     })
@@ -36,6 +38,8 @@ function reset (testDir) {
   } catch (e) {
     if (process.platform !== 'win32') {
       throw e
+    } else {
+      console.warn('rimraf error on win32: ', e)
     }
   }
   mkdirp.sync(testDir)
