@@ -162,7 +162,7 @@ test('cleans up tmp on successful completion', function (t) {
     fs.readdir(tmp, function (err, files) {
       if (!err || (err && err.code === 'ENOENT')) {
         files = files || []
-        t.equal(files.length, 0, 'nothing in the tmp dir!')
+        t.deepEqual(files, [], 'nothing in the tmp dir!')
         t.end()
       } else {
         throw err
