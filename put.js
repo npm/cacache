@@ -1,19 +1,16 @@
 var index = require('./lib/entry-index')
-var inflight = require('inflight')
-var putContentStream = require('./lib/content/put-stream')
+var putContent = require('./lib/content/put-stream')
+var to = require('mississippi').to
 
 module.exports.stream = putStream
-function putStream (cache, key, inputStream, opts, cb) {
-  if (!cb) {
-    cb = opts
-    opts = null
-  }
-  cb = inflight('cacache.put.stream: ' + key, cb)
-  if (!cb) { return }
-  return putContentStream(cache, inputStream, opts, function (err, digest) {
-    if (err) { return cb(err) }
-    index.insert(cache, key, digest, opts, function (err) {
-      cb(err, digest)
-    })
+function putStream (cache, key, opts) {
+  var digest
+  var contentStream = putContent(cache, opts).on('digest', function (d) {
+    digest = d
+  })
+  return to(function (chunk, enc, cb) {
+    contentStream.write(chunk, enc, cb)
+  }, function (cb) {
+    index.insert(cache, key, digest, opts, cb)
   })
 }
