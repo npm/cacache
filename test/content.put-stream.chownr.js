@@ -1,6 +1,7 @@
 var crypto = require('crypto')
 var fromString = require('./util/from-string')
 var path = require('path')
+var pipe = require('mississippi').pipe
 var requireInject = require('require-inject')
 var test = require('tap').test
 var testDir = require('./util/test-dir')(__filename)
@@ -26,10 +27,10 @@ test('allows setting a custom uid for cache contents on write', {
     }
   })
   t.plan(7)
-  putStream(CACHE, fromString(CONTENT), {
+  pipe(fromString(CONTENT), putStream(CACHE, {
     uid: NEWUID,
     gid: NEWGID
-  }, function (err) {
+  }), function (err) {
     if (err) { throw err }
     var expectedPaths = [
       CACHE, // this includes cache/tmp
