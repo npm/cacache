@@ -3,6 +3,7 @@ var fromString = require('./util/from-string')
 var fs = require('fs')
 var path = require('path')
 var pipe = require('mississippi').pipe
+var rimraf = require('rimraf')
 var Tacks = require('tacks')
 var test = require('tap').test
 var testDir = require('./util/test-dir')(__filename)
@@ -26,7 +27,7 @@ test('basic put', function (t) {
     var cpath = contentPath(CACHE, foundDigest)
     t.plan(3)
     t.equal(foundDigest, DIGEST, 'returned digest matches expected')
-    fs.stat(cpath, function (err, stat) {
+    fs.lstat(cpath, function (err, stat) {
       if (err) { throw err }
       t.ok(stat.isFile(), 'content inserted as a single file')
     })
@@ -148,7 +149,10 @@ test('exits normally if file already open', function (t) {
       t.equal(foundDigest, DIGEST, 'returns a matching digest')
       fs.close(fd, function (err) {
         if (err) { throw err }
-        t.end()
+        rimraf(PATH, function (err) {
+          if (err) { throw err }
+          t.end()
+        })
       })
     })
   })
