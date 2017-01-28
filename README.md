@@ -13,12 +13,6 @@ that stored content is shared by different keys if they point to the same data.
 
 * [Example](#example)
 * [Features](#features)
-* [Guide](#guide)
-  * [Introduction](#introduction)
-  * [Putting Data In](#insertion)
-  * [Getting Data Out](#extraction)
-  * [Querying the Cache](#queries)
-  * [Cleaning Up](#cleanup)
 * [API](#api)
   * [`ls`](#ls)
   * [`get.stream`](#get-stream)
@@ -35,6 +29,7 @@ that stored content is shared by different keys if they point to the same data.
 
 ```javascript
 const cacache = require('cacache')
+const fs = require('fs')
 
 const tarball = '/path/to/mytar.tgz'
 const cachePath = '/tmp/my-toy-cache'
@@ -42,24 +37,34 @@ const key = 'my-unique-key-1234'
 let tarballDigest = null
 
 // Cache it! Use `cachePath` as the root of the content cache
-cacache.put.file(cachePath, key, tarball, (err, digest) => {
-  if (err) { return console.error('Error saving your file!', err.code) }
-  tarballDigest = digest // we'll use this later
-  console.log(`Saved ${tarball} to ${cachePath} as ${digest}.`)
+fs.createReadStream(
+  tarball
+).pipe(
+  cacache.put.stream(
+    cachePath, key
+  ).on('digest', (d) => tarballDigest = d)
+).on('end', function () {
+  console.log(`Saved ${tarball} to ${cachePath}.`)
 })
 
 const destination = '/tmp/mytar.tgz'
 
 // Copy the contents out of the cache and into their destination!
-cacache.get.file(cachePath, key, destination, (err) => {
-  if (err) { return console.error('Error extracting data!', err.code) }
-  console.log(`data extracted to ${cachePath}.`)
+cacache.get.stream(
+  cachePath, key
+).pipe(
+  fs.createWriteStream(destination)
+).on('end', () => {
+  console.log('done extracting!')
 })
 
 // The same thing, but skip the key index.
-cacache.get.file.byDigest(cachePath, tarballDigest, destination, (err) => {
-  if (err) { return console.error('Error extracting data!', err.code) }
-  console.log(`data extracted to ${cachePath}.`)
+cacache.get.stream.byDigest(
+  cachePath, tarballDigest
+).pipe(
+  fs.createWriteStream(destination)
+).on('end', () => {
+  console.log('done extracting using sha1!')
 })
 ```
 
@@ -113,7 +118,7 @@ cacache.ls(cachePath, (err, allEntries) => {
 }
 ```
 
-#### <a name="get-stream"></a> `> cacache.get.stream(cache, key, [opts], cb)`
+#### <a name="get-stream"></a> `> cacache.get.stream(cache, key, [opts])`
 
 Returns a stream of the cached data identified by `key`.
 
@@ -174,35 +179,23 @@ cacache.get.info(cachePath, 'my-thing', (err, info) => {
 }
 ```
 
-#### <a name="put-stream"></a> `> cacache.put.stream(cache, key, stream, [opts], cb)`
+#### <a name="put-stream"></a> `> cacache.put.stream(cache, key, stream, [opts])`
 
-Inserts data from a stream into the cache.
-
-##### Example
-
-```javascript
-var req = request.get('https://registry.npmjs.org/cacache/-/cacache-1.0.0.tgz')
-cacache.put.stream(cachePath, 'registry.npmjs.org|cacache@1.0.0', req, (err, digest) => {
-  if (err) { throw err }
-  console.log(`Package tarball written to cache. sha: ${digest}`)
-})
-```
-
-#### <a name="put-metadata"></a> `> cacache.put.metadata(cache, key, metadata, [opts], cb)`
-
-Adds or updates metadata for a previously inserted entry. To add metadata on
-initial insertion, use `opts.metadata` in the other `cacache.put` functions.
+Inserts data from a stream into the cache. Emits a `digest` event with the
+digest of written contents when it succeeds.
 
 ##### Example
 
 ```javascript
-cacache.put.metadata(cachePath, 'registry.npmjs.org|cacache@1.0.0', {
-  name: 'cacache', version: '1.0.0'
-}, (err, digest) => {
-  if (err) { throw err } // will fail if `key` doesn't exist.
-  console.log(`Package metadata added to existing cache entry.`)
-})
+request.get(
+  'https://registry.npmjs.org/cacache/-/cacache-1.0.0.tgz'
+).pipe(
+  cacache.put.stream(
+    cachePath, 'registry.npmjs.org|cacache@1.0.0'
+  ).on('digest', d => console.log(`digest is ${d}`))
+)
 ```
+
 #### <a name="put-options"></a> `> cacache.put options`
 
 `cacache.put` functions have a number of options in common.
