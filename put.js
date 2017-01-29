@@ -8,9 +8,24 @@ function putStream (cache, key, opts) {
   var contentStream = putContent(cache, opts).on('digest', function (d) {
     digest = d
   })
-  return to(function (chunk, enc, cb) {
+  var errored = false
+  var stream = to(function (chunk, enc, cb) {
     contentStream.write(chunk, enc, cb)
   }, function (cb) {
-    index.insert(cache, key, digest, opts, cb)
+    contentStream.end(function () {
+      if (!digest) { return cb(new Error('no digest generated')) }
+      index.insert(cache, key, digest, opts, cb)
+    })
   })
+  stream.on('error', function (err) {
+    if (errored) { return }
+    errored = true
+    contentStream.emit('error', err)
+  })
+  contentStream.on('error', function (err) {
+    if (errored) { return }
+    errored = true
+    stream.emit('error', err)
+  })
+  return stream
 }
