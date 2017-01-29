@@ -14,6 +14,7 @@ function putStream (cache, key, opts) {
   }, function (cb) {
     contentStream.end(function () {
       if (!digest) { return cb(new Error('no digest generated')) }
+      stream.emit('digest', digest)
       index.insert(cache, key, digest, opts, cb)
     })
   })
