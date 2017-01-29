@@ -12,11 +12,11 @@ function putData (cache, key, data, opts, cb) {
   }
   opts = opts || {}
   var src = through()
-  var digest
+  var meta
   var dest = putStream(cache, key, opts)
-  dest.on('digest', function (d) { digest = d })
+  dest.on('metadata', function (m) { meta = m })
   pipe(src, dest, function (err) {
-    cb(err, digest)
+    cb(err, meta)
   })
   src.write(data, function () {
     src.end()
@@ -35,9 +35,12 @@ function putStream (cache, key, opts) {
     contentStream.write(chunk, enc, cb)
   }, function (cb) {
     contentStream.end(function () {
-      if (!digest) { return cb(new Error('no digest generated')) }
-      stream.emit('digest', digest)
-      index.insert(cache, key, digest, opts, cb)
+      index.insert(cache, key, digest, opts, function (err, entry) {
+        if (err) { return cb(err) }
+        stream.emit('digest', digest)
+        stream.emit('metadata', entry)
+        cb()
+      })
     })
   })
   stream.on('error', function (err) {
