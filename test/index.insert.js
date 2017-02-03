@@ -129,21 +129,22 @@ test('key case-sensitivity', function (t) {
 test('hash conflict in same bucket', function (t) {
   // NOTE - this test will break if `index._hashKey` changes its algorithm.
   //        Adapt to it accordingly.
+  var NEWKEY = KEY + '!'
   var CONFLICTING = KEY + '!!!'
-  index.insert(CACHE, KEY, DIGEST, function (err) {
+  index.insert(CACHE, NEWKEY, DIGEST, function (err) {
     if (err) { throw err }
     index.insert(CACHE, CONFLICTING, DIGEST, function (err) {
       if (err) { throw err }
-      var bucket = path.join(CACHE, 'index', KEYHASH)
+      var bucket = path.join(CACHE, 'index', index._hashKey(NEWKEY))
       fs.readFile(bucket, 'utf8', function (err, data) {
         if (err) { throw err }
         var entries = data.split('\n').map(JSON.parse)
         entries.forEach(function (e) { delete e.time })
         t.deepEqual(entries, [{
-          key: KEY,
+          key: NEWKEY,
           digest: DIGEST
         }, {
-          key: CONFLICTING,
+          key: KEY + '!!!',
           digest: DIGEST
         }], 'multiple entries for conflicting keys in the same bucket')
         t.end()
