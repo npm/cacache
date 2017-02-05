@@ -11,7 +11,7 @@
     "preversion": "npm t",
     "postversion": "npm publish && git push --follow-tags",
     "pretest": "standard lib test *.js",
-    "test": "nyc -- tap test/*.js"
+    "test": "nyc -- tap -j8 test/*.js"
   },
   "repository": "https://github.com/zkat/cacache",
   "keywords": [

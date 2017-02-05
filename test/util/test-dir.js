@@ -7,13 +7,14 @@ var cacheDir = path.resolve(__dirname, '../cache')
 
 module.exports = testDir
 function testDir (filename) {
-  var dir = path.join(cacheDir, path.basename(filename, '.js'))
+  var base = path.basename(filename, '.js')
+  var dir = path.join(cacheDir, base)
   reset(dir)
   if (!process.env.KEEPCACHE) {
     tap.tearDown(function () {
       process.chdir(__dirname)
       try {
-        rimraf.sync(cacheDir)
+        rimraf.sync(dir)
       } catch (e) {
         if (process.platform !== 'win32') {
           throw e
