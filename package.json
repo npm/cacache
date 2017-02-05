@@ -30,7 +30,6 @@
     "mississippi": "^1.2.0",
     "mkdirp": "^0.5.1",
     "once": "^1.4.0",
-    "randomstring": "^1.1.5",
     "rimraf": "^2.5.4",
     "slide": "^1.1.6",
     "split": "^1.0.0"
