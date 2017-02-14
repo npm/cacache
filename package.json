@@ -36,6 +36,7 @@
     "unique-filename": "^1.1.0"
   },
   "devDependencies": {
+    "glob": "^7.1.1",
     "nyc": "^10.0.0",
     "require-inject": "^1.4.0",
     "standard": "^8.6.0",
