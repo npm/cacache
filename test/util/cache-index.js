@@ -1,3 +1,5 @@
+'use strict'
+
 var hashKey = require('../../lib/entry-index')._hashKey
 var Tacks = require('tacks')
 

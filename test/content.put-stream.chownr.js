@@ -1,3 +1,5 @@
+'use strict'
+
 var crypto = require('crypto')
 var fromString = require('./util/from-string')
 var path = require('path')

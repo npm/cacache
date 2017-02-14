@@ -1,3 +1,5 @@
+'use strict'
+
 var index = require('./lib/entry-index')
 var pipe = require('mississippi').pipe
 var putContent = require('./lib/content/put-stream')

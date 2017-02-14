@@ -1,3 +1,5 @@
+'use strict'
+
 var index = require('./lib/entry-index')
 var finished = require('mississippi').finished
 var pipe = require('mississippi').pipe

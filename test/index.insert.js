@@ -1,3 +1,5 @@
+'use strict'
+
 var CacheIndex = require('./util/cache-index')
 var fs = require('fs')
 var path = require('path')

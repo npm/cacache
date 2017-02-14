@@ -1,3 +1,5 @@
+'use strict'
+
 var rmContent = require('./lib/content/rm')
 var index = require('./lib/entry-index')
 var rimraf = require('rimraf')

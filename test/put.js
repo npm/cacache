@@ -1,3 +1,5 @@
+'use strict'
+
 var test = require('tap').test
 
 test('stream ends when piped stream finishes')

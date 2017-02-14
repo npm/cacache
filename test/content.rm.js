@@ -1,3 +1,5 @@
+'use strict'
+
 var fs = require('graceful-fs')
 var path = require('path')
 var Tacks = require('tacks')
