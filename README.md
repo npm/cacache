@@ -13,6 +13,7 @@ that stored content is shared by different keys if they point to the same data.
 
 * [Example](#example)
 * [Features](#features)
+* [Contributing](#contributing)
 * [API](#api)
   * [`ls`](#ls)
   * [`get.stream`](#get-stream)
@@ -77,9 +78,9 @@ cacache.get.stream.byDigest(
 * Streaming support.
 * Metadata storage.
 
-### Guide
+### Contributing
 
-#### Introduction
+The cacache team enthusiastically welcomes contributions and project participation! There's a bunch of things you can do if you want to contribute! The [Contributor Guide](CONTRIBUTING.md) has all the information you need for everything from reporting bugs to contributing entire new features. Please don't hesitate to jump in if you'd like to, or even ask us questions if something isn't clear.
 
 ### API
 
