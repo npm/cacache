@@ -95,7 +95,7 @@ entry in the object will be keyed by the unique index key, with corresponding
 ```javascript
 cacache.ls(cachePath, (err, allEntries) => {
   if (err) { throw err }
-  console.log(info)
+  console.log(allEntries)
 })
 // Output
 {
