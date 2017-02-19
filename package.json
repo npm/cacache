@@ -42,6 +42,7 @@
     "standard": "^8.6.0",
     "tacks": "^1.2.2",
     "tap": "^10.0.2",
+    "weallbehave": "^1.0.0",
     "weallcontribute": "^1.0.7"
   },
   "config": {
