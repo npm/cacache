@@ -41,7 +41,8 @@
     "require-inject": "^1.4.0",
     "standard": "^8.6.0",
     "tacks": "^1.2.2",
-    "tap": "^10.0.2"
+    "tap": "^10.0.2",
+    "weallcontribute": "^1.0.7"
   },
   "config": {
     "nyc": {
