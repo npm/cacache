@@ -39,6 +39,7 @@
   ],
   "license": "CC0-1.0",
   "dependencies": {
+    "checksum-stream": "^1.0.2",
     "chownr": "^1.0.1",
     "dezalgo": "^1.0.3",
     "graceful-fs": "^4.1.10",
