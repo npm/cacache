@@ -59,7 +59,7 @@
     "require-inject": "^1.4.0",
     "standard": "^8.6.0",
     "tacks": "^1.2.2",
-    "tap": "^10.0.2",
+    "tap": "^10.2.0",
     "weallbehave": "^1.0.0",
     "weallcontribute": "^1.0.7"
   },
