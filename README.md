@@ -121,7 +121,7 @@ cacache.ls(cachePath, (err, allEntries) => {
 
 #### <a name="get-stream"></a> `> cacache.get.stream(cache, key, [opts])`
 
-Returns a stream of the cached data identified by `key`.
+Returns a [Readable Stream](https://nodejs.org/api/stream.html#stream_readable_streams) of the cached data identified by `key`.
 
 If there is no content identified by `key`, or if the locally-stored data does
 not pass the validity checksum, an error will be emitted.
@@ -182,8 +182,7 @@ cacache.get.info(cachePath, 'my-thing', (err, info) => {
 
 #### <a name="put-stream"></a> `> cacache.put.stream(cache, key, stream, [opts])`
 
-Inserts data from a stream into the cache. Emits a `digest` event with the
-digest of written contents when it succeeds.
+Returns a [Writable Stream](https://nodejs.org/api/stream.html#stream_writable_streams) that inserts data written to it into the cache. Emits a `digest` event with the digest of written contents when it succeeds.
 
 ##### Example
 
