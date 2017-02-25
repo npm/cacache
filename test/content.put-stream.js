@@ -1,32 +1,32 @@
 'use strict'
 
-var crypto = require('crypto')
-var fromString = require('./util/from-string')
-var fs = require('fs')
-var path = require('path')
-var pipe = require('mississippi').pipe
-var rimraf = require('rimraf')
-var Tacks = require('tacks')
-var test = require('tap').test
-var testDir = require('./util/test-dir')(__filename)
+const crypto = require('crypto')
+const fromString = require('./util/from-string')
+const fs = require('fs')
+const path = require('path')
+const pipe = require('mississippi').pipe
+const rimraf = require('rimraf')
+const Tacks = require('tacks')
+const test = require('tap').test
+const testDir = require('./util/test-dir')(__filename)
 
-var CACHE = path.join(testDir, 'cache')
-var contentPath = require('../lib/content/path')
-var Dir = Tacks.Dir
-var File = Tacks.File
-var putStream = require('../lib/content/put-stream')
+const CACHE = path.join(testDir, 'cache')
+const contentPath = require('../lib/content/path')
+const Dir = Tacks.Dir
+const File = Tacks.File
+const putStream = require('../lib/content/put-stream')
 
 test('basic put', function (t) {
-  var CONTENT = 'foobarbaz'
-  var DIGEST = crypto.createHash('sha1').update(CONTENT).digest('hex')
-  var foundDigest
-  var src = fromString(CONTENT)
-  var stream = putStream(CACHE).on('digest', function (d) {
+  const CONTENT = 'foobarbaz'
+  const DIGEST = crypto.createHash('sha1').update(CONTENT).digest('hex')
+  let foundDigest
+  const src = fromString(CONTENT)
+  const stream = putStream(CACHE).on('digest', function (d) {
     foundDigest = d
   })
   pipe(src, stream, function (err) {
     if (err) { throw err }
-    var cpath = contentPath(CACHE, foundDigest)
+    const cpath = contentPath(CACHE, foundDigest)
     t.plan(3)
     t.equal(foundDigest, DIGEST, 'returned digest matches expected')
     fs.lstat(cpath, function (err, stat) {
@@ -41,11 +41,11 @@ test('basic put', function (t) {
 })
 
 test('checks input digest doesn\'t match data', function (t) {
-  var CONTENT = 'foobarbaz'
-  var DIGEST = crypto.createHash('sha1').update(CONTENT).digest('hex')
+  const CONTENT = 'foobarbaz'
+  const DIGEST = crypto.createHash('sha1').update(CONTENT).digest('hex')
   t.plan(5)
-  var foundDigest1
-  var foundDigest2
+  let foundDigest1
+  let foundDigest2
   pipe(fromString('bazbarfoo'), putStream(CACHE, {
     digest: DIGEST
   }).on('digest', function (d) {
@@ -66,44 +66,29 @@ test('checks input digest doesn\'t match data', function (t) {
 })
 
 test('errors if stream ends with no data', function (t) {
-  var foundDigest
+  let foundDigest = null
   pipe(fromString(''), putStream(CACHE).on('digest', function (d) {
     foundDigest = d
   }), function (err) {
     t.ok(err, 'got an error')
-    t.ok(!foundDigest, 'no digest returned')
+    t.equal(foundDigest, null, 'no digest returned')
     t.equal(err.code, 'ENODATA', 'returns useful error code')
     t.end()
   })
 })
 
-test('errors if input stream errors', function (t) {
-  var stream = fromString('foo').on('data', function (d) {
-    stream.emit('error', new Error('bleh'))
-  })
-  var foundDigest
-  pipe(stream, putStream(CACHE).on('digest', function (d) {
-    foundDigest = d
-  }), function (err) {
-    t.ok(err, 'got an error')
-    t.ok(!foundDigest, 'no digest returned')
-    t.match(err.message, 'bleh', 'returns the error from input stream')
-    t.end()
-  })
-})
-
 test('does not overwrite content if already on disk', function (t) {
-  var CONTENT = 'foobarbaz'
-  var DIGEST = crypto.createHash('sha1').update(CONTENT).digest('hex')
-  var contentDir = {}
+  const CONTENT = 'foobarbaz'
+  const DIGEST = crypto.createHash('sha1').update(CONTENT).digest('hex')
+  const contentDir = {}
   contentDir[DIGEST] = File('nope')
-  var fixture = new Tacks(Dir({
+  const fixture = new Tacks(Dir({
     'content': Dir(contentDir)
   }))
   fixture.create(CACHE)
   t.plan(4)
-  var dig1
-  var dig2
+  let dig1
+  let dig2
   // With a digest -- early short-circuiting
   pipe(fromString(CONTENT), putStream(CACHE, {
     digest: DIGEST
@@ -129,16 +114,35 @@ test('does not overwrite content if already on disk', function (t) {
   })
 })
 
+test('errors if input stream errors', function (t) {
+  const stream = fromString('foobarbaz')
+  .on('end', () => stream.emit('error', new Error('bleh')))
+  let foundDigest
+  const putter = putStream(CACHE).on('digest', function (d) {
+    foundDigest = d
+  })
+  pipe(stream, putter, function (err) {
+    t.ok(err, 'got an error')
+    t.ok(!foundDigest, 'no digest returned')
+    t.match(err && err.message, 'bleh', 'returns the error from input stream')
+    fs.readdir(testDir, (err, files) => {
+      if (err) { throw err }
+      t.deepEqual(files, [], 'no files created')
+      t.end()
+    })
+  })
+})
+
 test('exits normally if file already open', function (t) {
-  var CONTENT = 'foobarbaz'
-  var DIGEST = crypto.createHash('sha1').update(CONTENT).digest('hex')
-  var PATH = path.join(CACHE, 'content', DIGEST)
-  var contentDir = {}
+  const CONTENT = 'foobarbaz'
+  const DIGEST = crypto.createHash('sha1').update(CONTENT).digest('hex')
+  const PATH = path.join(CACHE, 'content', DIGEST)
+  const contentDir = {}
   contentDir[DIGEST] = File(CONTENT)
-  var fixture = new Tacks(Dir({
+  const fixture = new Tacks(Dir({
     'content': Dir(contentDir)
   }))
-  var foundDigest
+  let foundDigest
   fixture.create(CACHE)
   // This case would only fail on Windows, when an entry is being read.
   // Generally, you'd get an EBUSY back.
@@ -160,15 +164,11 @@ test('exits normally if file already open', function (t) {
   })
 })
 
-test('cleans up tmp on successful completion', {
-  // TODO: There's an issue with rimraf on Windows where it's failing to clean
-  // things up. Skip this for now and deal with it later. :(
-  skip: process.platform === 'win32'
-}, function (t) {
-  var CONTENT = 'foobarbaz'
+test('cleans up tmp on successful completion', function (t) {
+  const CONTENT = 'foobarbaz'
   pipe(fromString(CONTENT), putStream(CACHE), function (err) {
     if (err) { throw err }
-    var tmp = path.join(CACHE, 'tmp')
+    const tmp = path.join(CACHE, 'tmp')
     fs.readdir(tmp, function (err, files) {
       if (!err || (err && err.code === 'ENOENT')) {
         files = files || []
@@ -184,8 +184,8 @@ test('cleans up tmp on successful completion', {
 test('cleans up tmp on error')
 
 test('checks the size of stream data if opts.size provided', function (t) {
-  var CONTENT = 'foobarbaz'
-  var dig1, dig2, dig3
+  const CONTENT = 'foobarbaz'
+  let dig1, dig2, dig3
   t.plan(8)
   pipe(
     fromString(CONTENT.slice(3)),
