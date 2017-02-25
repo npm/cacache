@@ -1,28 +1,30 @@
 'use strict'
 
-var crypto = require('crypto')
-var path = require('path')
-var Tacks = require('tacks')
-var test = require('tap').test
-var testDir = require('./util/test-dir')(__filename)
+const Promise = require('bluebird')
 
-var CACHE = path.join(testDir, 'cache')
-var Dir = Tacks.Dir
-var File = Tacks.File
-var read = require('../lib/content/read')
+const crypto = require('crypto')
+const path = require('path')
+const Tacks = require('tacks')
+const test = require('tap').test
+const testDir = require('./util/test-dir')(__filename)
+
+const CACHE = path.join(testDir, 'cache')
+const Dir = Tacks.Dir
+const File = Tacks.File
+const read = require('../lib/content/read')
 
 test('readStream: returns a stream with cache content data', function (t) {
-  var CONTENT = 'foobarbaz'
-  var DIGEST = crypto.createHash('sha1').update(CONTENT).digest('hex')
-  var dir = {}
+  const CONTENT = 'foobarbaz'
+  const DIGEST = crypto.createHash('sha1').update(CONTENT).digest('hex')
+  const dir = {}
   dir[DIGEST] = File(CONTENT)
-  var fixture = new Tacks(Dir({
+  const fixture = new Tacks(Dir({
     'content': Dir(dir)
   }))
   fixture.create(CACHE)
-  var stream = read.readStream(CACHE, DIGEST)
+  const stream = read.readStream(CACHE, DIGEST)
   stream.on('error', function (e) { throw e })
-  var buf = ''
+  let buf = ''
   stream.on('data', function (data) { buf += data })
   stream.on('end', function () {
     t.ok(true, 'stream completed successfully')
@@ -32,18 +34,18 @@ test('readStream: returns a stream with cache content data', function (t) {
 })
 
 test('readStream: allows hashAlgorithm configuration', function (t) {
-  var CONTENT = 'foobarbaz'
-  var HASH = 'sha1'
-  var DIGEST = crypto.createHash(HASH).update(CONTENT).digest('hex')
-  var dir = {}
+  const CONTENT = 'foobarbaz'
+  const HASH = 'sha1'
+  const DIGEST = crypto.createHash(HASH).update(CONTENT).digest('hex')
+  const dir = {}
   dir[DIGEST] = File(CONTENT)
-  var fixture = new Tacks(Dir({
+  const fixture = new Tacks(Dir({
     'content': Dir(dir)
   }))
   fixture.create(CACHE)
-  var stream = read.readStream(CACHE, DIGEST, { hashAlgorithm: HASH })
+  const stream = read.readStream(CACHE, DIGEST, { hashAlgorithm: HASH })
   stream.on('error', function (e) { throw e })
-  var buf = ''
+  let buf = ''
   stream.on('data', function (data) { buf += data })
   stream.on('end', function () {
     t.ok(true, 'stream completed successfully, off a sha1')
@@ -53,7 +55,7 @@ test('readStream: allows hashAlgorithm configuration', function (t) {
 })
 
 test('readStream: errors if content missing', function (t) {
-  var stream = read.readStream(CACHE, 'whatnot')
+  const stream = read.readStream(CACHE, 'whatnot')
   stream.on('error', function (e) {
     t.ok(e, 'got an error!')
     t.equal(e.code, 'ENOENT', 'error uses ENOENT error code')
@@ -68,15 +70,15 @@ test('readStream: errors if content missing', function (t) {
 })
 
 test('readStream: errors if content fails checksum', function (t) {
-  var CONTENT = 'foobarbaz'
-  var DIGEST = crypto.createHash('sha1').update(CONTENT).digest('hex')
-  var dir = {}
+  const CONTENT = 'foobarbaz'
+  const DIGEST = crypto.createHash('sha1').update(CONTENT).digest('hex')
+  const dir = {}
   dir[DIGEST] = File(CONTENT.slice(3)) // invalid contents!
-  var fixture = new Tacks(Dir({
+  const fixture = new Tacks(Dir({
     'content': Dir(dir)
   }))
   fixture.create(CACHE)
-  var stream = read.readStream(CACHE, DIGEST)
+  const stream = read.readStream(CACHE, DIGEST)
   stream.on('error', function (e) {
     t.ok(e, 'got an error!')
     t.equal(e.code, 'EBADCHECKSUM', 'error uses EBADCHECKSUM error code')
@@ -88,19 +90,18 @@ test('readStream: errors if content fails checksum', function (t) {
 })
 
 test('hasContent: returns true when a cache file exists', function (t) {
-  var fixture = new Tacks(Dir({
+  const fixture = new Tacks(Dir({
     'content': Dir({
       'deadbeef': File('')
     })
   }))
   fixture.create(CACHE)
-  t.plan(2)
-  read.hasContent(CACHE, 'deadbeef', function (err, bool) {
-    if (err) { throw err }
-    t.ok(bool, 'returned true for existing content')
-  })
-  read.hasContent(CACHE, 'not-there', function (err, bool) {
-    if (err) { throw err }
-    t.notOk(bool, 'returned false for missing content')
-  })
+  return Promise.join(
+    read.hasContent(CACHE, 'deadbeef').then(bool => {
+      t.ok(bool, 'returned true for existing content')
+    }),
+    read.hasContent(CACHE, 'not-there').then(bool => {
+      t.notOk(bool, 'returned false for missing content')
+    })
+  )
 })
