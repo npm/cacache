@@ -1,19 +1,18 @@
 'use strict'
 
-var CacheIndex = require('./util/cache-index')
-var fs = require('fs')
-var path = require('path')
-var Tacks = require('tacks')
-var test = require('tap').test
-var testDir = require('./util/test-dir')(__filename)
+const CacheIndex = require('./util/cache-index')
+const path = require('path')
+const Tacks = require('tacks')
+const test = require('tap').test
+const testDir = require('./util/test-dir')(__filename)
 
-var CACHE = path.join(testDir, 'cache')
-var contentPath = require('../lib/content/path')
-var Dir = Tacks.Dir
-var index = require('../lib/entry-index')
+const CACHE = path.join(testDir, 'cache')
+const contentPath = require('../lib/content/path')
+const Dir = Tacks.Dir
+const index = require('../lib/entry-index')
 
 test('basic listing', function (t) {
-  var contents = {
+  const contents = {
     'whatever': {
       key: 'whatever',
       digest: 'deadbeef',
@@ -27,7 +26,7 @@ test('basic listing', function (t) {
       metadata: null
     }
   }
-  var fixture = new Tacks(Dir({
+  const fixture = new Tacks(Dir({
     'index': CacheIndex(contents)
   }))
   contents.whatever.path =
@@ -35,15 +34,13 @@ test('basic listing', function (t) {
   contents.whatnot.path =
     contentPath(CACHE, contents.whatnot.digest)
   fixture.create(CACHE)
-  index.ls(CACHE, function (err, listing) {
-    if (err) { throw err }
+  return index.ls(CACHE).then(listing => {
     t.deepEqual(listing, contents, 'index contents correct')
-    t.end()
   })
 })
 
 test('separate keys in conflicting buckets', function (t) {
-  var contents = {
+  const contents = {
     'whatever': {
       key: 'whatever',
       digest: 'deadbeef',
@@ -57,7 +54,7 @@ test('separate keys in conflicting buckets', function (t) {
       metadata: null
     }
   }
-  var fixture = new Tacks(Dir({
+  const fixture = new Tacks(Dir({
     'index': CacheIndex({
       // put both in the same bucket
       'whatever': [contents.whatever, contents.whatev]
@@ -68,17 +65,13 @@ test('separate keys in conflicting buckets', function (t) {
   contents.whatev.path =
     contentPath(CACHE, contents.whatev.digest)
   fixture.create(CACHE)
-  index.ls(CACHE, function (err, listing) {
-    if (err) { throw err }
+  return index.ls(CACHE).then(listing => {
     t.deepEqual(listing, contents, 'index contents correct')
-    t.end()
   })
 })
 
 test('works fine on an empty/missing cache', function (t) {
-  index.ls(CACHE, function (err, listing) {
-    if (err) { throw err }
+  return index.ls(CACHE).then(listing => {
     t.deepEqual(listing, {})
-    t.end()
   })
 })
