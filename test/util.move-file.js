@@ -1,91 +1,82 @@
 'use strict'
 
-var fs = require('fs')
-var path = require('path')
-var Tacks = require('tacks')
-var test = require('tap').test
-var testDir = require('./util/test-dir')(__filename)
+const Promise = require('bluebird')
 
-var Dir = Tacks.Dir
-var File = Tacks.File
-var moveFile = require('../lib/util/move-file')
+const fs = require('fs')
+const path = require('path')
+const Tacks = require('tacks')
+const test = require('tap').test
+const testDir = require('./util/test-dir')(__filename)
+
+const Dir = Tacks.Dir
+const File = Tacks.File
+const moveFile = require('../lib/util/move-file')
+
+Promise.promisifyAll(fs)
 
 test('move a file', function (t) {
-  var fixture = new Tacks(Dir({
+  const fixture = new Tacks(Dir({
     src: File('foo')
   }))
   fixture.create(testDir)
-  moveFile('src', 'dest', function (err) {
-    t.ifError(err, 'finished without error')
-    fs.readFile('dest', 'utf8', function (err, data) {
-      t.ifError(err, 'destination file created')
-      t.equal(data, 'foo', 'file data correct')
-      fs.stat('src', function (err) {
-        t.ok(err, 'src read error')
-        t.equal(err.code, 'ENOENT', 'src does not exist')
-        t.done()
-      })
+  return moveFile('src', 'dest').then(() => {
+    return fs.readFileAsync('dest', 'utf8')
+  }).then(data => {
+    t.equal(data, 'foo', 'file data correct')
+    return fs.statAsync('src').catch(err => {
+      t.ok(err, 'src read error')
+      t.equal(err.code, 'ENOENT', 'src does not exist')
     })
   })
 })
 
 test('does not clobber existing files', function (t) {
-  var fixture = new Tacks(Dir({
+  const fixture = new Tacks(Dir({
     src: File('foo'),
     dest: File('bar')
   }))
   fixture.create(testDir)
-  moveFile('src', 'dest', function (err) {
-    t.ifError(err, 'finished without error')
-    fs.readFile('dest', 'utf8', function (err, data) {
-      t.ifError(err, 'destination file exists')
-      t.equal(data, 'bar', 'conflicting file left intact')
-      fs.stat('src', function (err) {
-        t.ok(err, 'src read error')
-        t.equal(err.code, 'ENOENT', 'src file still deleted')
-        t.done()
-      })
+  return moveFile('src', 'dest').then(() => {
+    return fs.readFileAsync('dest', 'utf8')
+  }).then(data => {
+    t.equal(data, 'bar', 'conflicting file left intact')
+    return fs.statAsync('src').catch(err => {
+      t.ok(err, 'src read error')
+      t.equal(err.code, 'ENOENT', 'src file still deleted')
     })
   })
 })
 
 test('does not move a file into an existing directory', function (t) {
-  var fixture = new Tacks(Dir({
+  const fixture = new Tacks(Dir({
     src: File('foo'),
     dest: Dir({})
   }))
   fixture.create(testDir)
-  moveFile('src', 'dest', function (err) {
-    t.ifError(err, 'finished without error')
-    fs.readdir('dest', function (err, files) {
-      t.ifError(err, 'dest should be a readable directory')
-      t.equal(files.length, 0, 'directory remains empty')
-      t.done()
-    })
+  return moveFile('src', 'dest').then(() => {
+    return fs.readdirAsync('dest')
+  }).then(files => {
+    t.equal(files.length, 0, 'directory remains empty')
   })
 })
 
 test('does not error if destination file is open', function (t) {
-  var fixture = new Tacks(Dir({
+  const fixture = new Tacks(Dir({
     src: File('foo'),
     dest: File('bar')
   }))
   fixture.create(testDir)
-  fs.open('dest', 'r+', function (err, fd) {
-    if (err) { throw err }
-    moveFile('src', 'dest', function (err) {
-      t.ifError(err, 'finished without error')
-      fs.close(fd, function (err) {
-        if (err) { throw err }
-        fs.readFile('dest', 'utf8', function (err, data) {
-          t.ifError(err, 'destination file created')
-          t.equal(data, 'bar', 'destination left intact')
-          fs.stat('src', function (err) {
-            t.ok(err, 'src read error')
-            t.equal(err.code, 'ENOENT', 'src does not exist')
-            t.done()
-          })
-        })
+
+  return fs.openAsync('dest', 'r+').then(fd => {
+    return moveFile('src', 'dest').then(() => {
+      return fs.closeAsync(fd)
+    }).then(() => {
+      return fs.readFileAsync('dest', 'utf8')
+    }).then(data => {
+      t.equal(data, 'bar', 'destination left intact')
+      return fs.statAsync('src').catch(err => {
+        t.ok(err, 'src read error')
+        t.equal(err.code, 'ENOENT', 'src does not exist')
       })
     })
   })
@@ -94,21 +85,20 @@ test('does not error if destination file is open', function (t) {
 test('errors if dest is not writable', {
   skip: process.platform === 'win32'
 }, function (t) {
-  var fixture = new Tacks(Dir({
+  const fixture = new Tacks(Dir({
     src: File('foo'),
     dest: Dir({})
   }))
   fixture.create(testDir)
-  fs.chmod('dest', parseInt('400', 8), function (err) {
-    if (err) { throw err }
-    moveFile('src', path.join('dest', 'file'), function (err) {
+  return fs.chmodAsync('dest', parseInt('400', 8)).then(() => {
+    return moveFile('src', path.join('dest', 'file')).then(() => {
+      throw new Error('move succeeded and should not have')
+    }).catch(err => {
       t.ok(err, 'error was returned')
       t.equal(err.code, 'EACCES', 'error is about permissions')
-      fs.readFile('src', 'utf8', function (err, data) {
-        t.ifError(err, 'src file still exists')
-        t.equal(data, 'foo', 'src contents left intact')
-        t.done()
-      })
+      return fs.readFileAsync('src', 'utf8')
     })
+  }).then(data => {
+    t.equal(data, 'foo', 'src contents left intact')
   })
 })
