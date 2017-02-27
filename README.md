@@ -44,7 +44,7 @@ fs.createReadStream(
   cacache.put.stream(
     cachePath, key
   ).on('digest', (d) => tarballDigest = d)
-).on('end', function () {
+).on('finish', function () {
   console.log(`Saved ${tarball} to ${cachePath}.`)
 })
 
@@ -55,7 +55,7 @@ cacache.get.stream(
   cachePath, key
 ).pipe(
   fs.createWriteStream(destination)
-).on('end', () => {
+).on('finish', () => {
   console.log('done extracting!')
 })
 
@@ -64,7 +64,7 @@ cacache.get.stream.byDigest(
   cachePath, tarballDigest
 ).pipe(
   fs.createWriteStream(destination)
-).on('end', () => {
+).on('finish', () => {
   console.log('done extracting using sha1!')
 })
 ```
@@ -84,7 +84,7 @@ The cacache team enthusiastically welcomes contributions and project participati
 
 ### API
 
-#### <a name="ls"></a> `> cacache.ls(cache, cb)`
+#### <a name="ls"></a> `> cacache.ls(cache) -> Promise`
 
 Lists info for all entries currently in the cache as a single large object. Each
 entry in the object will be keyed by the unique index key, with corresponding
@@ -93,10 +93,7 @@ entry in the object will be keyed by the unique index key, with corresponding
 ##### Example
 
 ```javascript
-cacache.ls(cachePath, (err, allEntries) => {
-  if (err) { throw err }
-  console.log(allEntries)
-})
+cacache.ls(cachePath).then(console.log)
 // Output
 {
   'my-thing': {
@@ -119,7 +116,7 @@ cacache.ls(cachePath, (err, allEntries) => {
 }
 ```
 
-#### <a name="get-stream"></a> `> cacache.get.stream(cache, key, [opts])`
+#### <a name="get-stream"></a> `> cacache.get.stream(cache, key, [opts]) -> Readable`
 
 Returns a [Readable Stream](https://nodejs.org/api/stream.html#stream_readable_streams) of the cached data identified by `key`.
 
@@ -145,7 +142,7 @@ cache.get.stream.byDigest(
 )
 ```
 
-#### <a name="get-info"></a> `> cacache.get.info(cache, key, cb)`
+#### <a name="get-info"></a> `> cacache.get.info(cache, key) -> Promise`
 
 Looks up `key` in the cache index, returning information about the entry if
 one exists. If an entry does not exist, the second argument to `cb` will be
@@ -162,10 +159,8 @@ falsy.
 ##### Example
 
 ```javascript
-cacache.get.info(cachePath, 'my-thing', (err, info) => {
-  if (err) { throw err }
-  console.log(info)
-})
+cacache.get.info(cachePath, 'my-thing').then(console.log)
+
 // Output
 {
   key: 'my-thing',
@@ -180,7 +175,7 @@ cacache.get.info(cachePath, 'my-thing', (err, info) => {
 }
 ```
 
-#### <a name="put-stream"></a> `> cacache.put.stream(cache, key, stream, [opts])`
+#### <a name="put-stream"></a> `> cacache.put.stream(cache, key, stream, [opts]) -> Writable`
 
 Returns a [Writable Stream](https://nodejs.org/api/stream.html#stream_writable_streams) that inserts data written to it into the cache. Emits a `digest` event with the digest of written contents when it succeeds.
 
@@ -231,34 +226,32 @@ cache use this particular `uid`/`gid` combination. This can be used,
 for example, to drop permissions when someone uses `sudo`, but cacache makes
 no assumptions about your needs here.
 
-#### <a name="rm-all"></a> `> cacache.rm.all(cache, cb)`
+#### <a name="rm-all"></a> `> cacache.rm.all(cache) -> Promise`
 
 Clears the entire cache. Mainly by blowing away the cache directory itself.
 
 ##### Example
 
 ```javascript
-cacache.rm.all(cachePath, (err) => {
-  if (err) { throw err }
+cacache.rm.all(cachePath).then(() => {
   console.log('THE APOCALYPSE IS UPON US 😱')
 })
 ```
 
-#### <a name="rm-entry"></a> `> cacache.rm.entry(cache, key, cb)`
+#### <a name="rm-entry"></a> `> cacache.rm.entry(cache, key) -> Promise`
 
 Removes the index entry for `key`. Content will still be accessible if
-requested directly.
+requested directly by content address ([`get.stream.byDigest`](#get-stream)).
 
 ##### Example
 
 ```javascript
-cacache.rm.entry(cachePath, 'my-thing', (err) => {
-  if (err) { throw err }
+cacache.rm.entry(cachePath, 'my-thing').then(() => {
   console.log('I did not like it anyway')
 })
 ```
 
-#### <a name="rm-content"></a> `> cacache.rm.content(cache, digest, cb)`
+#### <a name="rm-content"></a> `> cacache.rm.content(cache, digest) -> Promise`
 
 Removes the content identified by `digest`. Any index entries referring to it
 will not be usable again until the content is re-added to the cache with an
@@ -267,13 +260,12 @@ identical digest.
 ##### Example
 
 ```javascript
-cacache.rm.content(cachePath, 'deadbeef', (err) => {
-  if (err) { throw err }
+cacache.rm.content(cachePath, 'deadbeef').then(() => {
   console.log('data for my-thing is gone!')
 })
 ```
 
-#### <a name="verify"></a> `> cacache.verify(cache, opts, cb)`
+#### <a name="verify"></a> `> cacache.verify(cache, opts) -> Promise`
 
 Checks out and fixes up your cache:
 
@@ -306,24 +298,21 @@ echo somegarbage >> $CACHEPATH/content/deadbeef
 ```
 
 ```javascript
-cacache.verify(cachePath, (err, stats) => {
-  if (err) { throw err }
+cacache.verify(cachePath).then(stats => {
   // deadbeef collected, because of invalid checksum.
   console.log('cache is much nicer now! stats:', stats)
 })
 ```
 
-#### <a name="verify-last-run"></a> `> cacache.verify.lastRun(cache, cb)`
+#### <a name="verify-last-run"></a> `> cacache.verify.lastRun(cache) -> Promise`
 
 Returns a `Date` representing the last time `cacache.verify` was run on `cache`.
 
 ##### Example
 
 ```javascript
-cacache.verify(cachePath, (err) => {
-  if (err) { throw err }
-  cacache.verify.lastRun(cachePath, (err, lastTime) => {
-    if (err) { throw err }
+cacache.verify(cachePath).then(() => {
+  cacache.verify.lastRun(cachePath).then(lastTime => {
     console.log('cacache.verify was last called on' + lastTime)
   })
 })
