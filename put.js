@@ -1,10 +1,12 @@
 'use strict'
 
-var index = require('./lib/entry-index')
-var pipe = require('mississippi').pipe
-var putContent = require('./lib/content/put-stream')
-var through = require('mississippi').through
-var to = require('mississippi').to
+const Promise = require('bluebird')
+
+const index = require('./lib/entry-index')
+const pipe = Promise.promisify(require('mississippi').pipe)
+const putContent = require('./lib/content/put-stream')
+const through = require('mississippi').through
+const to = require('mississippi').to
 
 module.exports = putData
 function putData (cache, key, data, opts, cb) {
@@ -13,32 +15,30 @@ function putData (cache, key, data, opts, cb) {
     opts = null
   }
   opts = opts || {}
-  var src = through()
-  var meta
-  var dest = putStream(cache, key, opts)
+  const src = through()
+  let meta
+  const dest = putStream(cache, key, opts)
   dest.on('metadata', function (m) { meta = m })
-  pipe(src, dest, function (err) {
-    cb(err, meta)
-  })
+  const ret = pipe(src, dest).then(() => meta)
   src.write(data, function () {
     src.end()
   })
+  return ret
 }
 
 module.exports.stream = putStream
 function putStream (cache, key, opts) {
   opts = opts || {}
-  var digest
-  var contentStream = putContent(cache, opts).on('digest', function (d) {
+  let digest
+  const contentStream = putContent(cache, opts).on('digest', function (d) {
     digest = d
   })
-  var errored = false
-  var stream = to(function (chunk, enc, cb) {
+  let errored = false
+  const stream = to(function (chunk, enc, cb) {
     contentStream.write(chunk, enc, cb)
   }, function (cb) {
     contentStream.end(function () {
-      index.insert(cache, key, digest, opts, function (err, entry) {
-        if (err) { return cb(err) }
+      index.insert(cache, key, digest, opts).then(entry => {
         stream.emit('digest', digest)
         stream.emit('metadata', entry)
         cb()

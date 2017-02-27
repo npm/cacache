@@ -1,39 +1,36 @@
 'use strict'
 
-var index = require('./lib/entry-index')
-var finished = require('mississippi').finished
-var pipe = require('mississippi').pipe
-var read = require('./lib/content/read')
-var through = require('mississippi').through
+const Promise = require('bluebird')
 
-module.exports = function get (cache, key, opts, cb) {
-  return getData(false, cache, key, opts, cb)
+const index = require('./lib/entry-index')
+const finished = Promise.promisify(require('mississippi').finished)
+const pipe = require('mississippi').pipe
+const read = require('./lib/content/read')
+const through = require('mississippi').through
+
+module.exports = function get (cache, key, opts) {
+  return getData(false, cache, key, opts)
 }
-module.exports.byDigest = function getByDigest (cache, digest, opts, cb) {
-  return getData(true, cache, digest, opts, cb)
+module.exports.byDigest = function getByDigest (cache, digest, opts) {
+  return getData(true, cache, digest, opts)
 }
-function getData (byDigest, cache, key, opts, cb) {
-  if (!cb) {
-    cb = opts
-    opts = null
-  }
+function getData (byDigest, cache, key, opts) {
   opts = opts || {}
-  var src = (byDigest ? getStream.byDigest : getStream)(cache, key, opts)
-  var data = ''
-  var meta
+  const src = (byDigest ? getStream.byDigest : getStream)(cache, key, opts)
+  let data = ''
+  let meta
   src.on('data', function (d) { data += d })
   src.on('metadata', function (m) { meta = m })
-  finished(src, function (err) {
-    cb(err, data, meta)
-  })
+  return finished(src).then(() => ({ data, meta }))
 }
 
 module.exports.stream = getStream
 module.exports.stream.byDigest = read.readStream
 function getStream (cache, key, opts) {
-  var stream = through()
-  index.find(cache, key, function (err, data) {
-    if (err) { return stream.emit('error', err) }
+  const stream = through()
+  index.find(cache, key).catch(err => {
+    stream.emit('error', err)
+  }).then(data => {
     if (!data) {
       return stream.emit(
         'error', index.notFoundError(cache, key)
@@ -52,6 +49,6 @@ function getStream (cache, key, opts) {
 }
 
 module.exports.info = info
-function info (cache, key, cb) {
-  index.find(cache, key, cb)
+function info (cache, key) {
+  return index.find(cache, key)
 }

@@ -1,20 +1,22 @@
 'use strict'
 
-var rmContent = require('./lib/content/rm')
-var index = require('./lib/entry-index')
-var rimraf = require('rimraf')
+const Promise = require('bluebird')
+
+const rmContent = require('./lib/content/rm')
+const index = require('./lib/entry-index')
+const rimraf = Promise.promisify(require('rimraf'))
 
 module.exports.all = all
-function all (cache, cb) {
-  rimraf(cache, cb)
+function all (cache) {
+  return rimraf(cache)
 }
 
 module.exports.entry = entry
-function entry (cache, key, cb) {
-  index.delete(cache, key, cb)
+function entry (cache, key) {
+  return index.delete(cache, key)
 }
 
 module.exports.content = content
-function content (cache, address, cb) {
-  rmContent(cache, address, cb)
+function content (cache, address) {
+  return rmContent(cache, address)
 }
