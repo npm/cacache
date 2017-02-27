@@ -1,32 +1,28 @@
 'use strict'
 
-var mkdirp = require('mkdirp')
-var path = require('path')
-var rimraf = require('rimraf')
-var tap = require('tap')
+const mkdirp = require('mkdirp')
+const path = require('path')
+const rimraf = require('rimraf')
+const tap = require('tap')
 
-var cacheDir = path.resolve(__dirname, '../cache')
+const cacheDir = path.resolve(__dirname, '../cache')
 
 module.exports = testDir
 function testDir (filename) {
-  var base = path.basename(filename, '.js')
-  var dir = path.join(cacheDir, base)
-  tap.beforeEach(function (cb) {
-    reset(dir, function (err) {
+  const base = path.basename(filename, '.js')
+  const dir = path.join(cacheDir, base)
+  tap.beforeEach(cb => {
+    reset(dir, err => {
       if (err) { throw err }
       cb()
     })
   })
   if (!process.env.KEEPCACHE) {
-    tap.tearDown(function () {
+    tap.tearDown(() => {
       process.chdir(__dirname)
-      try {
-        rimraf.sync(dir)
-      } catch (e) {
-        if (process.platform !== 'win32') {
-          throw e
-        }
-      }
+      // This is ok cause this is the last
+      // thing to run in the process
+      rimraf(dir, () => {})
     })
   }
   return dir
