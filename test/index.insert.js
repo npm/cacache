@@ -141,8 +141,8 @@ test('key case-sensitivity', function (t) {
 test('hash conflict in same bucket', function (t) {
   // NOTE - this test will break if `index._hashKey` changes its algorithm.
   //        Adapt to it accordingly.
-  const NEWKEY = KEY + '!'
-  const CONFLICTING = KEY + '!!!'
+  const NEWKEY = KEY.toUpperCase()
+  const CONFLICTING = KEY.toLowerCase()
   return index.insert(
     CACHE, NEWKEY, DIGEST
   ).then(() => (
@@ -157,7 +157,7 @@ test('hash conflict in same bucket', function (t) {
       key: NEWKEY,
       digest: DIGEST
     }, {
-      key: KEY + '!!!',
+      key: CONFLICTING,
       digest: DIGEST
     }], 'multiple entries for conflicting keys in the same bucket')
   })
