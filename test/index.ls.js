@@ -16,12 +16,14 @@ test('basic listing', function (t) {
     'whatever': {
       key: 'whatever',
       digest: 'deadbeef',
+      hashAlgorithm: 'whatnot',
       time: 12345,
       metadata: 'omgsometa'
     },
     'whatnot': {
       key: 'whatnot',
       digest: 'bada55',
+      hashAlgorithm: 'whateva',
       time: 54321,
       metadata: null
     }
@@ -44,12 +46,14 @@ test('separate keys in conflicting buckets', function (t) {
     'whatever': {
       key: 'whatever',
       digest: 'deadbeef',
+      hashAlgorithm: 'whatnot',
       time: 12345,
       metadata: 'omgsometa'
     },
     'whatev': {
       key: 'whatev',
       digest: 'bada55',
+      hashAlgorithm: 'whateva',
       time: 54321,
       metadata: null
     }

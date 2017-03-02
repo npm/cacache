@@ -19,6 +19,7 @@ test('index.find cache hit', function (t) {
   const entry = {
     key: 'whatever',
     digest: 'deadbeef',
+    hashAlgorithm: 'whatnot',
     time: 12345,
     metadata: 'omgsometa'
   }
@@ -100,6 +101,7 @@ test('index.find path-breaking characters', function (t) {
     key: ';;!registry\nhttps://registry.npmjs.org/back \\ slash@Cool™?',
     digest: 'deadbeef',
     time: 12345,
+    hashAlgorithm: 'whatnot',
     metadata: 'omgsometa'
   }
   const idx = {}
@@ -128,6 +130,7 @@ test('index.find extremely long keys', function (t) {
     key: key,
     digest: 'deadbeef',
     time: 12345,
+    hashAlgorithm: 'whatnot',
     metadata: 'woo'
   }
   const idx = {}
@@ -197,6 +200,7 @@ test('index.find hash conflict in same bucket', function (t) {
   const entry = {
     key: 'whatever',
     digest: 'deadbeef',
+    hashAlgorithm: 'whatnot',
     time: 12345,
     metadata: 'yay'
   }

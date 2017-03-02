@@ -77,6 +77,34 @@ test('errors if stream ends with no data', function (t) {
   })
 })
 
+test('errors if input size does not match expected', function (t) {
+  t.plan(10)
+  let dig1 = null
+  pipe(fromString('abc'), putStream(CACHE, {
+    size: 5
+  }).on('digest', function (d) {
+    dig1 = d
+  }), function (err) {
+    t.ok(err, 'got an error when data smaller than expected')
+    t.equal(dig1, null, 'no digest returned')
+    t.equal(err.code, 'EBADSIZE', 'returns useful error code')
+    t.equal(err.expected, 5, 'error includes expected size')
+    t.equal(err.found, 3, 'error includes found size')
+  })
+  let dig2 = null
+  pipe(fromString('abcdefghi'), putStream(CACHE, {
+    size: 5
+  }).on('digest', function (d) {
+    dig2 = d
+  }), function (err) {
+    t.ok(err, 'got an error when data bigger than expected')
+    t.equal(dig2, null, 'no digest returned')
+    t.equal(err.code, 'EBADSIZE', 'returns useful error code')
+    t.equal(err.expected, 5, 'error includes expected size')
+    t.equal(err.found, 9, 'error includes found size')
+  })
+})
+
 test('does not overwrite content if already on disk', function (t) {
   const CONTENT = 'foobarbaz'
   const DIGEST = crypto.createHash('sha1').update(CONTENT).digest('hex')
@@ -181,7 +209,23 @@ test('cleans up tmp on successful completion', function (t) {
   })
 })
 
-test('cleans up tmp on error')
+test('cleans up tmp on error', function (t) {
+  const CONTENT = 'foobarbaz'
+  pipe(fromString(CONTENT), putStream(CACHE, { size: 1 }), function (err) {
+    t.ok(err, 'got an error')
+    t.equal(err.code, 'EBADSIZE', 'got expected code')
+    const tmp = path.join(CACHE, 'tmp')
+    fs.readdir(tmp, function (err, files) {
+      if (!err || (err && err.code === 'ENOENT')) {
+        files = files || []
+        t.deepEqual(files, [], 'nothing in the tmp dir!')
+        t.end()
+      } else {
+        throw err
+      }
+    })
+  })
+})
 
 test('checks the size of stream data if opts.size provided', function (t) {
   const CONTENT = 'foobarbaz'

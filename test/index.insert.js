@@ -17,21 +17,32 @@ const index = require('../lib/entry-index')
 const KEY = 'foo'
 const KEYHASH = index._hashKey(KEY)
 const DIGEST = 'deadbeef'
+const ALGO = 'whatnot'
 
 test('basic insertion', function (t) {
   return index.insert(
-    CACHE, KEY, DIGEST
-  ).then(() => {
+    CACHE, KEY, DIGEST, { metadata: 'foo', hashAlgorithm: ALGO }
+  ).then(entry => {
+    t.deepEqual(entry, {
+      key: KEY,
+      digest: DIGEST,
+      hashAlgorithm: ALGO,
+      path: path.join(CACHE, 'content', DIGEST),
+      time: entry.time,
+      metadata: 'foo'
+    }, 'formatted entry returned')
     const bucket = path.join(CACHE, 'index', KEYHASH)
     return fs.readFileAsync(bucket, 'utf8')
   }).then(data => {
     t.equal(data[0], '{', 'first entry starts with a {, not \\n')
     const entry = JSON.parse(data)
     t.ok(entry.time, 'entry has a timestamp')
-    delete entry.time
     t.deepEqual(entry, {
       key: KEY,
-      digest: DIGEST
+      digest: DIGEST,
+      hashAlgorithm: ALGO,
+      time: entry.time,
+      metadata: 'foo'
     }, 'entry matches what was inserted')
   })
 })

@@ -35,7 +35,7 @@ test('readStream: returns a stream with cache content data', function (t) {
 
 test('readStream: allows hashAlgorithm configuration', function (t) {
   const CONTENT = 'foobarbaz'
-  const HASH = 'sha1'
+  const HASH = 'sha512'
   const DIGEST = crypto.createHash(HASH).update(CONTENT).digest('hex')
   const dir = {}
   dir[DIGEST] = File(CONTENT)
@@ -48,7 +48,7 @@ test('readStream: allows hashAlgorithm configuration', function (t) {
   let buf = ''
   stream.on('data', function (data) { buf += data })
   stream.on('end', function () {
-    t.ok(true, 'stream completed successfully, off a sha1')
+    t.ok(true, 'stream completed successfully, off a sha512')
     t.equal(CONTENT, buf, 'cache contents read correctly')
     t.end()
   })
