@@ -16,13 +16,16 @@ that stored content is shared by different keys if they point to the same data.
 * [Contributing](#contributing)
 * [API](#api)
   * [`ls`](#ls)
+  * [`get`](#get-data)
   * [`get.stream`](#get-stream)
   * [`get.info`](#get-info)
+  * [`put`](#put-data)
   * [`put.stream`](#put-stream)
-  * [`put options`](#put-options)
+  * [`put*` opts](#put-options)
   * [`rm.all`](#rm-all)
   * [`rm.entry`](#rm-entry)
   * [`rm.content`](#rm-content)
+  * [`clearMemoized`](#clear-memoized)
   * [`verify`](#verify)
   * [`verify.lastRun`](#verify-last-run)
 
@@ -116,6 +119,49 @@ cacache.ls(cachePath).then(console.log)
 }
 ```
 
+#### <a name="get-data"></a> `> cacache.get(cache, key, [opts]) -> Promise({data, metadata, digest})`
+
+Returns an object with the cached data, digest, and metadata identified by
+`key`. The `data` property of this object will be a `Buffer` instance that
+presumably holds some data that means something to you. I'm sure you know what
+to do with it! cacache just won't care.
+
+If there is no content identified by `key`, or if the locally-stored data does
+not pass the validity checksum, the promise will be rejected.
+
+A sub-function, `get.byDigest` may be used for identical behavior, except lookup
+will happen by content digest, bypassing the index entirely. This version of the
+function *only* returns `data` itself, without any wrapper.
+
+##### Note
+
+This function loads the entire cache entry into memory before returning it. If
+you're dealing with Very Large data, consider using [`get.stream`](#get-stream)
+instead.
+
+##### Example
+
+```javascript
+// Look up by key
+cache.get(cachePath, 'my-thing').then(console.log)
+// Output:
+{
+  metadata: {
+    thingName: 'my'
+  },
+  digest: 'deadbeef',
+  hashAlgorithm: 'sha256'
+  data: Buffer#<deadbeef>
+}
+
+// Look up by digest
+cache.get.byDigest(cachePath, 'deadbeef', {
+  hashAlgorithm: 'sha256'
+}).then(console.log)
+// Output:
+Buffer#<deadbeef>
+```
+
 #### <a name="get-stream"></a> `> cacache.get.stream(cache, key, [opts]) -> Readable`
 
 Returns a [Readable Stream](https://nodejs.org/api/stream.html#stream_readable_streams) of the cached data identified by `key`.
@@ -123,20 +169,36 @@ Returns a [Readable Stream](https://nodejs.org/api/stream.html#stream_readable_s
 If there is no content identified by `key`, or if the locally-stored data does
 not pass the validity checksum, an error will be emitted.
 
+`metadata` and `digest` events will be emitted before the stream closes, if
+you need to collect that extra data about the cached entry.
+
 A sub-function, `get.stream.byDigest` may be used for identical behavior,
-except lookup will happen by content digest, bypassing the index entirely.
+except lookup will happen by content digest, bypassing the index entirely. This
+version does not emit the `metadata` and `digest` events at all.
 
 ##### Example
 
 ```javascript
+// Look up by key
 cache.get.stream(
   cachePath, 'my-thing'
-).pipe(
+).on('metadata', metadata => {
+  console.log('metadata:', metadata)
+}).on('hashAlgorithm', algo => {
+  console.log('hashAlgorithm:', algo)
+}).on('digest', digest => {
+  console.log('digest:', digest)
+}).pipe(
   fs.createWriteStream('./x.tgz')
 )
+// Outputs:
+metadata: { ... }
+hashAlgorithm: 'sha256'
+digest: deadbeef
 
+// Look up by digest
 cache.get.stream.byDigest(
-  cachePath, 'deadbeef'
+  cachePath, 'deadbeef', { hashAlgorithm: 'sha256' }
 ).pipe(
   fs.createWriteStream('./x.tgz')
 )
@@ -152,6 +214,7 @@ falsy.
 
 * `key` - Key the entry was looked up under. Matches the `key` argument.
 * `digest` - Content digest the entry refers to.
+* `hashAlgorithm` - Hashing algorithm used to generate `digest`.
 * `path` - Filesystem path relative to `cache` argument where content is stored.
 * `time` - Timestamp the entry was first added on.
 * `metadata` - User-assigned metadata associated with the entry/content.
@@ -175,9 +238,32 @@ cacache.get.info(cachePath, 'my-thing').then(console.log)
 }
 ```
 
-#### <a name="put-stream"></a> `> cacache.put.stream(cache, key, stream, [opts]) -> Writable`
+#### <a name="put-data"></a> `> cacache.put(cache, key, data, [opts]) -> Promise`
 
-Returns a [Writable Stream](https://nodejs.org/api/stream.html#stream_writable_streams) that inserts data written to it into the cache. Emits a `digest` event with the digest of written contents when it succeeds.
+Inserts data passed to it into the cache. The returned Promise resolves with a
+digest (generated according to [`opts.hashAlgorithm`](#hashalgorithm)) after the
+cache entry has been successfully written.
+
+##### Example
+
+```javascript
+fetch(
+  'https://registry.npmjs.org/cacache/-/cacache-1.0.0.tgz'
+).then(data => {
+  cacache.put(
+    cachePath, 'registry.npmjs.org|cacache@1.0.0', data
+  )
+}).then(digest => {
+  console.log('digest is', digest)
+})
+```
+
+#### <a name="put-stream"></a> `> cacache.put.stream(cache, key, [opts]) -> Writable`
+
+Returns a [Writable
+Stream](https://nodejs.org/api/stream.html#stream_writable_streams) that inserts
+data written to it into the cache. Emits a `digest` event with the digest of
+written contents when it succeeds.
 
 ##### Example
 
@@ -187,7 +273,7 @@ request.get(
 ).pipe(
   cacache.put.stream(
     cachePath, 'registry.npmjs.org|cacache@1.0.0'
-  ).on('digest', d => console.log(`digest is ${d}`))
+  ).on('digest', d => console.log('digest is ${d}'))
 )
 ```
 
@@ -202,22 +288,25 @@ Arbitrary metadata to be attached to the inserted key.
 ##### `size`
 
 If provided, the data stream will be verified to check that enough data was
-passed through. If there's more or less data than expected, an `EBADSIZE` error
-will be returned.
+passed through. If there's more or less data than expected, insertion will fail
+with an `EBADSIZE` error.
 
 ##### `digest`
 
 If present, the pre-calculated digest for the inserted content. If this option
-if provided and does not match the post-insertion digest, insertion will fail.
+if provided and does not match the post-insertion digest, insertion will fail
+with an `EBADCHECKSUM` error.
 
 To control the hashing algorithm, use `opts.hashAlgorithm`.
 
 ##### `hashAlgorithm`
 
-Default: 'sha1'
+Default: 'sha256'
 
 Hashing algorithm to use when calculating the digest for inserted data. Can use
-any algorithm supported by Node.js' `crypto` module.
+any algorithm listed in `crypto.getHashes()` or `'omakase'`/`'お任せします'` to
+pick a random hash algorithm on each insertion. You may also use any anagram of
+`'modnar'` to use this feature.
 
 ##### `uid`/`gid`
 
@@ -225,6 +314,22 @@ If provided, cacache will do its best to make sure any new files added to the
 cache use this particular `uid`/`gid` combination. This can be used,
 for example, to drop permissions when someone uses `sudo`, but cacache makes
 no assumptions about your needs here.
+
+##### `memoize`
+
+Default: null
+
+If provided, cacache will memoize the given cache insertion in memory, bypassing
+any filesystem checks for that key or digest in future cache fetches. Nothing
+will be written to the in-memory cache unless this option is explicitly truthy.
+
+There is no facility for limiting memory usage short of
+[`cacache.clearMemoized()`](#clear-memoized), so be mindful of the sort of data
+you ask to get memoized!
+
+Reading from existing memoized data can be forced by explicitly passing
+`memoize: false` to the reader functions, but their default will be to read from
+memory.
 
 #### <a name="rm-all"></a> `> cacache.rm.all(cache) -> Promise`
 
@@ -264,6 +369,10 @@ cacache.rm.content(cachePath, 'deadbeef').then(() => {
   console.log('data for my-thing is gone!')
 })
 ```
+
+#### <a name="clear-memoized"></a> `> cacache.clearMemoized()`
+
+Completely resets the in-memory entry cache.
 
 #### <a name="verify"></a> `> cacache.verify(cache, opts) -> Promise`
 
