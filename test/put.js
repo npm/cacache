@@ -15,7 +15,7 @@ const testDir = require('./util/test-dir')(__filename)
 const CACHE = path.join(testDir, 'cache')
 const CONTENT = bufferise('foobarbaz')
 const KEY = 'my-test-key'
-const ALGO = 'sha1'
+const ALGO = 'sha512'
 const DIGEST = crypto.createHash(ALGO).update(CONTENT).digest('hex')
 const METADATA = { foo: 'bar' }
 const contentPath = require('../lib/content/path')
@@ -31,7 +31,7 @@ function bufferise (string) {
 test('basic bulk insertion', t => {
   return put(CACHE, KEY, CONTENT).then(digest => {
     t.equal(digest, DIGEST, 'returned content digest')
-    const dataPath = contentPath(CACHE, digest)
+    const dataPath = contentPath(CACHE, digest, ALGO)
     return fs.readFileAsync(dataPath)
   }).then(data => {
     t.deepEqual(data, CONTENT, 'content was correctly inserted')

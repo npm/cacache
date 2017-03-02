@@ -1,6 +1,7 @@
 'use strict'
 
 const CacheIndex = require('./util/cache-index')
+const contentPath = require('../lib/content/path')
 const fs = require('fs')
 const path = require('path')
 const Promise = require('bluebird')
@@ -15,7 +16,6 @@ const Dir = Tacks.Dir
 const index = require('../lib/entry-index')
 
 const KEY = 'foo'
-const KEYHASH = index._hashKey(KEY)
 const BUCKET = index._bucketPath(CACHE, KEY)
 const DIGEST = 'deadbeef'
 const ALGO = 'whatnot'
@@ -28,7 +28,7 @@ test('basic insertion', function (t) {
       key: KEY,
       digest: DIGEST,
       hashAlgorithm: ALGO,
-      path: path.join(CACHE, 'content', DIGEST),
+      path: contentPath(CACHE, DIGEST, ALGO),
       time: entry.time,
       metadata: 'foo'
     }, 'formatted entry returned')

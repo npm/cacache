@@ -59,7 +59,11 @@ function streamGet (byDigest) {
 test('basic bulk get', t => {
   const fixture = new Tacks(Dir({
     'content': Dir({
-      [DIGEST]: File(CONTENT)
+      [ALGO]: Dir({
+        [DIGEST.slice(0, 2)]: Dir({
+          [DIGEST]: File(CONTENT)
+        })
+      })
     })
   }))
   fixture.create(CACHE)
@@ -85,7 +89,11 @@ test('basic bulk get', t => {
 test('basic stream get', t => {
   const fixture = new Tacks(Dir({
     'content': Dir({
-      [DIGEST]: File(CONTENT)
+      [ALGO]: Dir({
+        [DIGEST.slice(0, 2)]: Dir({
+          [DIGEST]: File(CONTENT)
+        })
+      })
     })
   }))
   fixture.create(CACHE)
@@ -141,7 +149,11 @@ test('memoizes data on bulk read', t => {
   memo.clearMemoized()
   const fixture = new Tacks(Dir({
     'content': Dir({
-      [DIGEST]: File(CONTENT)
+      [ALGO]: Dir({
+        [DIGEST.slice(0, 2)]: Dir({
+          [DIGEST]: File(CONTENT)
+        })
+      })
     })
   }))
   fixture.create(CACHE)
@@ -191,7 +203,11 @@ test('memoizes data on stream read', t => {
   memo.clearMemoized()
   const fixture = new Tacks(Dir({
     'content': Dir({
-      [DIGEST]: File(CONTENT)
+      [ALGO]: Dir({
+        [DIGEST.slice(0, 2)]: Dir({
+          [DIGEST]: File(CONTENT)
+        })
+      })
     })
   }))
   fixture.create(CACHE)

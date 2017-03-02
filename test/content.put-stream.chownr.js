@@ -31,13 +31,14 @@ test('allows setting a custom uid for cache contents on write', {
   t.plan(7)
   pipe(fromString(CONTENT), putStream(CACHE, {
     uid: NEWUID,
-    gid: NEWGID
+    gid: NEWGID,
+    hashAlgorithm: 'sha1'
   }), function (err) {
     if (err) { throw err }
     var expectedPaths = [
       CACHE, // this includes cache/tmp
       path.join(CACHE, 'content'),
-      path.join(CACHE, 'content', DIGEST)
+      path.join(CACHE, 'content', 'sha1', DIGEST.slice(0, 2), DIGEST)
     ]
     t.deepEqual(
       updatedPaths.sort(),

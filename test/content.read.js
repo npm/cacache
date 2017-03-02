@@ -16,10 +16,14 @@ const read = require('../lib/content/read')
 test('readStream: returns a stream with cache content data', function (t) {
   const CONTENT = 'foobarbaz'
   const DIGEST = crypto.createHash('sha512').update(CONTENT).digest('hex')
-  const dir = {}
-  dir[DIGEST] = File(CONTENT)
   const fixture = new Tacks(Dir({
-    'content': Dir(dir)
+    'content': Dir({
+      'sha512': Dir({
+        [DIGEST.slice(0, 2)]: Dir({
+          [DIGEST]: File(CONTENT)
+        })
+      })
+    })
   }))
   fixture.create(CACHE)
   const stream = read.readStream(CACHE, DIGEST)
@@ -37,10 +41,14 @@ test('readStream: allows hashAlgorithm configuration', function (t) {
   const CONTENT = 'foobarbaz'
   const HASH = 'whirlpool'
   const DIGEST = crypto.createHash(HASH).update(CONTENT).digest('hex')
-  const dir = {}
-  dir[DIGEST] = File(CONTENT)
   const fixture = new Tacks(Dir({
-    'content': Dir(dir)
+    'content': Dir({
+      [HASH]: Dir({
+        [DIGEST.slice(0, 2)]: Dir({
+          [DIGEST]: File(CONTENT)
+        })
+      })
+    })
   }))
   fixture.create(CACHE)
   const stream = read.readStream(CACHE, DIGEST, { hashAlgorithm: HASH })
@@ -71,11 +79,15 @@ test('readStream: errors if content missing', function (t) {
 
 test('readStream: errors if content fails checksum', function (t) {
   const CONTENT = 'foobarbaz'
-  const DIGEST = crypto.createHash('sha1').update(CONTENT).digest('hex')
-  const dir = {}
-  dir[DIGEST] = File(CONTENT.slice(3)) // invalid contents!
+  const DIGEST = crypto.createHash('sha512').update(CONTENT).digest('hex')
   const fixture = new Tacks(Dir({
-    'content': Dir(dir)
+    'content': Dir({
+      'sha512': Dir({
+        [DIGEST.slice(0, 2)]: Dir({
+          [DIGEST]: File(CONTENT.slice(3)) // invalid contents!
+        })
+      })
+    })
   }))
   fixture.create(CACHE)
   const stream = read.readStream(CACHE, DIGEST)
@@ -92,7 +104,11 @@ test('readStream: errors if content fails checksum', function (t) {
 test('hasContent: returns true when a cache file exists', function (t) {
   const fixture = new Tacks(Dir({
     'content': Dir({
-      'deadbeef': File('')
+      'sha512': Dir({
+        'de': Dir({
+          'deadbeef': File('')
+        })
+      })
     })
   }))
   fixture.create(CACHE)

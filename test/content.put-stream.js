@@ -18,7 +18,8 @@ const putStream = require('../lib/content/put-stream')
 
 test('basic put', function (t) {
   const CONTENT = 'foobarbaz'
-  const DIGEST = crypto.createHash('sha1').update(CONTENT).digest('hex')
+  // Default is sha512
+  const DIGEST = crypto.createHash('sha512').update(CONTENT).digest('hex')
   let foundDigest
   const src = fromString(CONTENT)
   const stream = putStream(CACHE).on('digest', function (d) {
@@ -42,7 +43,7 @@ test('basic put', function (t) {
 
 test('checks input digest doesn\'t match data', function (t) {
   const CONTENT = 'foobarbaz'
-  const DIGEST = crypto.createHash('sha1').update(CONTENT).digest('hex')
+  const DIGEST = crypto.createHash('sha512').update(CONTENT).digest('hex')
   t.plan(5)
   let foundDigest1
   let foundDigest2
@@ -107,7 +108,7 @@ test('errors if input size does not match expected', function (t) {
 
 test('does not overwrite content if already on disk', function (t) {
   const CONTENT = 'foobarbaz'
-  const DIGEST = crypto.createHash('sha1').update(CONTENT).digest('hex')
+  const DIGEST = crypto.createHash('sha512').update(CONTENT).digest('hex')
   const contentDir = {}
   contentDir[DIGEST] = File('nope')
   const fixture = new Tacks(Dir({
@@ -163,7 +164,7 @@ test('errors if input stream errors', function (t) {
 
 test('exits normally if file already open', function (t) {
   const CONTENT = 'foobarbaz'
-  const DIGEST = crypto.createHash('sha1').update(CONTENT).digest('hex')
+  const DIGEST = crypto.createHash('sha512').update(CONTENT).digest('hex')
   const PATH = path.join(CACHE, 'content', DIGEST)
   const contentDir = {}
   contentDir[DIGEST] = File(CONTENT)

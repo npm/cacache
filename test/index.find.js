@@ -33,7 +33,11 @@ test('index.find cache hit', function (t) {
     CACHE, entry.key
   ).then(info => {
     t.ok(info, 'cache hit')
-    t.equal(info.path, contentPath(CACHE, entry.digest), 'path added to info')
+    t.equal(
+      info.path,
+      contentPath(CACHE, entry.digest, entry.hashAlgorithm),
+      'path added to info'
+    )
     delete info.path
     t.deepEqual(info, entry, 'rest of info matches entry on disk')
   })

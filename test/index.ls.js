@@ -32,9 +32,11 @@ test('basic listing', function (t) {
     'index': CacheIndex(contents)
   }))
   contents.whatever.path =
-    contentPath(CACHE, contents.whatever.digest)
+    contentPath(
+      CACHE, contents.whatever.digest, contents.whatever.hashAlgorithm)
   contents.whatnot.path =
-    contentPath(CACHE, contents.whatnot.digest)
+    contentPath(
+      CACHE, contents.whatnot.digest, contents.whatnot.hashAlgorithm)
   fixture.create(CACHE)
   return index.ls(CACHE).then(listing => {
     t.deepEqual(listing, contents, 'index contents correct')
@@ -65,9 +67,11 @@ test('separate keys in conflicting buckets', function (t) {
     })
   }))
   contents.whatever.path =
-    contentPath(CACHE, contents.whatever.digest)
+    contentPath(
+      CACHE, contents.whatever.digest, contents.whatever.hashAlgorithm)
   contents.whatev.path =
-    contentPath(CACHE, contents.whatev.digest)
+    contentPath(
+      CACHE, contents.whatev.digest, contents.whatev.hashAlgorithm)
   fixture.create(CACHE)
   return index.ls(CACHE).then(listing => {
     t.deepEqual(listing, contents, 'index contents correct')

@@ -17,7 +17,9 @@ const rm = require('../lib/content/rm')
 test('removes a content entry', function (t) {
   const fixture = new Tacks(Dir({
     'content': Dir({
-      'deadbeef': File('')
+      'de': Dir({
+        'deadbeef': File('')
+      })
     })
   }))
   fixture.create(CACHE)
