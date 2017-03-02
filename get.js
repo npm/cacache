@@ -18,7 +18,7 @@ module.exports.byDigest = function getByDigest (cache, digest, opts) {
 }
 function getData (byDigest, cache, key, opts) {
   opts = opts || {}
-  opts.hashAlgorithm = opts.hashAlgorithm || 'sha1'
+  opts.hashAlgorithm = opts.hashAlgorithm || 'sha512'
   const memoized = (
     byDigest
     ? memo.get.byDigest(cache, key, opts.hashAlgorithm)
@@ -112,7 +112,7 @@ function getStream (cache, key, opts) {
 module.exports.stream.byDigest = getStreamDigest
 function getStreamDigest (cache, digest, opts) {
   opts = opts || {}
-  opts.hashAlgorithm = opts.hashAlgorithm || 'sha1'
+  opts.hashAlgorithm = opts.hashAlgorithm || 'sha512'
   const memoized = memo.get.byDigest(cache, digest, opts.hashAlgorithm)
   if (memoized && opts.memoize !== false) {
     const stream = through()
