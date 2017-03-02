@@ -16,6 +16,7 @@ function CacheIndex (entries) {
   Object.keys(entries).forEach(function (k) {
     var lines = entries[k]
     var hashed = hashKey(k)
+    var prefix = hashed.slice(0, 2)
     var serialised
     if (typeof lines === 'string') {
       serialised = lines
@@ -25,12 +26,17 @@ function CacheIndex (entries) {
       }
       serialised = lines.map(JSON.stringify).join('\n')
     }
-    index[hashed] = index[hashed]
-    ? [index[hashed], serialised].join('\n')
+    index[prefix] = index[prefix] || {}
+    index[prefix][hashed] = index[prefix][hashed]
+    ? [index[prefix][hashed], serialised].join('\n')
     : serialised
   })
-  Object.keys(index).forEach(function (k) {
-    index[k] = File(index[k])
+  Object.keys(index).forEach(function (prefix) {
+    var files = {}
+    Object.keys(index[prefix]).forEach(key => {
+      files[key] = File(index[prefix][key])
+    })
+    index[prefix] = Dir(files)
   })
   return Dir(index)
 }
