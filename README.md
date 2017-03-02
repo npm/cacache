@@ -150,13 +150,13 @@ cache.get(cachePath, 'my-thing').then(console.log)
     thingName: 'my'
   },
   digest: 'deadbeef',
-  hashAlgorithm: 'sha256'
+  hashAlgorithm: 'sha512'
   data: Buffer#<deadbeef>
 }
 
 // Look up by digest
 cache.get.byDigest(cachePath, 'deadbeef', {
-  hashAlgorithm: 'sha256'
+  hashAlgorithm: 'sha512'
 }).then(console.log)
 // Output:
 Buffer#<deadbeef>
@@ -193,12 +193,12 @@ cache.get.stream(
 )
 // Outputs:
 metadata: { ... }
-hashAlgorithm: 'sha256'
+hashAlgorithm: 'sha512'
 digest: deadbeef
 
 // Look up by digest
 cache.get.stream.byDigest(
-  cachePath, 'deadbeef', { hashAlgorithm: 'sha256' }
+  cachePath, 'deadbeef', { hashAlgorithm: 'sha512' }
 ).pipe(
   fs.createWriteStream('./x.tgz')
 )
@@ -301,7 +301,7 @@ To control the hashing algorithm, use `opts.hashAlgorithm`.
 
 ##### `hashAlgorithm`
 
-Default: 'sha256'
+Default: 'sha512'
 
 Hashing algorithm to use when calculating the digest for inserted data. Can use
 any algorithm listed in `crypto.getHashes()` or `'omakase'`/`'お任せします'` to
@@ -397,7 +397,7 @@ reading/writing on the cache.
 
 * `opts.uid` - uid to assign to cache and its contents
 * `opts.gid` - gid to assign to cache and its contents
-* `opts.hashAlgorithm` - defaults to `'sha256'`. Hash to use for content checks.
+* `opts.hashAlgorithm` - defaults to `'sha512'`. Hash to use for content checks.
 
 
 ##### Example
