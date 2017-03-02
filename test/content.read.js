@@ -15,7 +15,7 @@ const read = require('../lib/content/read')
 
 test('readStream: returns a stream with cache content data', function (t) {
   const CONTENT = 'foobarbaz'
-  const DIGEST = crypto.createHash('sha1').update(CONTENT).digest('hex')
+  const DIGEST = crypto.createHash('sha512').update(CONTENT).digest('hex')
   const dir = {}
   dir[DIGEST] = File(CONTENT)
   const fixture = new Tacks(Dir({
@@ -35,7 +35,7 @@ test('readStream: returns a stream with cache content data', function (t) {
 
 test('readStream: allows hashAlgorithm configuration', function (t) {
   const CONTENT = 'foobarbaz'
-  const HASH = 'sha512'
+  const HASH = 'whirlpool'
   const DIGEST = crypto.createHash(HASH).update(CONTENT).digest('hex')
   const dir = {}
   dir[DIGEST] = File(CONTENT)
