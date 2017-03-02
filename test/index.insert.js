@@ -70,14 +70,12 @@ test('inserts additional entries into existing key', function (t) {
 })
 
 test('separates entries even if one is corrupted', function (t) {
-  const fixture = new Tacks(Dir({
-    'index': CacheIndex({
-      'foo': '\n' + JSON.stringify({
-        key: KEY,
-        digest: 'meh',
-        time: 54321
-      }) + '\n{"key": "' + KEY + '"\noway'
-    })
+  const fixture = new Tacks(CacheIndex({
+    'foo': '\n' + JSON.stringify({
+      key: KEY,
+      digest: 'meh',
+      time: 54321
+    }) + '\n{"key": "' + KEY + '"\noway'
   }))
   fixture.create(CACHE)
   return index.insert(

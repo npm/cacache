@@ -12,8 +12,7 @@ const Tacks = require('tacks')
 const test = require('tap').test
 const testDir = require('./util/test-dir')(__filename)
 
-const Dir = Tacks.Dir
-const File = Tacks.File
+const CacheContent = require('./util/cache-content')
 
 const CACHE = path.join(testDir, 'cache')
 const CONTENT = bufferise('foobarbaz')
@@ -57,15 +56,9 @@ function streamGet (byDigest) {
 }
 
 test('basic bulk get', t => {
-  const fixture = new Tacks(Dir({
-    'content': Dir({
-      [ALGO]: Dir({
-        [DIGEST.slice(0, 2)]: Dir({
-          [DIGEST]: File(CONTENT)
-        })
-      })
-    })
-  }))
+  const fixture = new Tacks(CacheContent({
+    [DIGEST]: CONTENT
+  }, ALGO))
   fixture.create(CACHE)
   return index.insert(CACHE, KEY, DIGEST, {
     metadata: METADATA,
@@ -87,15 +80,9 @@ test('basic bulk get', t => {
 })
 
 test('basic stream get', t => {
-  const fixture = new Tacks(Dir({
-    'content': Dir({
-      [ALGO]: Dir({
-        [DIGEST.slice(0, 2)]: Dir({
-          [DIGEST]: File(CONTENT)
-        })
-      })
-    })
-  }))
+  const fixture = new Tacks(CacheContent({
+    [DIGEST]: CONTENT
+  }, ALGO))
   fixture.create(CACHE)
   return index.insert(CACHE, KEY, DIGEST, {
     metadata: METADATA,
@@ -147,15 +134,9 @@ test('get.info index entry lookup', t => {
 
 test('memoizes data on bulk read', t => {
   memo.clearMemoized()
-  const fixture = new Tacks(Dir({
-    'content': Dir({
-      [ALGO]: Dir({
-        [DIGEST.slice(0, 2)]: Dir({
-          [DIGEST]: File(CONTENT)
-        })
-      })
-    })
-  }))
+  const fixture = new Tacks(CacheContent({
+    [DIGEST]: CONTENT
+  }, ALGO))
   fixture.create(CACHE)
   return index.insert(CACHE, KEY, DIGEST, {
     metadata: METADATA,
@@ -201,15 +182,9 @@ test('memoizes data on bulk read', t => {
 
 test('memoizes data on stream read', t => {
   memo.clearMemoized()
-  const fixture = new Tacks(Dir({
-    'content': Dir({
-      [ALGO]: Dir({
-        [DIGEST.slice(0, 2)]: Dir({
-          [DIGEST]: File(CONTENT)
-        })
-      })
-    })
-  }))
+  const fixture = new Tacks(CacheContent({
+    [DIGEST]: CONTENT
+  }, ALGO))
   fixture.create(CACHE)
   return index.insert(CACHE, KEY, DIGEST, {
     metadata: METADATA,

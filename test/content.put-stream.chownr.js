@@ -10,6 +10,8 @@ var testDir = require('./util/test-dir')(__filename)
 
 var CACHE = path.join(testDir, 'cache')
 
+var contentPath = require('../lib/content/path')
+
 test('allows setting a custom uid for cache contents on write', {
   skip: !process.getuid // On a platform that doesn't support uid/gid
 }, function (t) {
@@ -35,10 +37,11 @@ test('allows setting a custom uid for cache contents on write', {
     hashAlgorithm: 'sha1'
   }), function (err) {
     if (err) { throw err }
+    const cpath = contentPath(CACHE, DIGEST, 'sha1')
     var expectedPaths = [
-      CACHE, // this includes cache/tmp
-      path.join(CACHE, 'content'),
-      path.join(CACHE, 'content', 'sha1', DIGEST.slice(0, 2), DIGEST)
+      CACHE,
+      path.join(CACHE, path.relative(CACHE, cpath).split(path.sep)[0]),
+      cpath
     ]
     t.deepEqual(
       updatedPaths.sort(),

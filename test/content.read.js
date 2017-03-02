@@ -9,21 +9,15 @@ const test = require('tap').test
 const testDir = require('./util/test-dir')(__filename)
 
 const CACHE = path.join(testDir, 'cache')
-const Dir = Tacks.Dir
-const File = Tacks.File
+const CacheContent = require('./util/cache-content')
+
 const read = require('../lib/content/read')
 
 test('readStream: returns a stream with cache content data', function (t) {
   const CONTENT = 'foobarbaz'
   const DIGEST = crypto.createHash('sha512').update(CONTENT).digest('hex')
-  const fixture = new Tacks(Dir({
-    'content': Dir({
-      'sha512': Dir({
-        [DIGEST.slice(0, 2)]: Dir({
-          [DIGEST]: File(CONTENT)
-        })
-      })
-    })
+  const fixture = new Tacks(CacheContent({
+    [DIGEST]: CONTENT
   }))
   fixture.create(CACHE)
   const stream = read.readStream(CACHE, DIGEST)
@@ -41,15 +35,9 @@ test('readStream: allows hashAlgorithm configuration', function (t) {
   const CONTENT = 'foobarbaz'
   const HASH = 'whirlpool'
   const DIGEST = crypto.createHash(HASH).update(CONTENT).digest('hex')
-  const fixture = new Tacks(Dir({
-    'content': Dir({
-      [HASH]: Dir({
-        [DIGEST.slice(0, 2)]: Dir({
-          [DIGEST]: File(CONTENT)
-        })
-      })
-    })
-  }))
+  const fixture = new Tacks(CacheContent({
+    [DIGEST]: CONTENT
+  }, HASH))
   fixture.create(CACHE)
   const stream = read.readStream(CACHE, DIGEST, { hashAlgorithm: HASH })
   stream.on('error', function (e) { throw e })
@@ -80,14 +68,8 @@ test('readStream: errors if content missing', function (t) {
 test('readStream: errors if content fails checksum', function (t) {
   const CONTENT = 'foobarbaz'
   const DIGEST = crypto.createHash('sha512').update(CONTENT).digest('hex')
-  const fixture = new Tacks(Dir({
-    'content': Dir({
-      'sha512': Dir({
-        [DIGEST.slice(0, 2)]: Dir({
-          [DIGEST]: File(CONTENT.slice(3)) // invalid contents!
-        })
-      })
-    })
+  const fixture = new Tacks(CacheContent({
+    [DIGEST]: CONTENT.slice(3) // invalid contents!
   }))
   fixture.create(CACHE)
   const stream = read.readStream(CACHE, DIGEST)
@@ -102,14 +84,8 @@ test('readStream: errors if content fails checksum', function (t) {
 })
 
 test('hasContent: returns true when a cache file exists', function (t) {
-  const fixture = new Tacks(Dir({
-    'content': Dir({
-      'sha512': Dir({
-        'de': Dir({
-          'deadbeef': File('')
-        })
-      })
-    })
+  const fixture = new Tacks(CacheContent({
+    'deadbeef': ''
   }))
   fixture.create(CACHE)
   return Promise.join(

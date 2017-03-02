@@ -8,7 +8,6 @@ const testDir = require('./util/test-dir')(__filename)
 
 const CACHE = path.join(testDir, 'cache')
 const contentPath = require('../lib/content/path')
-const Dir = Tacks.Dir
 const index = require('../lib/entry-index')
 
 test('basic listing', function (t) {
@@ -28,9 +27,7 @@ test('basic listing', function (t) {
       metadata: null
     }
   }
-  const fixture = new Tacks(Dir({
-    'index': CacheIndex(contents)
-  }))
+  const fixture = new Tacks(CacheIndex(contents))
   contents.whatever.path =
     contentPath(
       CACHE, contents.whatever.digest, contents.whatever.hashAlgorithm)
@@ -60,11 +57,9 @@ test('separate keys in conflicting buckets', function (t) {
       metadata: null
     }
   }
-  const fixture = new Tacks(Dir({
-    'index': CacheIndex({
-      // put both in the same bucket
-      'whatever': [contents.whatever, contents.whatev]
-    })
+  const fixture = new Tacks(CacheIndex({
+    // put both in the same bucket
+    'whatever': [contents.whatever, contents.whatev]
   }))
   contents.whatever.path =
     contentPath(

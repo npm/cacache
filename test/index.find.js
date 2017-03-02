@@ -23,10 +23,8 @@ test('index.find cache hit', function (t) {
     time: 12345,
     metadata: 'omgsometa'
   }
-  const fixture = new Tacks(Dir({
-    'index': CacheIndex({
-      'whatever': entry
-    })
+  const fixture = new Tacks(CacheIndex({
+    'whatever': entry
   }))
   fixture.create(CACHE)
   return index.find(
@@ -44,11 +42,9 @@ test('index.find cache hit', function (t) {
 })
 
 test('index.find cache miss', function (t) {
-  const fixture = new Tacks(Dir({
-    'index': CacheIndex({
-      'foo': {key: 'foo'},
-      'w/e': {key: 'w/e'}
-    })
+  const fixture = new Tacks(CacheIndex({
+    'foo': {key: 'foo'},
+    'w/e': {key: 'w/e'}
   }))
   fixture.create(CACHE)
   return index.find(
@@ -70,19 +66,17 @@ test('index.find no cache', function (t) {
 })
 
 test('index.find key case-sensitivity', function (t) {
-  const fixture = new Tacks(Dir({
-    'index': CacheIndex({
-      'jsonstream': {
-        key: 'jsonstream',
-        digest: 'lowercase',
-        time: 54321
-      },
-      'JSONStream': {
-        key: 'JSONStream',
-        digest: 'capitalised',
-        time: 12345
-      }
-    })
+  const fixture = new Tacks(CacheIndex({
+    'jsonstream': {
+      key: 'jsonstream',
+      digest: 'lowercase',
+      time: 54321
+    },
+    'JSONStream': {
+      key: 'JSONStream',
+      digest: 'capitalised',
+      time: 12345
+    }
   }))
   fixture.create(CACHE)
   return Promise.join(
@@ -108,10 +102,8 @@ test('index.find path-breaking characters', function (t) {
     hashAlgorithm: 'whatnot',
     metadata: 'omgsometa'
   }
-  const idx = {}
-  idx[entry.key] = entry
-  const fixture = new Tacks(Dir({
-    'index': CacheIndex(idx)
+  const fixture = new Tacks(CacheIndex({
+    [entry.key]: entry
   }))
   fixture.create(CACHE)
   return index.find(CACHE, entry.key).then(info => {
@@ -137,10 +129,8 @@ test('index.find extremely long keys', function (t) {
     hashAlgorithm: 'whatnot',
     metadata: 'woo'
   }
-  const idx = {}
-  idx[entry.key] = entry
-  const fixture = new Tacks(Dir({
-    'index': CacheIndex(idx)
+  const fixture = new Tacks(CacheIndex({
+    [entry.key]: entry
   }))
   fixture.create(CACHE)
   return index.find(CACHE, entry.key).then(info => {
@@ -156,13 +146,11 @@ test('index.find extremely long keys', function (t) {
 
 test('index.find multiple index entries for key', function (t) {
   const key = 'whatever'
-  const fixture = new Tacks(Dir({
-    'index': CacheIndex({
-      'whatever': [
-        { key: key, digest: 'deadbeef', time: 54321 },
-        { key: key, digest: 'bada55', time: 12345 }
-      ]
-    })
+  const fixture = new Tacks(CacheIndex({
+    'whatever': [
+      { key: key, digest: 'deadbeef', time: 54321 },
+      { key: key, digest: 'bada55', time: 12345 }
+    ]
   }))
   fixture.create(CACHE)
   return index.find(CACHE, key).then(info => {
@@ -183,14 +171,12 @@ test('index.find garbled data in index file', function (t) {
   // to the process crashing). In this case, the corrupt entry
   // will simply be skipped.
   const key = 'whatever'
-  const fixture = new Tacks(Dir({
-    'index': CacheIndex({
-      'whatever': '\n' + JSON.stringify({
-        key: key,
-        digest: 'deadbeef',
-        time: 54321
-      }) + '\n{"key": "' + key + '"\noway'
-    })
+  const fixture = new Tacks(CacheIndex({
+    'whatever': '\n' + JSON.stringify({
+      key: key,
+      digest: 'deadbeef',
+      time: 54321
+    }) + '\n{"key": "' + key + '"\noway'
   }))
   fixture.create(CACHE)
   return index.find(CACHE, key).then(info => {
@@ -208,14 +194,12 @@ test('index.find hash conflict in same bucket', function (t) {
     time: 12345,
     metadata: 'yay'
   }
-  const fixture = new Tacks(Dir({
-    'index': CacheIndex({
-      'whatever': [
-        { key: 'ohnoes', digest: 'welp!' },
-        entry,
-        { key: 'nope', digest: 'bada55' }
-      ]
-    })
+  const fixture = new Tacks(CacheIndex({
+    'whatever': [
+      { key: 'ohnoes', digest: 'welp!' },
+      entry,
+      { key: 'nope', digest: 'bada55' }
+    ]
   }))
   fixture.create(CACHE)
   return index.find(CACHE, entry.key).then(info => {
