@@ -152,3 +152,5 @@ function info (cache, key, opts) {
     return index.find(cache, key)
   }
 }
+
+module.exports.hasContent = read.hasContent
