@@ -26,7 +26,10 @@ function CacheIndex (entries, hashAlgorithm) {
       if (typeof lines.length !== 'number') {
         lines = [lines]
       }
-      serialised = '\n' + lines.map(JSON.stringify).join('\n')
+      serialised = '\n' + lines.map(line => {
+        const stringified = JSON.stringify(line)
+        return `${stringified.length}\t${stringified}`
+      }).join('\n')
     }
     insertContent(tree, parts, serialised)
   })

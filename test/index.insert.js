@@ -12,7 +12,6 @@ const testDir = require('./util/test-dir')(__filename)
 Promise.promisifyAll(fs)
 
 const CACHE = path.join(testDir, 'cache')
-const Dir = Tacks.Dir
 const index = require('../lib/entry-index')
 
 const KEY = 'foo'
@@ -35,7 +34,9 @@ test('basic insertion', function (t) {
     return fs.readFileAsync(BUCKET, 'utf8')
   }).then(data => {
     t.equal(data[0], '\n', 'first entry starts with a \\n')
-    const entry = JSON.parse(data)
+    const split = data.split('\t')
+    t.equal(parseInt(split[0], 10), split[1].length, 'length header correct')
+    const entry = JSON.parse(split[1])
     t.ok(entry.time, 'entry has a timestamp')
     t.deepEqual(entry, {
       key: KEY,
@@ -55,7 +56,9 @@ test('inserts additional entries into existing key', function (t) {
   )).then(() => {
     return fs.readFileAsync(BUCKET, 'utf8')
   }).then(data => {
-    const entries = data.split('\n').slice(1).map(JSON.parse)
+    const entries = data.split('\n').slice(1).map(line => {
+      return JSON.parse(line.split('\t')[1])
+    })
     entries.forEach(function (e) { delete e.time })
     t.deepEqual(entries, [{
       key: KEY,
@@ -70,6 +73,7 @@ test('inserts additional entries into existing key', function (t) {
 })
 
 test('separates entries even if one is corrupted', function (t) {
+  // TODO - check that middle-of-string corrupted writes won't hurt.
   const fixture = new Tacks(CacheIndex({
     'foo': '\n' + JSON.stringify({
       key: KEY,
@@ -83,7 +87,7 @@ test('separates entries even if one is corrupted', function (t) {
   ).then(() => {
     return fs.readFileAsync(BUCKET, 'utf8')
   }).then(data => {
-    const entry = JSON.parse(data.split('\n')[4])
+    const entry = JSON.parse(data.split('\n')[4].split('\t')[1])
     delete entry.time
     t.deepEqual(entry, {
       key: KEY,
@@ -99,7 +103,7 @@ test('optional arbitrary metadata', function (t) {
   ).then(() => {
     return fs.readFileAsync(BUCKET, 'utf8')
   }).then(data => {
-    const entry = JSON.parse(data)
+    const entry = JSON.parse(data.split('\t')[1])
     delete entry.time
     t.deepEqual(entry, {
       key: KEY,
@@ -147,7 +151,7 @@ test('path-breaking characters', function (t) {
     const bucket = index._bucketPath(CACHE, newKey)
     return fs.readFileAsync(bucket, 'utf8')
   }).then(data => {
-    const entry = JSON.parse(data)
+    const entry = JSON.parse(data.split('\t')[1])
     delete entry.time
     t.deepEqual(entry, {
       key: newKey,
@@ -167,7 +171,7 @@ test('extremely long keys', function (t) {
     const bucket = index._bucketPath(CACHE, newKey)
     return fs.readFileAsync(bucket, 'utf8')
   }).then(data => {
-    const entry = JSON.parse(data)
+    const entry = JSON.parse(data.split('\t')[1])
     delete entry.time
     t.deepEqual(entry, {
       key: newKey,

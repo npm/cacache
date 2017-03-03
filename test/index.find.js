@@ -171,12 +171,15 @@ test('index.find garbled data in index file', function (t) {
   // to the process crashing). In this case, the corrupt entry
   // will simply be skipped.
   const key = 'whatever'
+  const stringified = JSON.stringify({
+    key: key,
+    digest: 'deadbeef',
+    time: 54321
+  })
   const fixture = new Tacks(CacheIndex({
-    'whatever': '\n' + JSON.stringify({
-      key: key,
-      digest: 'deadbeef',
-      time: 54321
-    }) + '\n{"key": "' + key + '"\noway'
+    'whatever': '\n' +
+    `${stringified.length}\t${stringified}` +
+    '\n{"key": "' + key + '"\noway'
   }))
   fixture.create(CACHE)
   return index.find(CACHE, key).then(info => {
