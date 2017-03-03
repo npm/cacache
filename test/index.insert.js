@@ -34,7 +34,7 @@ test('basic insertion', function (t) {
     }, 'formatted entry returned')
     return fs.readFileAsync(BUCKET, 'utf8')
   }).then(data => {
-    t.equal(data[0], '{', 'first entry starts with a {, not \\n')
+    t.equal(data[0], '\n', 'first entry starts with a \\n')
     const entry = JSON.parse(data)
     t.ok(entry.time, 'entry has a timestamp')
     t.deepEqual(entry, {
@@ -55,7 +55,7 @@ test('inserts additional entries into existing key', function (t) {
   )).then(() => {
     return fs.readFileAsync(BUCKET, 'utf8')
   }).then(data => {
-    const entries = data.split('\n').map(JSON.parse)
+    const entries = data.split('\n').slice(1).map(JSON.parse)
     entries.forEach(function (e) { delete e.time })
     t.deepEqual(entries, [{
       key: KEY,
@@ -112,48 +112,30 @@ test('optional arbitrary metadata', function (t) {
 test('key case-sensitivity', function (t) {
   return Promise.join(
     index.insert(CACHE, KEY, DIGEST),
-    index.insert(CACHE, KEY.toUpperCase(), DIGEST)
+    index.insert(CACHE, KEY.toUpperCase(), DIGEST + 'upper')
   ).then(() => {
-    return fs.readFileAsync(BUCKET, 'utf8')
-  }).then(data => {
-    const entries = data.split('\n').map(JSON.parse).sort(e => (
-      e.key === KEY
-      ? -1
-      : 1
-    ))
-    entries.forEach(function (e) { delete e.time })
-    t.deepEqual(entries, [{
-      key: KEY,
-      digest: DIGEST
-    }, {
-      key: KEY.toUpperCase(),
-      digest: DIGEST
-    }], 'all entries present')
-  })
-})
-
-test('hash conflict in same bucket', function (t) {
-  // NOTE - this test will break if `index._hashKey` changes its algorithm.
-  //        Adapt to it accordingly.
-  const NEWKEY = KEY.toUpperCase()
-  const CONFLICTING = KEY.toLowerCase()
-  return index.insert(
-    CACHE, NEWKEY, DIGEST
-  ).then(() => (
-    index.insert(CACHE, CONFLICTING, DIGEST)
-  )).then(() => {
-    const bucket = index._bucketPath(CACHE, NEWKEY)
-    return fs.readFileAsync(bucket, 'utf8')
-  }).then(data => {
-    const entries = data.split('\n').map(JSON.parse)
-    entries.forEach(function (e) { delete e.time })
-    t.deepEqual(entries, [{
-      key: NEWKEY,
-      digest: DIGEST
-    }, {
-      key: CONFLICTING,
-      digest: DIGEST
-    }], 'multiple entries for conflicting keys in the same bucket')
+    return Promise.join(
+      index.find(CACHE, KEY),
+      index.find(CACHE, KEY.toUpperCase()),
+      (entry, upperEntry) => {
+        delete entry.time
+        delete upperEntry.time
+        t.deepEqual({
+          key: entry.key,
+          digest: entry.digest
+        }, {
+          key: KEY,
+          digest: DIGEST
+        }, 'regular entry exists')
+        t.deepEqual({
+          key: upperEntry.key,
+          digest: upperEntry.digest
+        }, {
+          key: KEY.toUpperCase(),
+          digest: DIGEST + 'upper'
+        }, 'case-variant entry intact')
+      }
+    )
   })
 })
 
