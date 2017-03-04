@@ -12,6 +12,7 @@
     "lib"
   ],
   "scripts": {
+    "benchmarks": "node test/benchmarks",
     "preversion": "npm t",
     "postversion": "npm publish && git push --follow-tags",
     "pretest": "standard lib test *.js",
