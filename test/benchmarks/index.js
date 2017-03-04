@@ -2,8 +2,6 @@
 
 const Benchmark = require('benchmark')
 const chalk = require('chalk')
-const fmtms = require('format-number')({round: 4})
-const fmtpct = require('format-number')({round: 1, suffix: '%'})
 const fs = require('fs')
 const path = require('path')
 const rimraf = require('rimraf')
@@ -14,40 +12,51 @@ const WARN_RANGE = 5
 
 const suite = new Benchmark.Suite({
   onStart () {
+    let previousPath = process.env.COMPARETO
+    ? path.resolve(process.env.COMPARETO)
+    : PREVIOUS
     try {
-      this.previous = require(
-        process.env.COMPARETO
-        ? path.resolve(process.env.COMPARETO)
-        : PREVIOUS)
+      this.previous = require(previousPath)
     } catch (e) {}
-    console.log('--- cacache performance benchmarks ---')
+    console.log('================================================')
+    if (this.previous) {
+      console.log('  Comparing to', path.relative(process.cwd(), previousPath))
+      console.log('================================================')
+    }
   },
   onCycle (event) {
     const bench = event.target
     const prev = this.previous && this.previous[bench.name]
-    const meanDiff = prev && (-((1 - (bench.stats.mean / prev.stats.mean)) * 100))
+    const pctDelta = prev && (((bench.stats.mean - prev.stats.mean) / prev.stats.mean) * 100)
     let colorDiff = !prev
     ? ''
-    : `${meanDiff > 0 ? '+' : ''}${fmtpct(meanDiff)}`
+    : `${pctDelta > 0 ? '+' : ''}${pctDelta.toFixed(2)}%`
     colorDiff = ` (${
-      meanDiff >= (WARN_RANGE + bench.stats.rme)
+      pctDelta >= (WARN_RANGE + bench.stats.rme)
       ? chalk.red(colorDiff)
-      : meanDiff <= -(WARN_RANGE + bench.stats.rme)
+      : pctDelta <= -(WARN_RANGE + bench.stats.rme)
       ? chalk.green(colorDiff)
       : colorDiff
-    })`
-    console.log(`--- ${bench.name} ---`)
-    console.log(`Avg: ${
-      fmtms(bench.stats.mean * 1000)
-    }ms${colorDiff}`)
-    console.log(`SEM: ${fmtms(bench.stats.sem * 1000)}ms`)
-    console.log(`RME: ${fmtms(bench.stats.rme)}%`)
-    console.log(`Total: ${bench.times.elapsed}s`)
-    console.log('--------------------------------------')
+    } ±${bench.stats.rme.toFixed(2)}%)`
+    console.log(`     ${bench.name}`)
+    console.log('------------------------------------------------')
+    if (bench.error) {
+      console.log('Error:', bench.error.message || bench.error)
+    } else {
+      console.log(`  ${
+        bench.hz.toFixed(bench.hz < 100 ? 2 : 0)
+      } ops/s @ ~${
+        (bench.stats.mean * 1000).toFixed(3)
+      }ms/op${colorDiff}`)
+      console.log(`  Sampled ${
+        bench.stats.sample.length
+      } in ${
+        bench.times.elapsed.toFixed(2)}s.`)
+    }
+    console.log('================================================')
     rimraf.sync(CACHE)
   },
   onComplete () {
-    console.log('--------------------------------------')
     fs.writeFileSync(PREVIOUS, JSON.stringify(this.reduce((acc, bench) => {
       acc[bench.name] = bench
       return acc
