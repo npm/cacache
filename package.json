@@ -57,7 +57,6 @@
     "promise-inflight": "^1.0.1",
     "rimraf": "^2.6.1",
     "slide": "^1.1.6",
-    "split": "^1.0.0",
     "unique-filename": "^1.1.0"
   },
   "devDependencies": {
