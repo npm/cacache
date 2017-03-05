@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="6.0.1"></a>
+## [6.0.1](https://github.com/zkat/cacache/compare/v6.0.0...v6.0.1) (2017-03-05)
+
+
+### Bug Fixes
+
+* **docs:** Missed spots in README ([8ffb7fa](https://github.com/zkat/cacache/commit/8ffb7fa))
+
+
+
 <a name="6.0.0"></a>
 # [6.0.0](https://github.com/zkat/cacache/compare/v5.0.3...v6.0.0) (2017-03-05)
 
