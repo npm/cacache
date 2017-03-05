@@ -2,6 +2,7 @@
 
 const Promise = require('bluebird')
 
+const bufferise = require('./util/bufferise')
 const crypto = require('crypto')
 const path = require('path')
 const Tacks = require('tacks')
@@ -13,25 +14,37 @@ const CacheContent = require('./util/cache-content')
 
 const read = require('../lib/content/read')
 
-test('readStream: returns a stream with cache content data', function (t) {
-  const CONTENT = 'foobarbaz'
+test('read: returns a Promise with cache content data', function (t) {
+  const CONTENT = bufferise('foobarbaz')
   const DIGEST = crypto.createHash('sha512').update(CONTENT).digest('hex')
   const fixture = new Tacks(CacheContent({
     [DIGEST]: CONTENT
   }))
   fixture.create(CACHE)
-  const stream = read.readStream(CACHE, DIGEST)
+  return read(CACHE, DIGEST).then(data => {
+    t.deepEqual(data, CONTENT, 'cache contents read correctly')
+  })
+})
+
+test('read.stream: returns a stream with cache content data', function (t) {
+  const CONTENT = bufferise('foobarbaz')
+  const DIGEST = crypto.createHash('sha512').update(CONTENT).digest('hex')
+  const fixture = new Tacks(CacheContent({
+    [DIGEST]: CONTENT
+  }))
+  fixture.create(CACHE)
+  const stream = read.stream(CACHE, DIGEST)
   stream.on('error', function (e) { throw e })
   let buf = ''
   stream.on('data', function (data) { buf += data })
   stream.on('end', function () {
     t.ok(true, 'stream completed successfully')
-    t.equal(CONTENT, buf, 'cache contents read correctly')
+    t.deepEqual(bufferise(buf), CONTENT, 'cache contents read correctly')
     t.end()
   })
 })
 
-test('readStream: allows hashAlgorithm configuration', function (t) {
+test('read.stream: allows hashAlgorithm configuration', function (t) {
   const CONTENT = 'foobarbaz'
   const HASH = 'whirlpool'
   const DIGEST = crypto.createHash(HASH).update(CONTENT).digest('hex')
@@ -39,19 +52,19 @@ test('readStream: allows hashAlgorithm configuration', function (t) {
     [DIGEST]: CONTENT
   }, HASH))
   fixture.create(CACHE)
-  const stream = read.readStream(CACHE, DIGEST, { hashAlgorithm: HASH })
+  const stream = read.stream(CACHE, DIGEST, { hashAlgorithm: HASH })
   stream.on('error', function (e) { throw e })
   let buf = ''
   stream.on('data', function (data) { buf += data })
   stream.on('end', function () {
     t.ok(true, 'stream completed successfully, off a sha512')
-    t.equal(CONTENT, buf, 'cache contents read correctly')
+    t.deepEqual(buf, CONTENT, 'cache contents read correctly')
     t.end()
   })
 })
 
-test('readStream: errors if content missing', function (t) {
-  const stream = read.readStream(CACHE, 'whatnot')
+test('read.stream: errors if content missing', function (t) {
+  const stream = read.stream(CACHE, 'whatnot')
   stream.on('error', function (e) {
     t.ok(e, 'got an error!')
     t.equal(e.code, 'ENOENT', 'error uses ENOENT error code')
@@ -65,7 +78,7 @@ test('readStream: errors if content missing', function (t) {
   })
 })
 
-test('readStream: errors if content fails checksum', function (t) {
+test('read.stream: errors if content fails checksum', function (t) {
   const CONTENT = 'foobarbaz'
   const DIGEST = crypto.createHash('sha512').update(CONTENT).digest('hex')
   const fixture = new Tacks(CacheContent({

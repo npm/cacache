@@ -3,7 +3,6 @@
 const Promise = require('bluebird')
 
 const index = require('./lib/entry-index')
-const finished = Promise.promisify(require('mississippi').finished)
 const memo = require('./lib/memoization')
 const pipe = require('mississippi').pipe
 const pipeline = require('mississippi').pipeline
@@ -25,33 +24,35 @@ function getData (byDigest, cache, key, opts) {
     : memo.get(cache, key)
   )
   if (memoized && opts.memoize !== false) {
-    return Promise.resolve({
+    return Promise.resolve(byDigest ? memoized : {
       metadata: memoized.entry.metadata,
       data: memoized.data,
       digest: memoized.entry.digest,
       hashAlgorithm: memoized.entry.hashAlgorithm
     })
   }
-  const src = (byDigest ? getStreamDigest : getStream)(cache, key, opts)
-  let acc = []
-  let dataTotal = 0
-  let metadata
-  let digest
-  let hashAlgorithm
-  if (!byDigest) {
-    src.on('digest', d => {
-      digest = d
+  return (
+    byDigest ? Promise.resolve(null) : index.find(cache, key, opts)
+  ).then(entry => {
+    if (!entry && !byDigest) {
+      throw index.notFoundError(cache, key)
+    }
+    return read(cache, byDigest ? key : entry.digest, {
+      hashAlgorithm: byDigest ? opts.hashAlgorithm : entry.hashAlgorithm,
+      size: opts.size
+    }).then(data => byDigest ? data : {
+      metadata: entry.metadata,
+      data: data,
+      digest: entry.digest,
+      hashAlgorithm: entry.hashAlgorithm
+    }).then(res => {
+      if (opts.memoize && byDigest) {
+        memo.put.byDigest(cache, key, opts.hashAlgorithm, res)
+      } else if (opts.memoize) {
+        memo.put(cache, entry, res.data)
+      }
+      return res
     })
-    src.on('hashAlgorithm', d => { hashAlgorithm = d })
-    src.on('metadata', d => { metadata = d })
-  }
-  src.on('data', d => {
-    acc.push(d)
-    dataTotal += d.length
-  })
-  return finished(src).then(() => {
-    const data = Buffer.concat(acc, dataTotal)
-    return byDigest ? data : { metadata, data, digest, hashAlgorithm }
   })
 }
 
