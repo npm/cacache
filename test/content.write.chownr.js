@@ -20,7 +20,7 @@ test('allows setting a custom uid for cache contents on write', {
   var NEWUID = process.getuid() + 1
   var NEWGID = process.getgid() + 1
   var updatedPaths = []
-  var putStream = requireInject('../lib/content/put-stream', {
+  var write = requireInject('../lib/content/write', {
     chownr: function (p, uid, gid, cb) {
       process.nextTick(function () {
         t.equal(uid, NEWUID, 'new uid set')
@@ -31,7 +31,7 @@ test('allows setting a custom uid for cache contents on write', {
     }
   })
   t.plan(7)
-  pipe(fromString(CONTENT), putStream(CACHE, {
+  pipe(fromString(CONTENT), write.stream(CACHE, {
     uid: NEWUID,
     gid: NEWGID,
     hashAlgorithm: 'sha1'

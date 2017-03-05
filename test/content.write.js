@@ -14,7 +14,8 @@ const CACHE = path.join(testDir, 'cache')
 const contentPath = require('../lib/content/path')
 const Dir = Tacks.Dir
 const File = Tacks.File
-const putStream = require('../lib/content/put-stream')
+
+const write = require('../lib/content/write')
 
 test('basic put', function (t) {
   const CONTENT = 'foobarbaz'
@@ -22,7 +23,7 @@ test('basic put', function (t) {
   const DIGEST = crypto.createHash('sha512').update(CONTENT).digest('hex')
   let foundDigest
   const src = fromString(CONTENT)
-  const stream = putStream(CACHE).on('digest', function (d) {
+  const stream = write.stream(CACHE).on('digest', function (d) {
     foundDigest = d
   })
   pipe(src, stream, function (err) {
@@ -47,7 +48,7 @@ test('checks input digest doesn\'t match data', function (t) {
   t.plan(5)
   let foundDigest1
   let foundDigest2
-  pipe(fromString('bazbarfoo'), putStream(CACHE, {
+  pipe(fromString('bazbarfoo'), write.stream(CACHE, {
     digest: DIGEST
   }).on('digest', function (d) {
     foundDigest1 = d
@@ -56,7 +57,7 @@ test('checks input digest doesn\'t match data', function (t) {
     t.ok(!!err, 'got an error')
     t.equal(err.code, 'EBADCHECKSUM', 'returns a useful error code')
   })
-  pipe(fromString(CONTENT), putStream(CACHE, {
+  pipe(fromString(CONTENT), write.stream(CACHE, {
     digest: DIGEST
   }).on('digest', function (d) {
     foundDigest2 = d
@@ -68,7 +69,7 @@ test('checks input digest doesn\'t match data', function (t) {
 
 test('errors if stream ends with no data', function (t) {
   let foundDigest = null
-  pipe(fromString(''), putStream(CACHE).on('digest', function (d) {
+  pipe(fromString(''), write.stream(CACHE).on('digest', function (d) {
     foundDigest = d
   }), function (err) {
     t.ok(err, 'got an error')
@@ -81,7 +82,7 @@ test('errors if stream ends with no data', function (t) {
 test('errors if input size does not match expected', function (t) {
   t.plan(10)
   let dig1 = null
-  pipe(fromString('abc'), putStream(CACHE, {
+  pipe(fromString('abc'), write.stream(CACHE, {
     size: 5
   }).on('digest', function (d) {
     dig1 = d
@@ -93,7 +94,7 @@ test('errors if input size does not match expected', function (t) {
     t.equal(err.found, 3, 'error includes found size')
   })
   let dig2 = null
-  pipe(fromString('abcdefghi'), putStream(CACHE, {
+  pipe(fromString('abcdefghi'), write.stream(CACHE, {
     size: 5
   }).on('digest', function (d) {
     dig2 = d
@@ -119,7 +120,7 @@ test('does not overwrite content if already on disk', function (t) {
   let dig1
   let dig2
   // With a digest -- early short-circuiting
-  pipe(fromString(CONTENT), putStream(CACHE, {
+  pipe(fromString(CONTENT), write.stream(CACHE, {
     digest: DIGEST
   }).on('digest', function (d) {
     dig1 = d
@@ -131,7 +132,7 @@ test('does not overwrite content if already on disk', function (t) {
       t.equal(d, 'nope', 'process short-circuited. Data not written.')
     })
   })
-  pipe(fromString(CONTENT), putStream(CACHE).on('digest', function (d) {
+  pipe(fromString(CONTENT), write.stream(CACHE).on('digest', function (d) {
     dig2 = d
   }), function (err) {
     if (err) { throw err }
@@ -147,7 +148,7 @@ test('errors if input stream errors', function (t) {
   const stream = fromString('foobarbaz')
   .on('end', () => stream.emit('error', new Error('bleh')))
   let foundDigest
-  const putter = putStream(CACHE).on('digest', function (d) {
+  const putter = write.stream(CACHE).on('digest', function (d) {
     foundDigest = d
   })
   pipe(stream, putter, function (err) {
@@ -177,7 +178,7 @@ test('exits normally if file already open', function (t) {
   // Generally, you'd get an EBUSY back.
   fs.open(PATH, 'r+', function (err, fd) {
     if (err) { throw err }
-    pipe(fromString(CONTENT), putStream(CACHE).on('digest', function (d) {
+    pipe(fromString(CONTENT), write.stream(CACHE).on('digest', function (d) {
       foundDigest = d
     }), function (err) {
       if (err) { throw err }
@@ -195,7 +196,7 @@ test('exits normally if file already open', function (t) {
 
 test('cleans up tmp on successful completion', function (t) {
   const CONTENT = 'foobarbaz'
-  pipe(fromString(CONTENT), putStream(CACHE), function (err) {
+  pipe(fromString(CONTENT), write.stream(CACHE), function (err) {
     if (err) { throw err }
     const tmp = path.join(CACHE, 'tmp')
     fs.readdir(tmp, function (err, files) {
@@ -212,7 +213,7 @@ test('cleans up tmp on successful completion', function (t) {
 
 test('cleans up tmp on error', function (t) {
   const CONTENT = 'foobarbaz'
-  pipe(fromString(CONTENT), putStream(CACHE, { size: 1 }), function (err) {
+  pipe(fromString(CONTENT), write.stream(CACHE, { size: 1 }), function (err) {
     t.ok(err, 'got an error')
     t.equal(err.code, 'EBADSIZE', 'got expected code')
     const tmp = path.join(CACHE, 'tmp')
@@ -234,7 +235,7 @@ test('checks the size of stream data if opts.size provided', function (t) {
   t.plan(8)
   pipe(
     fromString(CONTENT.slice(3)),
-    putStream(CACHE, {
+    write.stream(CACHE, {
       size: CONTENT.length
     }).on('digest', function (d) { dig1 = d }),
     function (err) {
@@ -245,7 +246,7 @@ test('checks the size of stream data if opts.size provided', function (t) {
   )
   pipe(
     fromString(CONTENT + 'quux'),
-    putStream(CACHE, {
+    write.stream(CACHE, {
       size: CONTENT.length
     }).on('digest', function (d) { dig2 = d }),
     function (err) {
@@ -256,7 +257,7 @@ test('checks the size of stream data if opts.size provided', function (t) {
   )
   pipe(
     fromString(CONTENT),
-    putStream(CACHE, {
+    write.stream(CACHE, {
       size: CONTENT.length
     }).on('digest', function (d) { dig3 = d }),
     function (err) {
