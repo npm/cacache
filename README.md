@@ -1,9 +1,12 @@
 # cacache [![npm version](https://img.shields.io/npm/v/cacache.svg)](https://npm.im/cacache) [![license](https://img.shields.io/npm/l/cacache.svg)](https://npm.im/cacache) [![Travis](https://img.shields.io/travis/zkat/cacache.svg)](https://travis-ci.org/zkat/cacache) [![AppVeyor](https://ci.appveyor.com/api/projects/status/github/zkat/cacache?svg=true)](https://ci.appveyor.com/project/zkat/cacache) [![Coverage Status](https://coveralls.io/repos/github/zkat/cacache/badge.svg?branch=latest)](https://coveralls.io/github/zkat/cacache?branch=latest)
 
 [`cacache`](https://github.com/zkat/cacache) is a Node.js library for managing
-caches of keyed data that can be looked up both by key and by a digest of the
-content itself. This means that by-content lookups can be very very fast, and
-that stored content is shared by different keys if they point to the same data.
+local key and content address caches. It's really fast, really good at
+concurrency, and it will never give you corrupted data, even if cache files
+get corrupted or manipulated.
+
+It was originally written to be used as [npm](https://npm.im)'s local cache, but
+can just as easily be used on its own
 
 ## Install
 
@@ -41,19 +44,14 @@ const key = 'my-unique-key-1234'
 let tarballDigest = null
 
 // Cache it! Use `cachePath` as the root of the content cache
-fs.createReadStream(
-  tarball
-).pipe(
-  cacache.put.stream(
-    cachePath, key
-  ).on('digest', (d) => tarballDigest = d)
-).on('finish', function () {
-  console.log(`Saved ${tarball} to ${cachePath}.`)
+cacache.put(cachePath, key, '10293801983029384').then(digest => {
+  console.log(`Saved content to ${cachePath}.`)
 })
 
 const destination = '/tmp/mytar.tgz'
 
 // Copy the contents out of the cache and into their destination!
+// But this time, use stream instead!
 cacache.get.stream(
   cachePath, key
 ).pipe(
@@ -63,23 +61,24 @@ cacache.get.stream(
 })
 
 // The same thing, but skip the key index.
-cacache.get.stream.byDigest(
-  cachePath, tarballDigest
-).pipe(
-  fs.createWriteStream(destination)
-).on('finish', () => {
-  console.log('done extracting using sha1!')
+cacache.get.byDigest(cachePath, tarballSha512).then(data => {
+  fs.writeFile(destination, data, err => {
+    console.log('tarball data fetched based on its sha512sum and written out!')
+  })
 })
 ```
 
 ### Features
 
-* Extraction by key or by content digest (shasum, etc).
-* Deduplicated content by digest -- two inputs with same key are only saved once
-* Consistency checks, both on insert and extract.
-* (Kinda) concurrency-safe and fault tolerant.
-* Streaming support.
-* Metadata storage.
+* Extraction by key or by content address (shasum, etc)
+* Multi-hash support - safely host sha1, sha512, etc, in a single cache
+* Automatic content deduplication
+* Fault tolerance and consistency guarantees for both insertion and extraction
+* Lockless, high-concurrency cache access
+* Streaming support
+* Promise support
+* Arbitrary metadata storage
+* Garbage collection and additional offline verification
 
 ### Contributing
 
@@ -102,7 +101,8 @@ cacache.ls(cachePath).then(console.log)
   'my-thing': {
     key: 'my-thing',
     digest: 'deadbeef',
-    path: '.testcache/content/deadbeef',
+    hashAlgorithm: 'sha512',
+    path: '.testcache/content/deadbeef', // joined with `cachePath`
     time: 12345698490,
     metadata: {
       name: 'blah',
@@ -113,18 +113,21 @@ cacache.ls(cachePath).then(console.log)
   'other-thing': {
     key: 'other-thing',
     digest: 'bada55',
+    hashAlgorithm: 'whirlpool',
     path: '.testcache/content/bada55',
     time: 11992309289
   }
 }
 ```
 
-#### <a name="get-data"></a> `> cacache.get(cache, key, [opts]) -> Promise({data, metadata, digest})`
+#### <a name="get-data"></a> `> cacache.get(cache, key, [opts]) -> Promise({data, metadata, digest, hashAlgorithm})`
 
 Returns an object with the cached data, digest, and metadata identified by
 `key`. The `data` property of this object will be a `Buffer` instance that
 presumably holds some data that means something to you. I'm sure you know what
-to do with it! cacache just won't care.
+to do with it! cacache just won't care. `hashAlgorithm` is the algorithm used
+to calculate the `digest` of the content. This algorithm must be used if you
+fetch later with `get.byDigest`.
 
 If there is no content identified by `key`, or if the locally-stored data does
 not pass the validity checksum, the promise will be rejected.
@@ -250,9 +253,7 @@ cache entry has been successfully written.
 fetch(
   'https://registry.npmjs.org/cacache/-/cacache-1.0.0.tgz'
 ).then(data => {
-  cacache.put(
-    cachePath, 'registry.npmjs.org|cacache@1.0.0', data
-  )
+  return cacache.put(cachePath, 'registry.npmjs.org|cacache@1.0.0', data)
 }).then(digest => {
   console.log('digest is', digest)
 })
