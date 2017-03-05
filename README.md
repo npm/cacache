@@ -18,19 +18,23 @@ can just as easily be used on its own
 * [Features](#features)
 * [Contributing](#contributing)
 * [API](#api)
-  * [`ls`](#ls)
-  * [`get`](#get-data)
-  * [`get.stream`](#get-stream)
-  * [`get.info`](#get-info)
-  * [`put`](#put-data)
-  * [`put.stream`](#put-stream)
-  * [`put*` opts](#put-options)
-  * [`rm.all`](#rm-all)
-  * [`rm.entry`](#rm-entry)
-  * [`rm.content`](#rm-content)
-  * [`clearMemoized`](#clear-memoized)
-  * [`verify`](#verify)
-  * [`verify.lastRun`](#verify-last-run)
+  * Reading
+    * [`ls`](#ls)
+    * [`ls.stream`](#ls-stream)
+    * [`get`](#get-data)
+    * [`get.stream`](#get-stream)
+    * [`get.info`](#get-info)
+  * Writing
+    * [`put`](#put-data)
+    * [`put.stream`](#put-stream)
+    * [`put*` opts](#put-options)
+    * [`rm.all`](#rm-all)
+    * [`rm.entry`](#rm-entry)
+    * [`rm.content`](#rm-content)
+  * Utilities
+    * [`clearMemoized`](#clear-memoized)
+    * [`verify`](#verify)
+    * [`verify.lastRun`](#verify-last-run)
 
 ### Example
 
@@ -41,7 +45,6 @@ const fs = require('fs')
 const tarball = '/path/to/mytar.tgz'
 const cachePath = '/tmp/my-toy-cache'
 const key = 'my-unique-key-1234'
-let tarballDigest = null
 
 // Cache it! Use `cachePath` as the root of the content cache
 cacache.put(cachePath, key, '10293801983029384').then(digest => {
@@ -117,6 +120,44 @@ cacache.ls(cachePath).then(console.log)
     path: '.testcache/content/bada55',
     time: 11992309289
   }
+}
+```
+
+#### <a name="ls-stream"></a> `> cacache.ls.stream(cache) -> Readable`
+
+Lists info for all entries currently in the cache as a single large object.
+
+This works just like [`ls`](#ls), except [`get.info`](#get-info) entries are
+returned as `'data'` events on the returned stream.
+
+##### Example
+
+```javascript
+cacache.ls.stream(cachePath).on('data', console.log)
+// Output
+{
+  key: 'my-thing',
+  digest: 'deadbeef',
+  hashAlgorithm: 'sha512',
+  path: '.testcache/content/deadbeef', // joined with `cachePath`
+  time: 12345698490,
+  metadata: {
+    name: 'blah',
+    version: '1.2.3',
+    description: 'this was once a package but now it is my-thing'
+  }
+}
+
+{
+  key: 'other-thing',
+  digest: 'bada55',
+  hashAlgorithm: 'whirlpool',
+  path: '.testcache/content/bada55',
+  time: 11992309289
+}
+
+{
+  ...
 }
 ```
 
@@ -210,8 +251,7 @@ cache.get.stream.byDigest(
 #### <a name="get-info"></a> `> cacache.get.info(cache, key) -> Promise`
 
 Looks up `key` in the cache index, returning information about the entry if
-one exists. If an entry does not exist, the second argument to `cb` will be
-falsy.
+one exists.
 
 ##### Fields
 
