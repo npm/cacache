@@ -32,6 +32,18 @@ module.exports = (suite, CACHE) => {
     }
   })
 
+  suite.add('cacache.put() big data', {
+    defer: true,
+    fn (deferred) {
+      put(
+        CACHE, KEY + this.count, BIGCONTENT + this.count
+      ).then(
+        () => deferred.resolve(),
+        err => deferred.reject(err)
+      )
+    }
+  })
+
   suite.add(`cacache.put.stream() ${CONTENT.length} bytes`, {
     defer: true,
     fn (deferred) {

@@ -40,6 +40,24 @@ module.exports = (suite, CACHE) => {
     }
   })
 
+  suite.add('content.read() big data', {
+    defer: true,
+    setup () {
+      const fixture = new Tacks(CacheContent({
+        [BIGDIGEST]: BIGCONTENT
+      }))
+      fixture.create(CACHE)
+    },
+    fn (deferred) {
+      read(
+        CACHE, BIGDIGEST
+      ).then(
+        () => deferred.resolve(),
+        err => deferred.reject(err)
+      )
+    }
+  })
+
   suite.add('content.read.stream() small data', {
     defer: true,
     setup () {
