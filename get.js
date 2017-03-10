@@ -35,7 +35,7 @@ function getData (byDigest, cache, key, opts) {
     byDigest ? Promise.resolve(null) : index.find(cache, key, opts)
   ).then(entry => {
     if (!entry && !byDigest) {
-      throw index.notFoundError(cache, key)
+      throw new index.NotFoundError(cache, key)
     }
     return read(cache, byDigest ? key : entry.digest, {
       hashAlgorithm: byDigest ? opts.hashAlgorithm : entry.hashAlgorithm,
@@ -73,7 +73,7 @@ function getStream (cache, key, opts) {
   index.find(cache, key).then(entry => {
     if (!entry) {
       return stream.emit(
-        'error', index.notFoundError(cache, key)
+        'error', new index.NotFoundError(cache, key)
       )
     }
     let memoStream

@@ -2,8 +2,8 @@
   "name": "cacache",
   "version": "6.0.1",
   "cache-version": {
-    "content": "1",
-    "index": "1"
+    "content": "2",
+    "index": "2"
   },
   "description": "General content-addressable cache system that maintains a filesystem registry of file data.",
   "main": "index.js",
@@ -58,7 +58,6 @@
     "once": "^1.4.0",
     "promise-inflight": "^1.0.1",
     "rimraf": "^2.6.1",
-    "slide": "^1.1.6",
     "unique-filename": "^1.1.0"
   },
   "devDependencies": {
