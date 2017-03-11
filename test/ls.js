@@ -1,6 +1,9 @@
 'use strict'
 
+const BB = require('bluebird')
+
 const CacheIndex = require('./util/cache-index')
+const finished = BB.promisify(require('mississippi').finished)
 const path = require('path')
 const Tacks = require('tacks')
 const test = require('tap').test
@@ -8,7 +11,8 @@ const testDir = require('./util/test-dir')(__filename)
 
 const CACHE = path.join(testDir, 'cache')
 const contentPath = require('../lib/content/path')
-const index = require('../lib/entry-index')
+
+const ls = require('../ls')
 
 test('basic listing', function (t) {
   const contents = {
@@ -35,8 +39,17 @@ test('basic listing', function (t) {
     contentPath(
       CACHE, contents.whatnot.digest, contents.whatnot.hashAlgorithm)
   fixture.create(CACHE)
-  return index.ls(CACHE).then(listing => {
+  return ls(CACHE).then(listing => {
     t.deepEqual(listing, contents, 'index contents correct')
+  }).then(() => {
+    const listing = []
+    const stream = ls.stream(CACHE)
+    stream.on('data', entry => {
+      listing[entry.key] = entry
+    })
+    return finished(stream).then(() => {
+      t.deepEqual(listing, contents, 'ls is streamable')
+    })
   })
 })
 
@@ -68,13 +81,13 @@ test('separate keys in conflicting buckets', function (t) {
     contentPath(
       CACHE, contents.whatev.digest, contents.whatev.hashAlgorithm)
   fixture.create(CACHE)
-  return index.ls(CACHE).then(listing => {
+  return ls(CACHE).then(listing => {
     t.deepEqual(listing, contents, 'index contents correct')
   })
 })
 
 test('works fine on an empty/missing cache', function (t) {
-  return index.ls(CACHE).then(listing => {
+  return ls(CACHE).then(listing => {
     t.deepEqual(listing, {})
   })
 })
