@@ -386,6 +386,8 @@ cacache.rm.all(cachePath).then(() => {
 
 #### <a name="rm-entry"></a> `> cacache.rm.entry(cache, key) -> Promise`
 
+Alias: `cacache.rm`
+
 Removes the index entry for `key`. Content will still be accessible if
 requested directly by content address ([`get.stream.byDigest`](#get-stream)).
 
