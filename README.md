@@ -422,6 +422,7 @@ Completely resets the in-memory entry cache.
 Checks out and fixes up your cache:
 
 * Cleans up corrupted or invalid index entries.
+* Custom entry filtering options.
 * Garbage collects any content entries not referenced by the index.
 * Checks digests for all content entries and removes invalid content.
 * Fixes cache ownership.
@@ -440,8 +441,8 @@ reading/writing on the cache.
 
 * `opts.uid` - uid to assign to cache and its contents
 * `opts.gid` - gid to assign to cache and its contents
-* `opts.hashAlgorithm` - defaults to `'sha512'`. Hash to use for content checks.
-
+* `opts.filter` - receives a formatted entry. Return false to remove it.
+                  Note: might be called more than once on the same entry.
 
 ##### Example
 
