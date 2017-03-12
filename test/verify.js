@@ -29,9 +29,11 @@ function mockCache () {
     [DIGEST]: CONTENT
   }, ALGO))
   fixture.create(CACHE)
-  return index.insert(CACHE, KEY, DIGEST, {
-    metadata: METADATA,
-    hashAlgorithm: ALGO
+  return fs.mkdirAsync(path.join(CACHE, 'tmp')).then(() => {
+    return index.insert(CACHE, KEY, DIGEST, {
+      metadata: METADATA,
+      hashAlgorithm: ALGO
+    })
   })
 }
 
@@ -149,6 +151,63 @@ test('removes corrupted content', t => {
   })
 })
 
-test('removes content not referenced by any entries')
+test('removes content not referenced by any entries', t => {
+  const fixture = new Tacks(CacheContent({
+    [DIGEST]: CONTENT
+  }, ALGO))
+  fixture.create(CACHE)
+  return verify(CACHE).then(stats => {
+    delete stats.startTime
+    delete stats.runTime
+    delete stats.endTime
+    t.deepEqual(stats, {
+      verifiedContent: 0,
+      reclaimedCount: 1,
+      reclaimedSize: CONTENT.length,
+      badContentCount: 0,
+      keptSize: 0,
+      missingContent: 0,
+      rejectedEntries: 0,
+      totalEntries: 0
+    }, 'reported correct collection counts')
+  })
+})
+
+test('cleans up contents of tmp dir', t => {
+  const tmpFile = path.join(CACHE, 'tmp', 'x')
+  const misc = path.join(CACHE, 'y')
+  return mockCache().then(() => {
+    return BB.join(
+      fs.writeFileAsync(tmpFile, ''),
+      fs.writeFileAsync(misc, ''),
+      () => verify(CACHE)
+    )
+  }).then(() => {
+    return BB.join(
+      fs.statAsync(tmpFile).catch({code: 'ENOENT'}, e => e),
+      fs.statAsync(misc),
+      (err, stat) => {
+        t.equal(err.code, 'ENOENT', 'tmp file was blown away')
+        t.ok(stat, 'misc file was not touched')
+      }
+    )
+  })
+})
+
+test('writes a file with last verification time', t => {
+  return verify(CACHE).then(() => {
+    return BB.join(
+      verify.lastRun(CACHE),
+      fs.readFileAsync(
+        path.join(CACHE, '_lastverified'), 'utf8'
+      ).then(data => {
+        return new Date(parseInt(data))
+      }),
+      (fromLastRun, fromFile) => {
+        t.equal(+fromLastRun, +fromFile, 'last verified was writen')
+      }
+    )
+  })
+})
+
 test('fixes permissions and users on cache contents')
-test('cleans up contents of tmp dir')
