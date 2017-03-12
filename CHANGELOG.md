@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="6.1.0"></a>
+# [6.1.0](https://github.com/zkat/cacache/compare/v6.0.2...v6.1.0) (2017-03-12)
+
+
+### Bug Fixes
+
+* **coverage:** more coverage for content reads (#70) ([ef4f70a](https://github.com/zkat/cacache/commit/ef4f70a))
+* **tests:** use safe-buffer because omfg (#69) ([6ab8132](https://github.com/zkat/cacache/commit/6ab8132))
+
+
+### Features
+
+* **rm:** limited rm.all and fixed bugs (#66) ([d5d25ba](https://github.com/zkat/cacache/commit/d5d25ba)), closes [#66](https://github.com/zkat/cacache/issues/66)
+* **verify:** tested, working cache verifier/gc (#68) ([45ad77a](https://github.com/zkat/cacache/commit/45ad77a))
+
+
+
 <a name="6.0.2"></a>
 ## [6.0.2](https://github.com/zkat/cacache/compare/v6.0.1...v6.0.2) (2017-03-11)
 
