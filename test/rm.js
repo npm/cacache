@@ -4,12 +4,9 @@ const Buffer = require('safe-buffer').Buffer
 const BB = require('bluebird')
 
 const crypto = require('crypto')
-const fromString = require('./util/from-string')
 const fs = BB.promisifyAll(require('fs'))
 const index = require('../lib/entry-index')
-const memo = require('../lib/memoization')
 const path = require('path')
-const pipe = BB.promisify(require('mississippi').pipe)
 const Tacks = require('tacks')
 const test = require('tap').test
 const testDir = require('./util/test-dir')(__filename)
