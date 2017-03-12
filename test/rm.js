@@ -1,5 +1,6 @@
 'use strict'
 
+const Buffer = require('safe-buffer').Buffer
 const Promise = require('bluebird')
 
 const crypto = require('crypto')
@@ -15,7 +16,7 @@ const testDir = require('./util/test-dir')(__filename)
 
 const CacheContent = require('./util/cache-content')
 const CACHE = path.join(testDir, 'cache')
-const CONTENT = bufferise('foobarbaz')
+const CONTENT = Buffer.from('foobarbaz')
 const KEY = 'my-test-key'
 const ALGO = 'sha512'
 const DIGEST = crypto.createHash(ALGO).update(CONTENT).digest('hex')
@@ -25,12 +26,6 @@ const contentPath = require('../lib/content/path')
 const get = require('../get')
 
 const rm = require('../rm')
-
-function bufferise (string) {
-  return Buffer.from
-  ? Buffer.from(string, 'utf8')
-  : new Buffer(string, 'utf8')
-}
 
 test('rm.entry removes entries, not content', t => {
   const fixture = new Tacks(CacheContent({

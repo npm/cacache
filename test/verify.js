@@ -1,5 +1,6 @@
 'use strict'
 
+const Buffer = require('safe-buffer').Buffer
 const Promise = require('bluebird')
 
 const crypto = require('crypto')
@@ -14,7 +15,7 @@ const testDir = require('./util/test-dir')(__filename)
 const CacheContent = require('./util/cache-content')
 
 const CACHE = path.join(testDir, 'cache')
-const CONTENT = bufferise('foobarbaz')
+const CONTENT = Buffer.from('foobarbaz', 'utf8')
 const KEY = 'my-test-key'
 const ALGO = 'sha512'
 const DIGEST = crypto.createHash(ALGO).update(CONTENT).digest('hex')
@@ -22,12 +23,6 @@ const METADATA = { foo: 'bar' }
 const BUCKET = index._bucketPath(CACHE, KEY)
 
 const verify = require('../verify')
-
-function bufferise (string) {
-  return Buffer.from
-  ? Buffer.from(string, 'utf8')
-  : new Buffer(string, 'utf8')
-}
 
 function mockCache () {
   const fixture = new Tacks(CacheContent({

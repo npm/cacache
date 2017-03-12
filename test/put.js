@@ -1,5 +1,6 @@
 'use strict'
 
+const Buffer = require('safe-buffer').Buffer
 const Promise = require('bluebird')
 
 const crypto = require('crypto')
@@ -13,7 +14,7 @@ const test = require('tap').test
 const testDir = require('./util/test-dir')(__filename)
 
 const CACHE = path.join(testDir, 'cache')
-const CONTENT = bufferise('foobarbaz')
+const CONTENT = Buffer.from('foobarbaz', 'utf8')
 const KEY = 'my-test-key'
 const ALGO = 'sha512'
 const DIGEST = crypto.createHash(ALGO).update(CONTENT).digest('hex')
@@ -21,12 +22,6 @@ const METADATA = { foo: 'bar' }
 const contentPath = require('../lib/content/path')
 
 var put = require('../put')
-
-function bufferise (string) {
-  return Buffer.from
-  ? Buffer.from(string, 'utf8')
-  : new Buffer(string, 'utf8')
-}
 
 test('basic bulk insertion', t => {
   return put(CACHE, KEY, CONTENT).then(digest => {

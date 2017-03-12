@@ -1,8 +1,8 @@
 'use strict'
 
+const Buffer = require('safe-buffer').Buffer
 const Promise = require('bluebird')
 
-const bufferise = require('./util/bufferise')
 const crypto = require('crypto')
 const path = require('path')
 const Tacks = require('tacks')
@@ -15,7 +15,7 @@ const CacheContent = require('./util/cache-content')
 const read = require('../lib/content/read')
 
 test('read: returns a Promise with cache content data', function (t) {
-  const CONTENT = bufferise('foobarbaz')
+  const CONTENT = Buffer.from('foobarbaz')
   const DIGEST = crypto.createHash('sha512').update(CONTENT).digest('hex')
   const fixture = new Tacks(CacheContent({
     [DIGEST]: CONTENT
@@ -27,7 +27,7 @@ test('read: returns a Promise with cache content data', function (t) {
 })
 
 test('read.stream: returns a stream with cache content data', function (t) {
-  const CONTENT = bufferise('foobarbaz')
+  const CONTENT = Buffer.from('foobarbaz')
   const DIGEST = crypto.createHash('sha512').update(CONTENT).digest('hex')
   const fixture = new Tacks(CacheContent({
     [DIGEST]: CONTENT
@@ -39,7 +39,7 @@ test('read.stream: returns a stream with cache content data', function (t) {
   stream.on('data', function (data) { buf += data })
   stream.on('end', function () {
     t.ok(true, 'stream completed successfully')
-    t.deepEqual(bufferise(buf), CONTENT, 'cache contents read correctly')
+    t.deepEqual(Buffer.from(buf), CONTENT, 'cache contents read correctly')
     t.end()
   })
 })
