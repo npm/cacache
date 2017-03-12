@@ -21,7 +21,7 @@ const DIGEST = crypto.createHash(ALGO).update(CONTENT).digest('hex')
 const METADATA = { foo: 'bar' }
 const contentPath = require('../lib/content/path')
 
-var put = require('../put')
+var put = require('..').put
 
 test('basic bulk insertion', t => {
   return put(CACHE, KEY, CONTENT).then(digest => {

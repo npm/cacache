@@ -22,7 +22,7 @@ const DIGEST = crypto.createHash(ALGO).update(CONTENT).digest('hex')
 const METADATA = { foo: 'bar' }
 const BUCKET = index._bucketPath(CACHE, KEY)
 
-const verify = require('../verify')
+const verify = require('..').verify
 
 function mockCache () {
   const fixture = new Tacks(CacheContent({

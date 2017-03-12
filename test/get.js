@@ -22,7 +22,7 @@ const ALGO = 'sha512'
 const DIGEST = crypto.createHash(ALGO).update(CONTENT).digest('hex')
 const METADATA = { foo: 'bar' }
 
-var get = require('../get')
+var get = require('..').get
 
 // Simple wrapper util cause this gets WORDY
 function streamGet (byDigest) {

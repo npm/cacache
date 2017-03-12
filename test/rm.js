@@ -23,9 +23,9 @@ const DIGEST = crypto.createHash(ALGO).update(CONTENT).digest('hex')
 const METADATA = { foo: 'bar' }
 const contentPath = require('../lib/content/path')
 
-const get = require('../get')
+const get = require('..').get
 
-const rm = require('../rm')
+const rm = require('..').rm
 
 test('rm.entry removes entries, not content', t => {
   const fixture = new Tacks(CacheContent({

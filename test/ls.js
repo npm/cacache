@@ -12,7 +12,7 @@ const testDir = require('./util/test-dir')(__filename)
 const CACHE = path.join(testDir, 'cache')
 const contentPath = require('../lib/content/path')
 
-const ls = require('../ls')
+const ls = require('..').ls
 
 test('basic listing', function (t) {
   const contents = {
