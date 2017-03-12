@@ -1,15 +1,15 @@
 'use strict'
 
 const Buffer = require('safe-buffer').Buffer
-const Promise = require('bluebird')
+const BB = require('bluebird')
 
 const crypto = require('crypto')
 const fromString = require('./util/from-string')
-const fs = Promise.promisifyAll(require('fs'))
+const fs = BB.promisifyAll(require('fs'))
 const index = require('../lib/entry-index')
 const memo = require('../lib/memoization')
 const path = require('path')
-const pipe = Promise.promisify(require('mississippi').pipe)
+const pipe = BB.promisify(require('mississippi').pipe)
 const test = require('tap').test
 const testDir = require('./util/test-dir')(__filename)
 
@@ -109,7 +109,7 @@ test('optionally memoizes data on stream insertion', t => {
 })
 
 test('signals error if error writing to cache', t => {
-  return Promise.join(
+  return BB.join(
     put(CACHE, KEY, CONTENT, {
       size: 2
     }).then(() => {

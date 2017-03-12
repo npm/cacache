@@ -4,12 +4,12 @@ const CacheIndex = require('./util/cache-index')
 const contentPath = require('../lib/content/path')
 const fs = require('fs')
 const path = require('path')
-const Promise = require('bluebird')
+const BB = require('bluebird')
 const Tacks = require('tacks')
 const test = require('tap').test
 const testDir = require('./util/test-dir')(__filename)
 
-Promise.promisifyAll(fs)
+BB.promisifyAll(fs)
 
 const CACHE = path.join(testDir, 'cache')
 const index = require('../lib/entry-index')
@@ -114,11 +114,11 @@ test('optional arbitrary metadata', function (t) {
 })
 
 test('key case-sensitivity', function (t) {
-  return Promise.join(
+  return BB.join(
     index.insert(CACHE, KEY, DIGEST),
     index.insert(CACHE, KEY.toUpperCase(), DIGEST + 'upper')
   ).then(() => {
-    return Promise.join(
+    return BB.join(
       index.find(CACHE, KEY),
       index.find(CACHE, KEY.toUpperCase()),
       (entry, upperEntry) => {

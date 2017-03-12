@@ -3,12 +3,12 @@
 const CacheIndex = require('./util/cache-index')
 const fs = require('fs')
 const path = require('path')
-const Promise = require('bluebird')
+const BB = require('bluebird')
 const Tacks = require('tacks')
 const test = require('tap').test
 const testDir = require('./util/test-dir')(__filename)
 
-Promise.promisifyAll(fs)
+BB.promisifyAll(fs)
 
 const CACHE = path.join(testDir, 'cache')
 const contentPath = require('../lib/content/path')
@@ -79,7 +79,7 @@ test('index.find key case-sensitivity', function (t) {
     }
   }))
   fixture.create(CACHE)
-  return Promise.join(
+  return BB.join(
     index.find(CACHE, 'JSONStream').then(info => {
       t.ok(info, 'found an entry for JSONStream')
       t.equal(info.key, 'JSONStream', 'fetched the correct entry')

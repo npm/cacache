@@ -2,12 +2,12 @@
 
 const fs = require('graceful-fs')
 const path = require('path')
-const Promise = require('bluebird')
+const BB = require('bluebird')
 const Tacks = require('tacks')
 const test = require('tap').test
 const testDir = require('./util/test-dir')(__filename)
 
-Promise.promisifyAll(fs)
+BB.promisifyAll(fs)
 
 const CACHE = path.join(testDir, 'cache')
 const Dir = Tacks.Dir

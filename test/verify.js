@@ -1,12 +1,12 @@
 'use strict'
 
 const Buffer = require('safe-buffer').Buffer
-const Promise = require('bluebird')
+const BB = require('bluebird')
 
 const crypto = require('crypto')
 const contentPath = require('../lib/content/path')
 const index = require('../lib/entry-index')
-const fs = Promise.promisifyAll(require('graceful-fs'))
+const fs = BB.promisifyAll(require('graceful-fs'))
 const path = require('path')
 const Tacks = require('tacks')
 const test = require('tap').test
@@ -83,7 +83,7 @@ test('accepts function for custom user filtering of index entries', t => {
   const KEY2 = KEY + 'aaa'
   const KEY3 = KEY + 'bbb'
   return mockCache().then(() => {
-    return Promise.join(
+    return BB.join(
       index.insert(CACHE, KEY2, DIGEST, {
         metadata: 'haayyyy',
         hashAlgorithm: ALGO

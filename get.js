@@ -1,6 +1,6 @@
 'use strict'
 
-const Promise = require('bluebird')
+const BB = require('bluebird')
 
 const index = require('./lib/entry-index')
 const memo = require('./lib/memoization')
@@ -24,7 +24,7 @@ function getData (byDigest, cache, key, opts) {
     : memo.get(cache, key)
   )
   if (memoized && opts.memoize !== false) {
-    return Promise.resolve(byDigest ? memoized : {
+    return BB.resolve(byDigest ? memoized : {
       metadata: memoized.entry.metadata,
       data: memoized.data,
       digest: memoized.entry.digest,
@@ -32,7 +32,7 @@ function getData (byDigest, cache, key, opts) {
     })
   }
   return (
-    byDigest ? Promise.resolve(null) : index.find(cache, key, opts)
+    byDigest ? BB.resolve(null) : index.find(cache, key, opts)
   ).then(entry => {
     if (!entry && !byDigest) {
       throw new index.NotFoundError(cache, key)
@@ -148,7 +148,7 @@ function info (cache, key, opts) {
   opts = opts || {}
   const memoized = memo.get(cache, key)
   if (memoized && opts.memoize !== false) {
-    return Promise.resolve(memoized.entry)
+    return BB.resolve(memoized.entry)
   } else {
     return index.find(cache, key)
   }

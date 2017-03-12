@@ -1,7 +1,7 @@
 'use strict'
 
 const Buffer = require('safe-buffer').Buffer
-const Promise = require('bluebird')
+const BB = require('bluebird')
 
 const crypto = require('crypto')
 const path = require('path')
@@ -14,7 +14,7 @@ const CacheContent = require('./util/cache-content')
 
 const read = require('../lib/content/read')
 
-test('read: returns a Promise with cache content data', function (t) {
+test('read: returns a BB with cache content data', function (t) {
   const CONTENT = Buffer.from('foobarbaz')
   const DIGEST = crypto.createHash('sha512').update(CONTENT).digest('hex')
   const fixture = new Tacks(CacheContent({
@@ -101,7 +101,7 @@ test('hasContent: returns true when a cache file exists', function (t) {
     'deadbeef': ''
   }))
   fixture.create(CACHE)
-  return Promise.join(
+  return BB.join(
     read.hasContent(CACHE, 'deadbeef').then(bool => {
       t.ok(bool, 'returned true for existing content')
     }),

@@ -1,11 +1,11 @@
 'use strict'
 
-const Promise = require('bluebird')
+const BB = require('bluebird')
 
 const index = require('./lib/entry-index')
 const memo = require('./lib/memoization')
 const path = require('path')
-const rimraf = Promise.promisify(require('rimraf'))
+const rimraf = BB.promisify(require('rimraf'))
 const rmContent = require('./lib/content/rm')
 
 module.exports = entry

@@ -1,14 +1,14 @@
 'use strict'
 
 const Buffer = require('safe-buffer').Buffer
-const Promise = require('bluebird')
+const BB = require('bluebird')
 
 const crypto = require('crypto')
-const finished = Promise.promisify(require('mississippi').finished)
+const finished = BB.promisify(require('mississippi').finished)
 const index = require('../lib/entry-index')
 const memo = require('../lib/memoization')
 const path = require('path')
-const rimraf = Promise.promisify(require('rimraf'))
+const rimraf = BB.promisify(require('rimraf'))
 const Tacks = require('tacks')
 const test = require('tap').test
 const testDir = require('./util/test-dir')(__filename)
@@ -83,7 +83,7 @@ test('basic stream get', t => {
     metadata: METADATA,
     hashAlgorithm: ALGO
   }).then(() => {
-    return Promise.join(
+    return BB.join(
       streamGet(false, CACHE, KEY),
       streamGet(true, CACHE, DIGEST, { hashAlgorithm: ALGO }),
       (byKey, byDigest) => {
@@ -185,7 +185,7 @@ test('memoizes data on stream read', t => {
     metadata: METADATA,
     hashAlgorithm: ALGO
   }).then(ENTRY => {
-    return Promise.join(
+    return BB.join(
       streamGet(false, CACHE, KEY),
       streamGet(true, CACHE, DIGEST, { hashAlgorithm: ALGO }),
       () => {
@@ -247,7 +247,7 @@ test('memoizes data on stream read', t => {
     }).then(() => {
       return rimraf(CACHE)
     }).then(() => {
-      return Promise.join(
+      return BB.join(
         streamGet(false, CACHE, KEY),
         streamGet(true, CACHE, DIGEST, { hashAlgorithm: ALGO }),
         (byKey, byDigest) => {
@@ -265,7 +265,7 @@ test('memoizes data on stream read', t => {
         }
       )
     }).then(() => {
-      return Promise.join(
+      return BB.join(
         streamGet(false, CACHE, KEY, {
           memoize: false
         }).catch(err => err),

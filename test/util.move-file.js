@@ -1,6 +1,6 @@
 'use strict'
 
-const Promise = require('bluebird')
+const BB = require('bluebird')
 
 const fs = require('fs')
 const path = require('path')
@@ -12,7 +12,7 @@ const Dir = Tacks.Dir
 const File = Tacks.File
 const moveFile = require('../lib/util/move-file')
 
-Promise.promisifyAll(fs)
+BB.promisifyAll(fs)
 
 test('move a file', function (t) {
   const fixture = new Tacks(Dir({
