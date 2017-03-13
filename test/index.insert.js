@@ -63,10 +63,12 @@ test('inserts additional entries into existing key', function (t) {
     t.deepEqual(entries, [{
       key: KEY,
       digest: DIGEST,
+      hashAlgorithm: 'sha512',
       metadata: 1
     }, {
       key: KEY,
       digest: DIGEST,
+      hashAlgorithm: 'sha512',
       metadata: 2
     }], 'all entries present')
   })
@@ -91,7 +93,8 @@ test('separates entries even if one is corrupted', function (t) {
     delete entry.time
     t.deepEqual(entry, {
       key: KEY,
-      digest: DIGEST
+      digest: DIGEST,
+      hashAlgorithm: 'sha512'
     }, 'new entry unaffected by corruption')
   })
 })
@@ -108,6 +111,7 @@ test('optional arbitrary metadata', function (t) {
     t.deepEqual(entry, {
       key: KEY,
       digest: DIGEST,
+      hashAlgorithm: 'sha512',
       metadata: metadata
     }, 'entry includes inserted metadata')
   })
@@ -155,7 +159,8 @@ test('path-breaking characters', function (t) {
     delete entry.time
     t.deepEqual(entry, {
       key: newKey,
-      digest: DIGEST
+      digest: DIGEST,
+      hashAlgorithm: 'sha512'
     }, 'entry exists and matches original key with invalid chars')
   })
 })
@@ -175,7 +180,8 @@ test('extremely long keys', function (t) {
     delete entry.time
     t.deepEqual(entry, {
       key: newKey,
-      digest: DIGEST
+      digest: DIGEST,
+      hashAlgorithm: 'sha512'
     }, 'entry exists in spite of INCREDIBLY LONG key')
   })
 })
