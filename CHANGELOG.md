@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="6.1.1"></a>
+## [6.1.1](https://github.com/zkat/cacache/compare/v6.1.0...v6.1.1) (2017-03-13)
+
+
+### Bug Fixes
+
+* **coverage:** bumping coverage for verify (#71) ([0b7faf6](https://github.com/zkat/cacache/commit/0b7faf6))
+* **deps:** glob should have been a regular dep :< ([0640bc4](https://github.com/zkat/cacache/commit/0640bc4))
+
+
+
 <a name="6.1.0"></a>
 # [6.1.0](https://github.com/zkat/cacache/compare/v6.0.2...v6.1.0) (2017-03-12)
 
