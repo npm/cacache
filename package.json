@@ -51,6 +51,7 @@
     "checksum-stream": "^1.0.2",
     "chownr": "^1.0.1",
     "dezalgo": "^1.0.3",
+    "glob": "^7.1.1",
     "graceful-fs": "^4.1.10",
     "mississippi": "^1.2.0",
     "mkdirp": "^0.5.1",
@@ -62,7 +63,6 @@
   "devDependencies": {
     "benchmark": "^2.1.3",
     "chalk": "^1.1.3",
-    "glob": "^7.1.1",
     "nyc": "^10.0.0",
     "require-inject": "^1.4.0",
     "safe-buffer": "^5.0.1",
