@@ -432,11 +432,6 @@ When it's done, it'll return an object with various stats about the verification
 process, including amount of storage reclaimed, number of valid entries, number
 of entries removed, etc.
 
-This function should not be run while other processes are running `cacache`. It
-assumes it'll be used offline by a human or a coordinated process. Concurrent
-verifies are protected by a lock, but there's no guarantee others won't be
-reading/writing on the cache.
-
 ##### Options
 
 * `opts.uid` - uid to assign to cache and its contents
