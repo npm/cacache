@@ -50,7 +50,6 @@
     "bluebird": "^3.4.7",
     "checksum-stream": "^1.0.2",
     "chownr": "^1.0.1",
-    "dezalgo": "^1.0.3",
     "glob": "^7.1.1",
     "graceful-fs": "^4.1.10",
     "mississippi": "^1.2.0",
