@@ -55,7 +55,6 @@
     "graceful-fs": "^4.1.10",
     "mississippi": "^1.2.0",
     "mkdirp": "^0.5.1",
-    "once": "^1.4.0",
     "promise-inflight": "^1.0.1",
     "rimraf": "^2.6.1",
     "unique-filename": "^1.1.0"
