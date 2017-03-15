@@ -52,6 +52,7 @@
     "chownr": "^1.0.1",
     "glob": "^7.1.1",
     "graceful-fs": "^4.1.10",
+    "lru-cache": "^4.0.2",
     "mississippi": "^1.2.0",
     "mkdirp": "^0.5.1",
     "promise-inflight": "^1.0.1",
