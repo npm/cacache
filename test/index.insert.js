@@ -35,7 +35,7 @@ test('basic insertion', function (t) {
   }).then(data => {
     t.equal(data[0], '\n', 'first entry starts with a \\n')
     const split = data.split('\t')
-    t.equal(parseInt(split[0], 10), split[1].length, 'length header correct')
+    t.equal(split[0].slice(1), index._hashEntry(split[1]), 'consistency header correct')
     const entry = JSON.parse(split[1])
     t.ok(entry.time, 'entry has a timestamp')
     t.deepEqual(entry, {

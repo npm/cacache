@@ -48,10 +48,11 @@ test('removes corrupted index entries from buckets', t => {
         t.equal(stats.totalEntries, 1, 'only one entry counted')
         return fs.readFileAsync(BUCKET, 'utf8')
       }).then(bucketData => {
-        // cleaned-up entries have different timestamps
-        const newTime = bucketData.match(/"time":([0-9]+)/)[1]
-        const target = BUCKETDATA.replace(/"time":[0-9]+/, `"time":${newTime}`)
-        t.deepEqual(bucketData, target, 'bucket only contains good entry')
+        const bucketEntry = JSON.parse(bucketData.split('\t')[1])
+        const targetEntry = JSON.parse(BUCKETDATA.split('\t')[1])
+        targetEntry.time = bucketEntry.time // different timestamps
+        t.deepEqual(
+          bucketEntry, targetEntry, 'bucket only contains good entry')
       })
     })
   })
@@ -75,7 +76,11 @@ test('removes shadowed index entries from buckets', t => {
           time: +(bucketData.match(/"time":([0-9]+)/)[1]),
           metadata: newEntry.metadata
         })
-        t.equal(bucketData, `\n${stringified.length}\t${stringified}`)
+        t.equal(
+          bucketData,
+          `\n${index._hashEntry(stringified)}\t${stringified}`,
+          'only the most recent entry is still in the bucket'
+        )
       })
     })
   })

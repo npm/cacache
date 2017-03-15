@@ -1,8 +1,11 @@
 'use strict'
 
-const bucketPath = require('../../lib/entry-index')._bucketPath
+const index = require('../../lib/entry-index')
 const path = require('path')
 const Tacks = require('tacks')
+
+const bucketPath = index._bucketPath
+const hashEntry = index._hashEntry
 
 const Dir = Tacks.Dir
 const File = Tacks.File
@@ -28,7 +31,7 @@ function CacheIndex (entries, hashAlgorithm) {
       }
       serialised = '\n' + lines.map(line => {
         const stringified = JSON.stringify(line)
-        return `${stringified.length}\t${stringified}`
+        return `${hashEntry(stringified)}\t${stringified}`
       }).join('\n')
     }
     insertContent(tree, parts, serialised)

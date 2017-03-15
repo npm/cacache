@@ -76,10 +76,12 @@ cacache.get.byDigest(cachePath, tarballSha512).then(data => {
 * Extraction by key or by content address (shasum, etc)
 * Multi-hash support - safely host sha1, sha512, etc, in a single cache
 * Automatic content deduplication
-* Fault tolerance and consistency guarantees for both insertion and extraction
+* Fault tolerance (immune to corruption, partial writes, etc)
+* Consistency guarantees on read and write (full data verification)
 * Lockless, high-concurrency cache access
 * Streaming support
 * Promise support
+* Pretty darn fast
 * Arbitrary metadata storage
 * Garbage collection and additional offline verification
 

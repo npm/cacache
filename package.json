@@ -3,7 +3,7 @@
   "version": "6.1.2",
   "cache-version": {
     "content": "2",
-    "index": "2"
+    "index": "3"
   },
   "description": "General content-addressable cache system that maintains a filesystem registry of file data.",
   "main": "index.js",

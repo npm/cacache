@@ -12,7 +12,6 @@ BB.promisifyAll(fs)
 
 const CACHE = path.join(testDir, 'cache')
 const contentPath = require('../lib/content/path')
-const Dir = Tacks.Dir
 const index = require('../lib/entry-index')
 
 test('index.find cache hit', function (t) {
@@ -178,7 +177,7 @@ test('index.find garbled data in index file', function (t) {
   })
   const fixture = new Tacks(CacheIndex({
     'whatever': '\n' +
-    `${stringified.length}\t${stringified}` +
+    `${index._hashEntry(stringified)}\t${stringified}` +
     '\n{"key": "' + key + '"\noway'
   }))
   fixture.create(CACHE)
