@@ -6,5 +6,6 @@ module.exports = {
   put: require('./put'),
   rm: require('./rm'),
   verify: require('./verify'),
-  clearMemoized: require('./lib/memoization').clearMemoized
+  clearMemoized: require('./lib/memoization').clearMemoized,
+  tmp: require('./lib/util/tmp')
 }

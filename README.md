@@ -33,6 +33,8 @@ can just as easily be used on its own
     * [`rm.content`](#rm-content)
   * Utilities
     * [`clearMemoized`](#clear-memoized)
+    * [`tmp.mkdir`](#tmp-mkdir)
+    * [`tmp.withTmp`](#with-tmp)
     * [`verify`](#verify)
     * [`verify.lastRun`](#verify-last-run)
 
@@ -418,6 +420,47 @@ cacache.rm.content(cachePath, 'deadbeef').then(() => {
 #### <a name="clear-memoized"></a> `> cacache.clearMemoized()`
 
 Completely resets the in-memory entry cache.
+
+#### <a name="tmp-mkdir"></a> `> tmp.mkdir(cache, opts) -> Promise<Path>`
+
+Returns a unique temporary directory inside the cache's `tmp` dir. This
+directory will use the same safe user assignment that all the other stuff use.
+
+Once the directory is made, it's the user's responsibility that all files within
+are made according to the same `opts.gid`/`opts.uid` settings that would be
+passed in. If not, you can ask cacache to do it for you by calling
+[`tmp.fix()`](#tmp-fix), which will fix all tmp directory permissions.
+
+If you want automatic cleanup of this directory, use
+[`tmp.withTmp()`](#with-tpm)
+
+##### Example
+
+```javascript
+cacache.tmp.mkdir(cache).then(dir => {
+  fs.writeFile(path.join(dir, 'blablabla'), Buffer#<1234>, ...)
+})
+```
+
+#### <a name="with-tmp"></a> `> tmp.withTmp(cache, opts, cb) -> Promise`
+
+Creates a temporary directory with [`tmp.mkdir()`](#tmp-mkdir) and calls `cb`
+with it. The created temporary directory will be removed when the return value
+of `cb()` resolves -- that is, if you return a Promise from `cb()`, the tmp
+directory will be automatically deleted once that promise completes.
+
+The same caveats apply when it comes to managing permissions for the tmp dir's
+contents.
+
+##### Example
+
+```javascript
+cacache.tmp.withTmp(cache, dir => {
+  return fs.writeFileAsync(path.join(dir, 'blablabla'), Buffer#<1234>, ...)
+}).then(() => {
+  // `dir` no longer exists
+})
+```
 
 #### <a name="verify"></a> `> cacache.verify(cache, opts) -> Promise`
 
