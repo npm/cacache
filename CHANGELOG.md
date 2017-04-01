@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="6.3.0"></a>
+# [6.3.0](https://github.com/zkat/cacache/compare/v6.2.0...v6.3.0) (2017-04-01)
+
+
+### Bug Fixes
+
+* **fixOwner:** ignore EEXIST race condition from mkdirp ([4670e9b](https://github.com/zkat/cacache/commit/4670e9b))
+* **index:** ignore index removal races when inserting ([b9d2fa2](https://github.com/zkat/cacache/commit/b9d2fa2))
+* **memo:** use lru-cache for better mem management (#75) ([d8ac5aa](https://github.com/zkat/cacache/commit/d8ac5aa))
+
+
+### Features
+
+* **dependencies:** Switch to move-concurrently (#77) ([dc6482d](https://github.com/zkat/cacache/commit/dc6482d))
+
+
+
 <a name="6.2.0"></a>
 # [6.2.0](https://github.com/zkat/cacache/compare/v6.1.2...v6.2.0) (2017-03-15)
 
