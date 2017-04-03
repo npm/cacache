@@ -55,7 +55,7 @@ test('checks input digest doesn\'t match data', t => {
   }), err => {
     t.ok(!int1, 'no digest emitted')
     t.ok(!!err, 'got an error')
-    t.equal(err.code, 'EBADCHECKSUM', 'returns a useful error code')
+    t.equal(err.code, 'EINTEGRITY', 'returns a useful error code')
   })
   pipe(fromString(CONTENT), write.stream(CACHE, {
     integrity: INTEGRITY

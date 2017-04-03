@@ -343,7 +343,7 @@ with an `EBADSIZE` error.
 
 If present, the pre-calculated digest for the inserted content. If this option
 if provided and does not match the post-insertion digest, insertion will fail
-with an `EBADCHECKSUM` error.
+with an `EINTEGRITY` error.
 
 `hashAlgorithm` has no effect if this option is present.
 

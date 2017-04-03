@@ -100,11 +100,11 @@ test('read: errors if content fails checksum', function (t) {
     throw new Error('end was called even though stream errored')
   })
   return BB.join(
-    finished(stream).catch({code: 'EBADCHECKSUM'}, err => err),
-    read(CACHE, INTEGRITY).catch({code: 'EBADCHECKSUM'}, err => err),
+    finished(stream).catch({code: 'EINTEGRITY'}, err => err),
+    read(CACHE, INTEGRITY).catch({code: 'EINTEGRITY'}, err => err),
     (streamErr, bulkErr) => {
-      t.equal(streamErr.code, 'EBADCHECKSUM', 'stream got the right error')
-      t.equal(bulkErr.code, 'EBADCHECKSUM', 'bulk got the right error')
+      t.equal(streamErr.code, 'EINTEGRITY', 'stream got the right error')
+      t.equal(bulkErr.code, 'EINTEGRITY', 'bulk got the right error')
     }
   )
 })
