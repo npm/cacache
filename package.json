@@ -5,7 +5,7 @@
     "content": "2",
     "index": "4"
   },
-  "description": "General content-addressable cache system that maintains a filesystem registry of file data.",
+  "description": "Fast, fault-tolerant, cross-platform, disk-based, data-agnostic, content-addressable cache.",
   "main": "index.js",
   "files": [
     "*.js",
@@ -25,8 +25,18 @@
   "repository": "https://github.com/zkat/cacache",
   "keywords": [
     "cache",
-    "content-addressable cache",
-    "file store"
+    "caching",
+    "content-addressable",
+    "sri",
+    "sri hash",
+    "subresource integrity",
+    "cache",
+    "storage",
+    "store",
+    "file store",
+    "filesystem",
+    "disk cache",
+    "disk storage"
   ],
   "author": {
     "name": "Kat Marchán",
@@ -41,13 +51,13 @@
     },
     {
       "name": "Rebecca Turner",
-      "email": "me@re-becca.org"
+      "email": "me@re-becca.org",
+      "twitter": "ReBeccaOrg"
     }
   ],
   "license": "CC0-1.0",
   "dependencies": {
     "bluebird": "^3.4.7",
-    "checksum-stream": "^1.0.2",
     "chownr": "^1.0.1",
     "glob": "^7.1.1",
     "graceful-fs": "^4.1.10",
