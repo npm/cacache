@@ -153,9 +153,9 @@ test('errors if input stream errors', t => {
     t.ok(err, 'got an error')
     t.ok(!integrity, 'no digest returned')
     t.match(err && err.message, 'bleh', 'returns the error from input stream')
-    fs.readdir(testDir, (err, files) => {
-      if (err) { throw err }
-      t.deepEqual(files, [], 'no files created')
+    fs.stat(contentPath(CACHE, ssri.fromData('foobarbaz')), (err, stat) => {
+      t.ok(err, 'got an error')
+      t.equal(err.code, 'ENOENT', 'target file missing. No files created.')
       t.end()
     })
   })
