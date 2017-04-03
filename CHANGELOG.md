@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="7.0.2"></a>
+## [7.0.2](https://github.com/zkat/cacache/compare/v7.0.1...v7.0.2) (2017-04-03)
+
+
+### Bug Fixes
+
+* **integrity:** use EINTEGRITY error code and update ssri ([8dc2e62](https://github.com/zkat/cacache/commit/8dc2e62))
+
+
+
 <a name="7.0.1"></a>
 ## [7.0.1](https://github.com/zkat/cacache/compare/v7.0.0...v7.0.1) (2017-04-03)
 
