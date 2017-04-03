@@ -2,6 +2,52 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="7.0.0"></a>
+# [7.0.0](https://github.com/zkat/cacache/compare/v6.3.0...v7.0.0) (2017-04-03)
+
+
+### Bug Fixes
+
+* **test:** fix content.write tests when running in docker ([d2e9b6a](https://github.com/zkat/cacache/commit/d2e9b6a))
+
+
+### Features
+
+* **integrity:** subresource integrity support (#78) ([b1e731f](https://github.com/zkat/cacache/commit/b1e731f))
+
+
+### BREAKING CHANGES
+
+* **integrity:** The entire API has been overhauled to use SRI hashes instead of digest/hashAlgorithm pairs. SRI hashes follow the Subresource Integrity standard and support strings and objects compatible with [`ssri`](https://npm.im/ssri).
+
+* This change bumps the index version, which will invalidate all previous index entries. Content entries will remain intact, and existing caches will automatically reuse any content from before this breaking change.
+
+* `cacache.get.info()`, `cacache.ls(), and `cacache.ls.stream()` will now return objects that looks like this:
+
+```
+{
+  key: String,
+  integrity: '<algorithm>-<base64hash>',
+  path: ContentPath,
+  time: Date<ms>,
+  metadata: Any
+}
+```
+
+* `opts.digest` and `opts.hashAlgorithm` are obsolete for any API calls that used them.
+
+* Anywhere `opts.digest` was accepted, `opts.integrity` is now an option. Any valid SRI hash is accepted here -- multiple hash entries will be resolved according to the standard: first, the "strongest" hash algorithm will be picked, and then each of the entries for that algorithm will be matched against the content. Content will be validated if *any* of the entries match (so, a single integrity string can be used for multiple "versions" of the same document/data).
+
+* `put.byDigest()`, `put.stream.byDigest`, `get.byDigest()` and `get.stream.byDigest() now expect an SRI instead of a `digest` + `opts.hashAlgorithm` pairing.
+
+* `get.hasContent()` now expects an integrity hash instead of a digest. If content exists, it will return the specific single integrity hash that was found in the cache.
+
+* `verify()` has learned to handle integrity-based caches, and forgotten how to handle old-style cache indices due to the format change.
+
+* `cacache.rm.content()` now expects an integrity hash instead of a hex digest.
+
+
+
 <a name="6.3.0"></a>
 # [6.3.0](https://github.com/zkat/cacache/compare/v6.2.0...v6.3.0) (2017-04-01)
 
