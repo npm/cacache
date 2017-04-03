@@ -32,7 +32,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 * This change bumps the index version, which will invalidate all previous index entries. Content entries will remain intact, and existing caches will automatically reuse any content from before this breaking change.
 
-* `cacache.get.info()`, `cacache.ls(), and `cacache.ls.stream()` will now return objects that looks like this:
+* `cacache.get.info()`, `cacache.ls()`, and `cacache.ls.stream()` will now return objects that looks like this:
 
 ```
 {
@@ -48,7 +48,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 * Anywhere `opts.digest` was accepted, `opts.integrity` is now an option. Any valid SRI hash is accepted here -- multiple hash entries will be resolved according to the standard: first, the "strongest" hash algorithm will be picked, and then each of the entries for that algorithm will be matched against the content. Content will be validated if *any* of the entries match (so, a single integrity string can be used for multiple "versions" of the same document/data).
 
-* `put.byDigest()`, `put.stream.byDigest`, `get.byDigest()` and `get.stream.byDigest() now expect an SRI instead of a `digest` + `opts.hashAlgorithm` pairing.
+* `put.byDigest()`, `put.stream.byDigest`, `get.byDigest()` and `get.stream.byDigest()` now expect an SRI instead of a `digest` + `opts.hashAlgorithm` pairing.
 
 * `get.hasContent()` now expects an integrity hash instead of a digest. If content exists, it will return the specific single integrity hash that was found in the cache.
 
