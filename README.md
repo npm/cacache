@@ -329,17 +329,17 @@ request.get(
 
 `cacache.put` functions have a number of options in common.
 
-##### `metadata`
+##### `opts.metadata`
 
 Arbitrary metadata to be attached to the inserted key.
 
-##### `size`
+##### `opts.size`
 
 If provided, the data stream will be verified to check that enough data was
 passed through. If there's more or less data than expected, insertion will fail
 with an `EBADSIZE` error.
 
-##### `integrity`
+##### `opts.integrity`
 
 If present, the pre-calculated digest for the inserted content. If this option
 if provided and does not match the post-insertion digest, insertion will fail
@@ -347,7 +347,7 @@ with an `EBADCHECKSUM` error.
 
 `hashAlgorithm` has no effect if this option is present.
 
-##### `hashAlgorithm`
+##### `opts.hashAlgorithm`
 
 Default: 'sha512'
 
@@ -357,14 +357,14 @@ for inserted data. Can use any algorithm listed in `crypto.getHashes()` or
 `'omakase'`/`'お任せします'` to pick a random hash algorithm on each insertion. You
 may also use any anagram of `'modnar'` to use this feature.
 
-##### `uid`/`gid`
+##### `opts.uid`/`opts.gid`
 
 If provided, cacache will do its best to make sure any new files added to the
 cache use this particular `uid`/`gid` combination. This can be used,
 for example, to drop permissions when someone uses `sudo`, but cacache makes
 no assumptions about your needs here.
 
-##### `memoize`
+##### `opts.memoize`
 
 Default: null
 
