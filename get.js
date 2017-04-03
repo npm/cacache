@@ -17,18 +17,16 @@ module.exports.byDigest = function getByDigest (cache, digest, opts) {
 }
 function getData (byDigest, cache, key, opts) {
   opts = opts || {}
-  opts.hashAlgorithm = opts.hashAlgorithm || 'sha512'
   const memoized = (
     byDigest
-    ? memo.get.byDigest(cache, key, opts.hashAlgorithm)
+    ? memo.get.byDigest(cache, key)
     : memo.get(cache, key)
   )
   if (memoized && opts.memoize !== false) {
     return BB.resolve(byDigest ? memoized : {
       metadata: memoized.entry.metadata,
       data: memoized.data,
-      digest: memoized.entry.digest,
-      hashAlgorithm: memoized.entry.hashAlgorithm
+      integrity: memoized.entry.integrity
     })
   }
   return (
@@ -37,17 +35,16 @@ function getData (byDigest, cache, key, opts) {
     if (!entry && !byDigest) {
       throw new index.NotFoundError(cache, key)
     }
-    return read(cache, byDigest ? key : entry.digest, {
-      hashAlgorithm: byDigest ? opts.hashAlgorithm : entry.hashAlgorithm,
+    return read(cache, byDigest ? key : entry.integrity, {
+      integrity: opts.integrity,
       size: opts.size
     }).then(data => byDigest ? data : {
       metadata: entry.metadata,
       data: data,
-      digest: entry.digest,
-      hashAlgorithm: entry.hashAlgorithm
+      integrity: entry.integrity
     }).then(res => {
       if (opts.memoize && byDigest) {
-        memo.put.byDigest(cache, key, opts.hashAlgorithm, res)
+        memo.put.byDigest(cache, key, res)
       } else if (opts.memoize) {
         memo.put(cache, entry, res.data)
       }
@@ -64,8 +61,7 @@ function getStream (cache, key, opts) {
   if (memoized && opts.memoize !== false) {
     stream.on('newListener', function (ev, cb) {
       ev === 'metadata' && cb(memoized.entry.metadata)
-      ev === 'digest' && cb(memoized.entry.digest)
-      ev === 'hashAlgorithm' && cb(memoized.entry.hashAlgorithm)
+      ev === 'integrity' && cb(memoized.entry.integrity)
     })
     stream.write(memoized.data, () => stream.end())
     return stream
@@ -91,18 +87,14 @@ function getStream (cache, key, opts) {
     } else {
       memoStream = through()
     }
-    // TODO - don't overwrite someone else's `opts`.
-    opts.hashAlgorithm = entry.hashAlgorithm
     stream.emit('metadata', entry.metadata)
-    stream.emit('hashAlgorithm', entry.hashAlgorithm)
-    stream.emit('digest', entry.digest)
+    stream.emit('integrity', entry.integrity)
     stream.on('newListener', function (ev, cb) {
       ev === 'metadata' && cb(entry.metadata)
-      ev === 'digest' && cb(entry.digest)
-      ev === 'hashAlgorithm' && cb(entry.hashAlgorithm)
+      ev === 'integrity' && cb(entry.integrity)
     })
     pipe(
-      read.readStream(cache, entry.digest, opts),
+      read.readStream(cache, entry.integrity, opts),
       memoStream,
       stream
     )
@@ -111,16 +103,15 @@ function getStream (cache, key, opts) {
 }
 
 module.exports.stream.byDigest = getStreamDigest
-function getStreamDigest (cache, digest, opts) {
+function getStreamDigest (cache, integrity, opts) {
   opts = opts || {}
-  opts.hashAlgorithm = opts.hashAlgorithm || 'sha512'
-  const memoized = memo.get.byDigest(cache, digest, opts.hashAlgorithm)
+  const memoized = memo.get.byDigest(cache, integrity)
   if (memoized && opts.memoize !== false) {
     const stream = through()
     stream.write(memoized, () => stream.end())
     return stream
   } else {
-    let stream = read.readStream(cache, digest, opts)
+    let stream = read.readStream(cache, integrity, opts)
     if (opts.memoize) {
       let memoData = []
       let memoLength = 0
@@ -131,8 +122,7 @@ function getStreamDigest (cache, digest, opts) {
       }, cb => {
         memoData && memo.put.byDigest(
           cache,
-          digest,
-          opts.hashAlgorithm,
+          integrity,
           Buffer.concat(memoData, memoLength)
         )
         cb()

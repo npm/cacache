@@ -1,8 +1,8 @@
 'use strict'
 
 const CacheContent = require('../util/cache-content')
-const crypto = require('crypto')
 const Tacks = require('tacks')
+const ssri = require('ssri')
 
 const read = require('../../lib/content/read')
 
@@ -12,27 +12,27 @@ for (let i = 0; i < Math.pow(2, 8); i++) {
 }
 
 const CONTENT = Buffer.concat(buf, buf.length * 8)
-const DIGEST = crypto.createHash('sha512').update(CONTENT).digest('hex')
+const INTEGRITY = ssri.fromData(CONTENT)
 
 const arr = []
 for (let i = 0; i < 100; i++) {
   arr.push(CONTENT)
 }
 const BIGCONTENT = Buffer.concat(arr, CONTENT.length * 1000)
-const BIGDIGEST = crypto.createHash('sha512').update(BIGCONTENT).digest('hex')
+const BIGINTEGRITY = ssri.fromData(BIGCONTENT)
 
 module.exports = (suite, CACHE) => {
   suite.add('content.read()', {
     defer: true,
     setup () {
       const fixture = new Tacks(CacheContent({
-        [DIGEST]: CONTENT
+        [INTEGRITY]: CONTENT
       }))
       fixture.create(CACHE)
     },
     fn (deferred) {
       read(
-        CACHE, DIGEST
+        CACHE, INTEGRITY
       ).then(
         () => deferred.resolve(),
         err => deferred.reject(err)
@@ -44,13 +44,13 @@ module.exports = (suite, CACHE) => {
     defer: true,
     setup () {
       const fixture = new Tacks(CacheContent({
-        [BIGDIGEST]: BIGCONTENT
+        [BIGINTEGRITY]: BIGCONTENT
       }))
       fixture.create(CACHE)
     },
     fn (deferred) {
       read(
-        CACHE, BIGDIGEST
+        CACHE, BIGINTEGRITY
       ).then(
         () => deferred.resolve(),
         err => deferred.reject(err)
@@ -62,12 +62,12 @@ module.exports = (suite, CACHE) => {
     defer: true,
     setup () {
       const fixture = new Tacks(CacheContent({
-        [DIGEST]: CONTENT
+        [INTEGRITY]: CONTENT
       }))
       fixture.create(CACHE)
     },
     fn (deferred) {
-      const stream = read.stream(CACHE, DIGEST)
+      const stream = read.stream(CACHE, INTEGRITY)
       stream.on('data', () => {})
       stream.on('error', err => deferred.reject(err))
       stream.on('end', () => {
@@ -80,12 +80,12 @@ module.exports = (suite, CACHE) => {
     defer: true,
     setup () {
       const fixture = new Tacks(CacheContent({
-        [BIGDIGEST]: BIGCONTENT
+        [BIGINTEGRITY]: BIGCONTENT
       }))
       fixture.create(CACHE)
     },
     fn (deferred) {
-      const stream = read.stream(CACHE, BIGDIGEST)
+      const stream = read.stream(CACHE, BIGINTEGRITY)
       stream.on('data', () => {})
       stream.on('error', err => deferred.reject(err))
       stream.on('end', () => {

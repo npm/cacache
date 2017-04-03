@@ -1,10 +1,11 @@
 'use strict'
 
+const BB = require('bluebird')
+
 const CacheIndex = require('./util/cache-index')
 const contentPath = require('../lib/content/path')
 const fs = require('fs')
 const path = require('path')
-const BB = require('bluebird')
 const Tacks = require('tacks')
 const test = require('tap').test
 const testDir = require('./util/test-dir')(__filename)
@@ -16,18 +17,16 @@ const index = require('../lib/entry-index')
 
 const KEY = 'foo'
 const BUCKET = index._bucketPath(CACHE, KEY)
-const DIGEST = 'deadbeef'
-const ALGO = 'whatnot'
+const INTEGRITY = 'sha512-deadbeef'
 
 test('basic insertion', function (t) {
-  return index.insert(
-    CACHE, KEY, DIGEST, { metadata: 'foo', hashAlgorithm: ALGO }
-  ).then(entry => {
+  return index.insert(CACHE, KEY, INTEGRITY, {
+    metadata: 'foo'
+  }).then(entry => {
     t.deepEqual(entry, {
       key: KEY,
-      digest: DIGEST,
-      hashAlgorithm: ALGO,
-      path: contentPath(CACHE, DIGEST, ALGO),
+      integrity: INTEGRITY,
+      path: contentPath(CACHE, INTEGRITY),
       time: entry.time,
       metadata: 'foo'
     }, 'formatted entry returned')
@@ -40,8 +39,7 @@ test('basic insertion', function (t) {
     t.ok(entry.time, 'entry has a timestamp')
     t.deepEqual(entry, {
       key: KEY,
-      digest: DIGEST,
-      hashAlgorithm: ALGO,
+      integrity: INTEGRITY,
       time: entry.time,
       metadata: 'foo'
     }, 'entry matches what was inserted')
@@ -49,10 +47,10 @@ test('basic insertion', function (t) {
 })
 
 test('inserts additional entries into existing key', function (t) {
-  return index.insert(
-    CACHE, KEY, DIGEST, {metadata: 1}
-  ).then(() => (
-    index.insert(CACHE, KEY, DIGEST, {metadata: 2})
+  return index.insert(CACHE, KEY, INTEGRITY, {
+    metadata: 1
+  }).then(() => (
+    index.insert(CACHE, KEY, INTEGRITY, {metadata: 2})
   )).then(() => {
     return fs.readFileAsync(BUCKET, 'utf8')
   }).then(data => {
@@ -62,13 +60,11 @@ test('inserts additional entries into existing key', function (t) {
     entries.forEach(function (e) { delete e.time })
     t.deepEqual(entries, [{
       key: KEY,
-      digest: DIGEST,
-      hashAlgorithm: 'sha512',
+      integrity: INTEGRITY,
       metadata: 1
     }, {
       key: KEY,
-      digest: DIGEST,
-      hashAlgorithm: 'sha512',
+      integrity: INTEGRITY,
       metadata: 2
     }], 'all entries present')
   })
@@ -79,13 +75,13 @@ test('separates entries even if one is corrupted', function (t) {
   const fixture = new Tacks(CacheIndex({
     'foo': '\n' + JSON.stringify({
       key: KEY,
-      digest: 'meh',
+      integrity: 'meh',
       time: 54321
     }) + '\n{"key": "' + KEY + '"\noway'
   }))
   fixture.create(CACHE)
   return index.insert(
-    CACHE, KEY, DIGEST
+    CACHE, KEY, INTEGRITY
   ).then(() => {
     return fs.readFileAsync(BUCKET, 'utf8')
   }).then(data => {
@@ -93,8 +89,7 @@ test('separates entries even if one is corrupted', function (t) {
     delete entry.time
     t.deepEqual(entry, {
       key: KEY,
-      digest: DIGEST,
-      hashAlgorithm: 'sha512'
+      integrity: INTEGRITY
     }, 'new entry unaffected by corruption')
   })
 })
@@ -102,7 +97,7 @@ test('separates entries even if one is corrupted', function (t) {
 test('optional arbitrary metadata', function (t) {
   const metadata = { foo: 'bar' }
   return index.insert(
-    CACHE, KEY, DIGEST, { metadata: metadata }
+    CACHE, KEY, INTEGRITY, { metadata: metadata }
   ).then(() => {
     return fs.readFileAsync(BUCKET, 'utf8')
   }).then(data => {
@@ -110,8 +105,7 @@ test('optional arbitrary metadata', function (t) {
     delete entry.time
     t.deepEqual(entry, {
       key: KEY,
-      digest: DIGEST,
-      hashAlgorithm: 'sha512',
+      integrity: INTEGRITY,
       metadata: metadata
     }, 'entry includes inserted metadata')
   })
@@ -119,8 +113,8 @@ test('optional arbitrary metadata', function (t) {
 
 test('key case-sensitivity', function (t) {
   return BB.join(
-    index.insert(CACHE, KEY, DIGEST),
-    index.insert(CACHE, KEY.toUpperCase(), DIGEST + 'upper')
+    index.insert(CACHE, KEY, INTEGRITY),
+    index.insert(CACHE, KEY.toUpperCase(), INTEGRITY + 'upper')
   ).then(() => {
     return BB.join(
       index.find(CACHE, KEY),
@@ -130,17 +124,17 @@ test('key case-sensitivity', function (t) {
         delete upperEntry.time
         t.deepEqual({
           key: entry.key,
-          digest: entry.digest
+          integrity: entry.integrity
         }, {
           key: KEY,
-          digest: DIGEST
+          integrity: INTEGRITY
         }, 'regular entry exists')
         t.deepEqual({
           key: upperEntry.key,
-          digest: upperEntry.digest
+          integrity: upperEntry.integrity
         }, {
           key: KEY.toUpperCase(),
-          digest: DIGEST + 'upper'
+          integrity: INTEGRITY + 'upper'
         }, 'case-variant entry intact')
       }
     )
@@ -150,7 +144,7 @@ test('key case-sensitivity', function (t) {
 test('path-breaking characters', function (t) {
   const newKey = ';;!registry\nhttps://registry.npmjs.org/back \\ slash@Cool™?'
   return index.insert(
-    CACHE, newKey, DIGEST
+    CACHE, newKey, INTEGRITY
   ).then(() => {
     const bucket = index._bucketPath(CACHE, newKey)
     return fs.readFileAsync(bucket, 'utf8')
@@ -159,8 +153,7 @@ test('path-breaking characters', function (t) {
     delete entry.time
     t.deepEqual(entry, {
       key: newKey,
-      digest: DIGEST,
-      hashAlgorithm: 'sha512'
+      integrity: INTEGRITY
     }, 'entry exists and matches original key with invalid chars')
   })
 })
@@ -171,7 +164,7 @@ test('extremely long keys', function (t) {
     newKey += i
   }
   return index.insert(
-    CACHE, newKey, DIGEST
+    CACHE, newKey, INTEGRITY
   ).then(() => {
     const bucket = index._bucketPath(CACHE, newKey)
     return fs.readFileAsync(bucket, 'utf8')
@@ -180,8 +173,7 @@ test('extremely long keys', function (t) {
     delete entry.time
     t.deepEqual(entry, {
       key: newKey,
-      digest: DIGEST,
-      hashAlgorithm: 'sha512'
+      integrity: INTEGRITY
     }, 'entry exists in spite of INCREDIBLY LONG key')
   })
 })

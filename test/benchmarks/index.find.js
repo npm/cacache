@@ -19,8 +19,7 @@ module.exports = (suite, CACHE) => {
     onStart () {
       const entry = {
         key: 'whatever',
-        digest: 'deadbeef',
-        hashAlgorithm: 'whatnot',
+        integrity: 'sha512-deadbeef',
         time: 12345,
         metadata: 'omgsometa'
       }

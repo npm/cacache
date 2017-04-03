@@ -1,30 +1,31 @@
 'use strict'
 
-var crypto = require('crypto')
-var fromString = require('./util/from-string')
-var path = require('path')
-var pipe = require('mississippi').pipe
-var requireInject = require('require-inject')
-var test = require('tap').test
-var testDir = require('./util/test-dir')(__filename)
+const fromString = require('./util/from-string')
+const path = require('path')
+const pipe = require('mississippi').pipe
+const requireInject = require('require-inject')
+const ssri = require('ssri')
+const test = require('tap').test
+const testDir = require('./util/test-dir')(__filename)
 
-var CACHE = path.join(testDir, 'cache')
+const CACHE = path.join(testDir, 'cache')
 
-var contentPath = require('../lib/content/path')
+const contentPath = require('../lib/content/path')
 
 test('allows setting a custom uid for cache contents on write', {
-  skip: !process.getuid // On a platform that doesn't support uid/gid
-}, function (t) {
-  var CONTENT = 'foobarbaz'
-  var DIGEST = crypto.createHash('sha1').update(CONTENT).digest('hex')
-  var NEWUID = process.getuid() + 1
-  var NEWGID = process.getgid() + 1
-  var updatedPaths = []
-  var write = requireInject('../lib/content/write', {
+  skip: process.getuid ? false : 'test only works on platforms that can set uid/gid'
+}, t => {
+  const CONTENT = 'foobarbaz'
+  const INTEGRITY = ssri.fromData(CONTENT)
+  const NEWUID = process.getuid() + 1
+  const NEWGID = process.getgid() + 1
+  const updatedPaths = []
+  const write = requireInject('../lib/content/write', {
     chownr: function (p, uid, gid, cb) {
       process.nextTick(function () {
-        t.equal(uid, NEWUID, 'new uid set')
-        t.equal(gid, NEWGID, 'new gid set')
+        const rel = path.relative(CACHE, p)
+        t.equal(uid, NEWUID, 'new uid set for ' + rel)
+        t.equal(gid, NEWGID, 'new gid set for ' + rel)
         updatedPaths.push(p)
         cb(null)
       })
@@ -37,8 +38,8 @@ test('allows setting a custom uid for cache contents on write', {
     hashAlgorithm: 'sha1'
   }), function (err) {
     if (err) { throw err }
-    const cpath = contentPath(CACHE, DIGEST, 'sha1')
-    var expectedPaths = [
+    const cpath = contentPath(CACHE, INTEGRITY)
+    const expectedPaths = [
       CACHE,
       path.join(CACHE, path.relative(CACHE, cpath).split(path.sep)[0]),
       cpath

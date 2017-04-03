@@ -8,11 +8,10 @@ const Dir = Tacks.Dir
 const File = Tacks.File
 
 module.exports = CacheContent
-function CacheContent (entries, hashAlgorithm) {
-  hashAlgorithm = hashAlgorithm || 'sha512'
+function CacheContent (entries) {
   var tree = Dir({})
   Object.keys(entries).forEach(function (k) {
-    const cpath = contentPath('', k, hashAlgorithm)
+    const cpath = contentPath('', k)
     const content = entries[k]
     const parts = cpath.split(path.sep)
     insertContent(tree, parts, content)

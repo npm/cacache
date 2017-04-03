@@ -7,8 +7,7 @@ const memo = require('../lib/memoization')
 const CACHE = 'mycache'
 const ENTRY = {
   key: 'foo',
-  digest: 'deadbeef',
-  hashAlgorithm: 'sha512',
+  integrity: 'sha512-deadbeef',
   time: new Date(),
   metadata: null
 }
@@ -21,7 +20,7 @@ test('memoizes entry and data by key', t => {
       entry: ENTRY,
       data: DATA
     },
-    [`digest:${CACHE}:${ENTRY.hashAlgorithm}:${ENTRY.digest}`]: DATA
+    [`digest:${CACHE}:${ENTRY.integrity}`]: DATA
   }, 'cache has both key and digest entries')
   t.done()
 })
@@ -44,7 +43,7 @@ test('can fetch data by key', t => {
 test('can fetch data by digest', t => {
   memo.put(CACHE, ENTRY, DATA)
   t.deepEqual(
-    memo.get.byDigest(CACHE, ENTRY.digest, ENTRY.hashAlgorithm),
+    memo.get.byDigest(CACHE, ENTRY.integrity),
     DATA,
     'got raw data by digest, without an entry'
   )
@@ -61,7 +60,7 @@ test('can clear out the memoization cache', t => {
     'entry not there anymore'
   )
   t.deepEqual(
-    memo.get.byDigest(ENTRY.digest),
+    memo.get.byDigest(ENTRY.integrity),
     null,
     'digest-based data not there anymore'
   )

@@ -1,9 +1,9 @@
 'use strict'
 
 const CacheContent = require('../util/cache-content')
-const crypto = require('crypto')
 const memo = require('../../lib/memoization')
 const Tacks = require('tacks')
+const ssri = require('ssri')
 
 const get = require('../../get')
 
@@ -13,27 +13,27 @@ for (let i = 0; i < Math.pow(2, 8); i++) {
 }
 
 const CONTENT = Buffer.concat(buf, buf.length * 8)
-const DIGEST = crypto.createHash('sha512').update(CONTENT).digest('hex')
+const INTEGRITY = ssri.fromData(CONTENT)
 
 const arr = []
 for (let i = 0; i < 100; i++) {
   arr.push(CONTENT)
 }
 const BIGCONTENT = Buffer.concat(arr, CONTENT.length * 1000)
-const BIGDIGEST = crypto.createHash('sha512').update(BIGCONTENT).digest('hex')
+const BIGINTEGRITY = ssri.fromData(BIGCONTENT)
 
 module.exports = (suite, CACHE) => {
   suite.add('get.byDigest()', {
     defer: true,
     setup () {
       const fixture = new Tacks(CacheContent({
-        [DIGEST]: CONTENT
+        [INTEGRITY]: CONTENT
       }))
       fixture.create(CACHE)
     },
     fn (deferred) {
       get.byDigest(
-        CACHE, DIGEST
+        CACHE, INTEGRITY
       ).then(
         () => deferred.resolve(),
         err => deferred.reject(err)
@@ -44,11 +44,11 @@ module.exports = (suite, CACHE) => {
   suite.add('get.byDigest() memoized', {
     defer: true,
     setup () {
-      memo.put.byDigest(CACHE, DIGEST, 'sha512', CONTENT)
+      memo.put.byDigest(CACHE, INTEGRITY, CONTENT)
     },
     fn (deferred) {
       get.byDigest(
-        CACHE, DIGEST
+        CACHE, INTEGRITY
       ).then(
         () => deferred.resolve(),
         err => deferred.reject(err)
@@ -63,12 +63,12 @@ module.exports = (suite, CACHE) => {
     defer: true,
     setup () {
       const fixture = new Tacks(CacheContent({
-        [DIGEST]: CONTENT
+        [INTEGRITY]: CONTENT
       }))
       fixture.create(CACHE)
     },
     fn (deferred) {
-      const stream = get.stream.byDigest(CACHE, DIGEST, { memoize: false })
+      const stream = get.stream.byDigest(CACHE, INTEGRITY, { memoize: false })
       stream.on('data', () => {})
       stream.on('error', err => deferred.reject(err))
       stream.on('end', () => {
@@ -81,12 +81,12 @@ module.exports = (suite, CACHE) => {
     defer: true,
     setup () {
       const fixture = new Tacks(CacheContent({
-        [BIGDIGEST]: BIGCONTENT
+        [BIGINTEGRITY]: BIGCONTENT
       }))
       fixture.create(CACHE)
     },
     fn (deferred) {
-      const stream = get.stream.byDigest(CACHE, BIGDIGEST)
+      const stream = get.stream.byDigest(CACHE, BIGINTEGRITY)
       stream.on('data', () => {})
       stream.on('error', err => deferred.reject(err))
       stream.on('end', () => {

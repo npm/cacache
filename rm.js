@@ -16,9 +16,9 @@ function entry (cache, key) {
 }
 
 module.exports.content = content
-function content (cache, address) {
+function content (cache, integrity) {
   memo.clearMemoized()
-  return rmContent(cache, address)
+  return rmContent(cache, integrity)
 }
 
 module.exports.all = all

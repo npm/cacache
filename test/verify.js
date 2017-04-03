@@ -3,7 +3,6 @@
 const Buffer = require('safe-buffer').Buffer
 const BB = require('bluebird')
 
-const crypto = require('crypto')
 const contentPath = require('../lib/content/path')
 const index = require('../lib/entry-index')
 const fs = BB.promisifyAll(require('graceful-fs'))
@@ -11,14 +10,14 @@ const path = require('path')
 const Tacks = require('tacks')
 const test = require('tap').test
 const testDir = require('./util/test-dir')(__filename)
+const ssri = require('ssri')
 
 const CacheContent = require('./util/cache-content')
 
 const CACHE = path.join(testDir, 'cache')
 const CONTENT = Buffer.from('foobarbaz', 'utf8')
 const KEY = 'my-test-key'
-const ALGO = 'sha512'
-const DIGEST = crypto.createHash(ALGO).update(CONTENT).digest('hex')
+const INTEGRITY = ssri.fromData(CONTENT)
 const METADATA = { foo: 'bar' }
 const BUCKET = index._bucketPath(CACHE, KEY)
 
@@ -26,13 +25,12 @@ const verify = require('..').verify
 
 function mockCache () {
   const fixture = new Tacks(CacheContent({
-    [DIGEST]: CONTENT
-  }, ALGO))
+    [INTEGRITY]: CONTENT
+  }))
   fixture.create(CACHE)
   return fs.mkdirAsync(path.join(CACHE, 'tmp')).then(() => {
-    return index.insert(CACHE, KEY, DIGEST, {
-      metadata: METADATA,
-      hashAlgorithm: ALGO
+    return index.insert(CACHE, KEY, INTEGRITY, {
+      metadata: METADATA
     })
   })
 }
@@ -60,9 +58,8 @@ test('removes corrupted index entries from buckets', t => {
 
 test('removes shadowed index entries from buckets', t => {
   return mockCache().then(() => {
-    return index.insert(CACHE, KEY, DIGEST, {
-      metadata: 'meh',
-      hashAlgorithm: ALGO
+    return index.insert(CACHE, KEY, INTEGRITY, {
+      metadata: 'meh'
     }).then(newEntry => {
       return verify(CACHE).then(stats => {
         t.equal(stats.missingContent, 0, 'content valid because of good entry')
@@ -71,8 +68,7 @@ test('removes shadowed index entries from buckets', t => {
       }).then(bucketData => {
         const stringified = JSON.stringify({
           key: newEntry.key,
-          digest: newEntry.digest,
-          hashAlgorithm: newEntry.hashAlgorithm,
+          integrity: newEntry.integrity.toString(),
           time: +(bucketData.match(/"time":([0-9]+)/)[1]),
           metadata: newEntry.metadata
         })
@@ -91,13 +87,11 @@ test('accepts function for custom user filtering of index entries', t => {
   const KEY3 = KEY + 'bbb'
   return mockCache().then(() => {
     return BB.join(
-      index.insert(CACHE, KEY2, DIGEST, {
-        metadata: 'haayyyy',
-        hashAlgorithm: ALGO
+      index.insert(CACHE, KEY2, INTEGRITY, {
+        metadata: 'haayyyy'
       }),
-      index.insert(CACHE, KEY3, DIGEST, {
-        metadata: 'haayyyy again',
-        hashAlgorithm: ALGO
+      index.insert(CACHE, KEY3, INTEGRITY, {
+        metadata: 'haayyyy again'
       }),
       (entryA, entryB) => ({
         [entryA.key]: entryA,
@@ -129,7 +123,7 @@ test('accepts function for custom user filtering of index entries', t => {
 })
 
 test('removes corrupted content', t => {
-  const cpath = contentPath(CACHE, DIGEST)
+  const cpath = contentPath(CACHE, INTEGRITY)
   return mockCache().then(() => {
     return fs.truncateAsync(cpath, CONTENT.length - 1)
   }).then(() => {
@@ -158,8 +152,8 @@ test('removes corrupted content', t => {
 
 test('removes content not referenced by any entries', t => {
   const fixture = new Tacks(CacheContent({
-    [DIGEST]: CONTENT
-  }, ALGO))
+    [INTEGRITY]: CONTENT
+  }))
   fixture.create(CACHE)
   return verify(CACHE).then(stats => {
     delete stats.startTime

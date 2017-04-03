@@ -3,7 +3,7 @@
   "version": "6.3.0",
   "cache-version": {
     "content": "2",
-    "index": "3"
+    "index": "4"
   },
   "description": "General content-addressable cache system that maintains a filesystem registry of file data.",
   "main": "index.js",
@@ -46,7 +46,6 @@
   ],
   "license": "CC0-1.0",
   "dependencies": {
-    "move-concurrently": "^1.0.0",
     "bluebird": "^3.4.7",
     "checksum-stream": "^1.0.2",
     "chownr": "^1.0.1",
@@ -55,8 +54,10 @@
     "lru-cache": "^4.0.2",
     "mississippi": "^1.2.0",
     "mkdirp": "^0.5.1",
+    "move-concurrently": "^1.0.0",
     "promise-inflight": "^1.0.1",
     "rimraf": "^2.6.1",
+    "ssri": "^3.0.0",
     "unique-filename": "^1.1.0"
   },
   "devDependencies": {

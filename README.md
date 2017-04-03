@@ -35,6 +35,8 @@ can just as easily be used on its own
     * [`clearMemoized`](#clear-memoized)
     * [`tmp.mkdir`](#tmp-mkdir)
     * [`tmp.withTmp`](#with-tmp)
+  * Integrity
+    * [Subresource Integrity](#integrity)
     * [`verify`](#verify)
     * [`verify.lastRun`](#verify-last-run)
 
@@ -49,7 +51,7 @@ const cachePath = '/tmp/my-toy-cache'
 const key = 'my-unique-key-1234'
 
 // Cache it! Use `cachePath` as the root of the content cache
-cacache.put(cachePath, key, '10293801983029384').then(digest => {
+cacache.put(cachePath, key, '10293801983029384').then(integrity => {
   console.log(`Saved content to ${cachePath}.`)
 })
 
@@ -66,7 +68,7 @@ cacache.get.stream(
 })
 
 // The same thing, but skip the key index.
-cacache.get.byDigest(cachePath, tarballSha512).then(data => {
+cacache.get.byDigest(cachePath, integrityHash).then(data => {
   fs.writeFile(destination, data, err => {
     console.log('tarball data fetched based on its sha512sum and written out!')
   })
@@ -107,8 +109,7 @@ cacache.ls(cachePath).then(console.log)
 {
   'my-thing': {
     key: 'my-thing',
-    digest: 'deadbeef',
-    hashAlgorithm: 'sha512',
+    integrity: 'sha512-BaSe64/EnCoDED+HAsh=='
     path: '.testcache/content/deadbeef', // joined with `cachePath`
     time: 12345698490,
     metadata: {
@@ -119,8 +120,7 @@ cacache.ls(cachePath).then(console.log)
   },
   'other-thing': {
     key: 'other-thing',
-    digest: 'bada55',
-    hashAlgorithm: 'whirlpool',
+    integrity: 'sha1-ANothER+hasH=',
     path: '.testcache/content/bada55',
     time: 11992309289
   }
@@ -141,8 +141,7 @@ cacache.ls.stream(cachePath).on('data', console.log)
 // Output
 {
   key: 'my-thing',
-  digest: 'deadbeef',
-  hashAlgorithm: 'sha512',
+  integrity: 'sha512-BaSe64HaSh',
   path: '.testcache/content/deadbeef', // joined with `cachePath`
   time: 12345698490,
   metadata: {
@@ -154,8 +153,7 @@ cacache.ls.stream(cachePath).on('data', console.log)
 
 {
   key: 'other-thing',
-  digest: 'bada55',
-  hashAlgorithm: 'whirlpool',
+  integrity: 'whirlpool-WoWSoMuchSupport',
   path: '.testcache/content/bada55',
   time: 11992309289
 }
@@ -165,20 +163,23 @@ cacache.ls.stream(cachePath).on('data', console.log)
 }
 ```
 
-#### <a name="get-data"></a> `> cacache.get(cache, key, [opts]) -> Promise({data, metadata, digest, hashAlgorithm})`
+#### <a name="get-data"></a> `> cacache.get(cache, key, [opts]) -> Promise({data, metadata, integrity})`
 
 Returns an object with the cached data, digest, and metadata identified by
 `key`. The `data` property of this object will be a `Buffer` instance that
 presumably holds some data that means something to you. I'm sure you know what
-to do with it! cacache just won't care. `hashAlgorithm` is the algorithm used
-to calculate the `digest` of the content. This algorithm must be used if you
-fetch later with `get.byDigest`.
+to do with it! cacache just won't care.
+
+`integrity` is a [Subresource
+Integrity](#integrity)
+string. That is, a string that can be used to verify `data`, which looks like
+`<hash-algorithm>-<base64-integrity-hash>`.
 
 If there is no content identified by `key`, or if the locally-stored data does
 not pass the validity checksum, the promise will be rejected.
 
 A sub-function, `get.byDigest` may be used for identical behavior, except lookup
-will happen by content digest, bypassing the index entirely. This version of the
+will happen by integrity hash, bypassing the index entirely. This version of the
 function *only* returns `data` itself, without any wrapper.
 
 ##### Note
@@ -197,15 +198,12 @@ cache.get(cachePath, 'my-thing').then(console.log)
   metadata: {
     thingName: 'my'
   },
-  digest: 'deadbeef',
-  hashAlgorithm: 'sha512'
+  integrity: 'sha512-BaSe64HaSh',
   data: Buffer#<deadbeef>
 }
 
 // Look up by digest
-cache.get.byDigest(cachePath, 'deadbeef', {
-  hashAlgorithm: 'sha512'
-}).then(console.log)
+cache.get.byDigest(cachePath, 'sha512-BaSe64HaSh').then(console.log)
 // Output:
 Buffer#<deadbeef>
 ```
@@ -217,12 +215,12 @@ Returns a [Readable Stream](https://nodejs.org/api/stream.html#stream_readable_s
 If there is no content identified by `key`, or if the locally-stored data does
 not pass the validity checksum, an error will be emitted.
 
-`metadata` and `digest` events will be emitted before the stream closes, if
+`metadata` and `integrity` events will be emitted before the stream closes, if
 you need to collect that extra data about the cached entry.
 
 A sub-function, `get.stream.byDigest` may be used for identical behavior,
-except lookup will happen by content digest, bypassing the index entirely. This
-version does not emit the `metadata` and `digest` events at all.
+except lookup will happen by integrity hash, bypassing the index entirely. This
+version does not emit the `metadata` and `integrity` events at all.
 
 ##### Example
 
@@ -232,21 +230,18 @@ cache.get.stream(
   cachePath, 'my-thing'
 ).on('metadata', metadata => {
   console.log('metadata:', metadata)
-}).on('hashAlgorithm', algo => {
-  console.log('hashAlgorithm:', algo)
-}).on('digest', digest => {
-  console.log('digest:', digest)
+}).on('integrity', integrity => {
+  console.log('integrity:', integrity)
 }).pipe(
   fs.createWriteStream('./x.tgz')
 )
 // Outputs:
 metadata: { ... }
-hashAlgorithm: 'sha512'
-digest: deadbeef
+integrity: 'sha512-SoMeDIGest+64=='
 
 // Look up by digest
 cache.get.stream.byDigest(
-  cachePath, 'deadbeef', { hashAlgorithm: 'sha512' }
+  cachePath, 'sha512-SoMeDIGest+64=='
 ).pipe(
   fs.createWriteStream('./x.tgz')
 )
@@ -260,8 +255,7 @@ one exists.
 ##### Fields
 
 * `key` - Key the entry was looked up under. Matches the `key` argument.
-* `digest` - Content digest the entry refers to.
-* `hashAlgorithm` - Hashing algorithm used to generate `digest`.
+* `integrity` - [Subresource Integrity hash](#integrity) for the content this entry refers to.
 * `path` - Filesystem path relative to `cache` argument where content is stored.
 * `time` - Timestamp the entry was first added on.
 * `metadata` - User-assigned metadata associated with the entry/content.
@@ -274,7 +268,7 @@ cacache.get.info(cachePath, 'my-thing').then(console.log)
 // Output
 {
   key: 'my-thing',
-  digest: 'deadbeef',
+  integrity: 'sha256-MUSTVERIFY+ALL/THINGS=='
   path: '.testcache/content/deadbeef',
   time: 12345698490,
   metadata: {
@@ -298,8 +292,8 @@ fetch(
   'https://registry.npmjs.org/cacache/-/cacache-1.0.0.tgz'
 ).then(data => {
   return cacache.put(cachePath, 'registry.npmjs.org|cacache@1.0.0', data)
-}).then(digest => {
-  console.log('digest is', digest)
+}).then(integrity => {
+  console.log('integrity hash is', integrity)
 })
 ```
 
@@ -307,7 +301,7 @@ fetch(
 
 Returns a [Writable
 Stream](https://nodejs.org/api/stream.html#stream_writable_streams) that inserts
-data written to it into the cache. Emits a `digest` event with the digest of
+data written to it into the cache. Emits an `integrity` event with the digest of
 written contents when it succeeds.
 
 ##### Example
@@ -318,7 +312,7 @@ request.get(
 ).pipe(
   cacache.put.stream(
     cachePath, 'registry.npmjs.org|cacache@1.0.0'
-  ).on('digest', d => console.log('digest is ${d}'))
+  ).on('integrity', d => console.log(`integrity digest is ${d}`))
 )
 ```
 
@@ -336,22 +330,23 @@ If provided, the data stream will be verified to check that enough data was
 passed through. If there's more or less data than expected, insertion will fail
 with an `EBADSIZE` error.
 
-##### `digest`
+##### `integrity`
 
 If present, the pre-calculated digest for the inserted content. If this option
 if provided and does not match the post-insertion digest, insertion will fail
 with an `EBADCHECKSUM` error.
 
-To control the hashing algorithm, use `opts.hashAlgorithm`.
+`hashAlgorithm` has no effect if this option is present.
 
 ##### `hashAlgorithm`
 
 Default: 'sha512'
 
-Hashing algorithm to use when calculating the digest for inserted data. Can use
-any algorithm listed in `crypto.getHashes()` or `'omakase'`/`'お任せします'` to
-pick a random hash algorithm on each insertion. You may also use any anagram of
-`'modnar'` to use this feature.
+Hashing algorithm to use when calculating the [subresource integrity
+digest](#integrity)
+for inserted data. Can use any algorithm listed in `crypto.getHashes()` or
+`'omakase'`/`'お任せします'` to pick a random hash algorithm on each insertion. You
+may also use any anagram of `'modnar'` to use this feature.
 
 ##### `uid`/`gid`
 
@@ -395,6 +390,10 @@ Alias: `cacache.rm`
 Removes the index entry for `key`. Content will still be accessible if
 requested directly by content address ([`get.stream.byDigest`](#get-stream)).
 
+To remove the content itself (which might still be used by other entries), use
+[`rm.content`](#rm-content). Or, to safely vacuum any unused content, use
+[`verify`](#verify).
+
 ##### Example
 
 ```javascript
@@ -403,16 +402,16 @@ cacache.rm.entry(cachePath, 'my-thing').then(() => {
 })
 ```
 
-#### <a name="rm-content"></a> `> cacache.rm.content(cache, digest) -> Promise`
+#### <a name="rm-content"></a> `> cacache.rm.content(cache, integrity) -> Promise`
 
-Removes the content identified by `digest`. Any index entries referring to it
+Removes the content identified by `integrity`. Any index entries referring to it
 will not be usable again until the content is re-added to the cache with an
 identical digest.
 
 ##### Example
 
 ```javascript
-cacache.rm.content(cachePath, 'deadbeef').then(() => {
+cacache.rm.content(cachePath, 'sha512-SoMeDIGest/IN+BaSE64==').then(() => {
   console.log('data for my-thing is gone!')
 })
 ```
@@ -462,6 +461,46 @@ cacache.tmp.withTmp(cache, dir => {
 })
 ```
 
+#### <a name="integrity"></a> Subresource Integrity Digests
+
+For content verification and addressing, cacache uses strings following the
+[Subresource
+Integrity](https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity)
+spec. That is, any time cacache expects an `integrity` argument or option, it
+should be in the format `<hashAlgorithm>-<base64-hash>`.
+
+One deviation from the current spec is that cacache will support any hash
+algorithms supported by the underlying Node.js process. You can use
+`crypto.getHashes()` to see which ones you can use.
+
+##### Generating Digests Yourself
+
+If you have an existing content shasum, they are generally formatted as a
+hexadecimal string (that is, a sha1 would look like:
+`5f5513f8822fdbe5145af33b64d8d970dcf95c6e`). In order to be compatible with
+cacache, you'll need to convert this to an equivalent subresource integrity
+string. For this example, the corresponding hash would be:
+`sha1-X1UT+IIv2+UUWvM7ZNjZcNz5XG4=`.
+
+If you want to generate an integrity string yourself for existing data, you can
+use something like this:
+
+```javascript
+const crypto = require('crypto')
+const hashAlgorithm = 'sha512'
+const data = 'foobarbaz'
+
+const integrity = (
+  hashAlgorithm +
+  '-' +
+  crypto.createHash(hashAlgorithm).update(data).digest('base64')
+)
+```
+
+You can also use [`ssri`](https://npm.im) to have a richer set of functionality
+around SRI strings, including generation, parsing, and translating from existing
+hex-formatted strings.
+
 #### <a name="verify"></a> `> cacache.verify(cache, opts) -> Promise`
 
 Checks out and fixes up your cache:
@@ -469,7 +508,7 @@ Checks out and fixes up your cache:
 * Cleans up corrupted or invalid index entries.
 * Custom entry filtering options.
 * Garbage collects any content entries not referenced by the index.
-* Checks digests for all content entries and removes invalid content.
+* Checks integrity for all content entries and removes invalid content.
 * Fixes cache ownership.
 * Removes the `tmp` directory in the cache and all its contents.
 

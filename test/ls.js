@@ -18,15 +18,13 @@ test('basic listing', function (t) {
   const contents = {
     'whatever': {
       key: 'whatever',
-      digest: 'deadbeef',
-      hashAlgorithm: 'whatnot',
+      integrity: 'sha512-deadbeef',
       time: 12345,
       metadata: 'omgsometa'
     },
     'whatnot': {
       key: 'whatnot',
-      digest: 'bada55',
-      hashAlgorithm: 'whateva',
+      integrity: 'sha512-bada55',
       time: 54321,
       metadata: null
     }
@@ -34,10 +32,10 @@ test('basic listing', function (t) {
   const fixture = new Tacks(CacheIndex(contents))
   contents.whatever.path =
     contentPath(
-      CACHE, contents.whatever.digest, contents.whatever.hashAlgorithm)
+      CACHE, contents.whatever.integrity)
   contents.whatnot.path =
     contentPath(
-      CACHE, contents.whatnot.digest, contents.whatnot.hashAlgorithm)
+      CACHE, contents.whatnot.integrity)
   fixture.create(CACHE)
   return ls(CACHE).then(listing => {
     t.deepEqual(listing, contents, 'index contents correct')
@@ -57,15 +55,13 @@ test('separate keys in conflicting buckets', function (t) {
   const contents = {
     'whatever': {
       key: 'whatever',
-      digest: 'deadbeef',
-      hashAlgorithm: 'whatnot',
+      integrity: 'sha512-deadbeef',
       time: 12345,
       metadata: 'omgsometa'
     },
     'whatev': {
       key: 'whatev',
-      digest: 'bada55',
-      hashAlgorithm: 'whateva',
+      integrity: 'sha512-bada55',
       time: 54321,
       metadata: null
     }
@@ -76,10 +72,10 @@ test('separate keys in conflicting buckets', function (t) {
   }))
   contents.whatever.path =
     contentPath(
-      CACHE, contents.whatever.digest, contents.whatever.hashAlgorithm)
+      CACHE, contents.whatever.integrity)
   contents.whatev.path =
     contentPath(
-      CACHE, contents.whatev.digest, contents.whatev.hashAlgorithm)
+      CACHE, contents.whatev.integrity)
   fixture.create(CACHE)
   return ls(CACHE).then(listing => {
     t.deepEqual(listing, contents, 'index contents correct')
