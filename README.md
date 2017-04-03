@@ -474,8 +474,8 @@ cacache.tmp.withTmp(cache, dir => {
 
 For content verification and addressing, cacache uses strings following the
 [Subresource
-Integrity](https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity)
-spec. That is, any time cacache expects an `integrity` argument or option, it
+Integrity spec](https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity).
+That is, any time cacache expects an `integrity` argument or option, it
 should be in the format `<hashAlgorithm>-<base64-hash>`.
 
 One deviation from the current spec is that cacache will support any hash
