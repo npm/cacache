@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="7.0.1"></a>
+## [7.0.1](https://github.com/zkat/cacache/compare/v7.0.0...v7.0.1) (2017-04-03)
+
+
+### Bug Fixes
+
+* **docs:** fix header name conflict in readme ([afcd456](https://github.com/zkat/cacache/commit/afcd456))
+
+
+
 <a name="7.0.0"></a>
 # [7.0.0](https://github.com/zkat/cacache/compare/v6.3.0...v7.0.0) (2017-04-03)
 
