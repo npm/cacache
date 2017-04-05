@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="7.0.3"></a>
+## [7.0.3](https://github.com/zkat/cacache/compare/v7.0.2...v7.0.3) (2017-04-05)
+
+
+### Bug Fixes
+
+* **read:** fixing error message for integrity verification failures ([9d4f0a5](https://github.com/zkat/cacache/commit/9d4f0a5))
+
+
+
 <a name="7.0.2"></a>
 ## [7.0.2](https://github.com/zkat/cacache/compare/v7.0.1...v7.0.2) (2017-04-03)
 
