@@ -76,7 +76,7 @@
     "nyc": "^10.2.0",
     "require-inject": "^1.4.0",
     "safe-buffer": "^5.0.1",
-    "standard": "^9.0.2",
+    "standard": "^10.0.1",
     "standard-version": "^4.0.0",
     "tacks": "^1.2.2",
     "tap": "^10.3.1",
