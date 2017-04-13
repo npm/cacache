@@ -506,7 +506,7 @@ const integrity = (
 )
 ```
 
-You can also use [`ssri`](https://npm.im) to have a richer set of functionality
+You can also use [`ssri`](https://npm.im/ssri) to have a richer set of functionality
 around SRI strings, including generation, parsing, and translating from existing
 hex-formatted strings.
 
