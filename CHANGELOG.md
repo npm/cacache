@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="7.0.4"></a>
+## [7.0.4](https://github.com/zkat/cacache/compare/v7.0.3...v7.0.4) (2017-04-15)
+
+
+### Bug Fixes
+
+* **fix-owner:** throw away ENOENTs on chownr ([d49bbcd](https://github.com/zkat/cacache/commit/d49bbcd))
+
+
+
 <a name="7.0.3"></a>
 ## [7.0.3](https://github.com/zkat/cacache/compare/v7.0.2...v7.0.3) (2017-04-05)
 
