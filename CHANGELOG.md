@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="7.0.5"></a>
+## [7.0.5](https://github.com/zkat/cacache/compare/v7.0.4...v7.0.5) (2017-04-18)
+
+
+### Bug Fixes
+
+* **integrity:** new ssri with fixed integrity stream ([6d13e8e](https://github.com/zkat/cacache/commit/6d13e8e))
+* **write:** wrap stuff in promises to improve errors ([3624fc5](https://github.com/zkat/cacache/commit/3624fc5))
+
+
+
 <a name="7.0.4"></a>
 ## [7.0.4](https://github.com/zkat/cacache/compare/v7.0.3...v7.0.4) (2017-04-15)
 
