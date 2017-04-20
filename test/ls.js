@@ -20,13 +20,15 @@ test('basic listing', function (t) {
       key: 'whatever',
       integrity: 'sha512-deadbeef',
       time: 12345,
-      metadata: 'omgsometa'
+      metadata: 'omgsometa',
+      size: 234234
     },
     'whatnot': {
       key: 'whatnot',
       integrity: 'sha512-bada55',
       time: 54321,
-      metadata: null
+      metadata: null,
+      size: 425345345
     }
   }
   const fixture = new Tacks(CacheIndex(contents))
@@ -57,13 +59,15 @@ test('separate keys in conflicting buckets', function (t) {
       key: 'whatever',
       integrity: 'sha512-deadbeef',
       time: 12345,
-      metadata: 'omgsometa'
+      metadata: 'omgsometa',
+      size: 5
     },
     'whatev': {
       key: 'whatev',
       integrity: 'sha512-bada55',
       time: 54321,
-      metadata: null
+      metadata: null,
+      size: 99234234
     }
   }
   const fixture = new Tacks(CacheIndex({

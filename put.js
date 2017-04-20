@@ -8,12 +8,14 @@ const to = require('mississippi').to
 module.exports = putData
 function putData (cache, key, data, opts) {
   opts = opts || {}
-  return write(cache, data, opts).then(integrity => {
-    return index.insert(cache, key, integrity, opts).then(entry => {
+  return write(cache, data, opts).then(res => {
+    // TODO - stop modifying opts
+    opts.size = res.size
+    return index.insert(cache, key, res.integrity, opts).then(entry => {
       if (opts.memoize) {
         memo.put(cache, entry, data)
       }
-      return integrity
+      return res.integrity
     })
   })
 }
@@ -22,8 +24,13 @@ module.exports.stream = putStream
 function putStream (cache, key, opts) {
   opts = opts || {}
   let integrity
-  const contentStream = write.stream(cache, opts).on('integrity', int => {
+  let size
+  const contentStream = write.stream(
+    cache, opts
+  ).on('integrity', int => {
     integrity = int
+  }).on('size', s => {
+    size = s
   })
   let memoData
   let memoTotal = 0
@@ -38,6 +45,8 @@ function putStream (cache, key, opts) {
     })
   }, cb => {
     contentStream.end(() => {
+      // TODO - stop modifying `opts`
+      opts.size = size
       index.insert(cache, key, integrity, opts).then(entry => {
         if (opts.memoize) {
           memo.put(cache, entry, Buffer.concat(memoData, memoTotal))

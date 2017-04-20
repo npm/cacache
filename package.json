@@ -3,7 +3,7 @@
   "version": "7.0.5",
   "cache-version": {
     "content": "2",
-    "index": "4"
+    "index": "5"
   },
   "description": "Fast, fault-tolerant, cross-platform, disk-based, data-agnostic, content-addressable cache.",
   "main": "index.js",

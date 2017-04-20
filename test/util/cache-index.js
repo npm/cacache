@@ -15,11 +15,10 @@ const File = Tacks.File
 //
 // The returned object is for use with Tacks
 module.exports = CacheIndex
-function CacheIndex (entries, hashAlgorithm) {
-  hashAlgorithm = hashAlgorithm || 'sha512'
+function CacheIndex (entries) {
   var tree = Dir({})
   Object.keys(entries).forEach(function (k) {
-    const bpath = bucketPath('', k, hashAlgorithm)
+    const bpath = bucketPath('', k)
     const parts = bpath.split(path.sep)
     let lines = entries[k]
     let serialised

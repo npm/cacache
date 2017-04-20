@@ -11,6 +11,7 @@ const testDir = require('./util/test-dir')(__filename)
 BB.promisifyAll(fs)
 
 const CACHE = path.join(testDir, 'cache')
+const SIZE = 999
 const contentPath = require('../lib/content/path')
 const index = require('../lib/entry-index')
 
@@ -19,7 +20,8 @@ test('index.find cache hit', function (t) {
     key: 'whatever',
     integrity: 'whatnot-deadbeef',
     time: 12345,
-    metadata: 'omgsometa'
+    metadata: 'omgsometa',
+    size: 5
   }
   const fixture = new Tacks(CacheIndex({
     'whatever': entry
@@ -68,12 +70,14 @@ test('index.find key case-sensitivity', function (t) {
     'jsonstream': {
       key: 'jsonstream',
       integrity: 'sha1-lowercase',
-      time: 54321
+      time: 54321,
+      size: SIZE
     },
     'JSONStream': {
       key: 'JSONStream',
       integrity: 'sha1-capitalised',
-      time: 12345
+      time: 12345,
+      size: SIZE
     }
   }))
   fixture.create(CACHE)
@@ -97,7 +101,8 @@ test('index.find path-breaking characters', function (t) {
     key: ';;!registry\nhttps://registry.npmjs.org/back \\ slash@Cool™?',
     integrity: 'sha1-deadbeef',
     time: 12345,
-    metadata: 'omgsometa'
+    metadata: 'omgsometa',
+    size: 9
   }
   const fixture = new Tacks(CacheIndex({
     [entry.key]: entry
@@ -123,7 +128,8 @@ test('index.find extremely long keys', function (t) {
     key: key,
     integrity: 'sha1-deadbeef',
     time: 12345,
-    metadata: 'woo'
+    metadata: 'woo',
+    size: 10
   }
   const fixture = new Tacks(CacheIndex({
     [entry.key]: entry
@@ -190,7 +196,8 @@ test('index.find hash conflict in same bucket', function (t) {
     key: 'whatever',
     integrity: 'sha1-deadbeef',
     time: 12345,
-    metadata: 'yay'
+    metadata: 'yay',
+    size: 8
   }
   const fixture = new Tacks(CacheIndex({
     'whatever': [

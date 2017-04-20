@@ -26,7 +26,8 @@ function getData (byDigest, cache, key, opts) {
     return BB.resolve(byDigest ? memoized : {
       metadata: memoized.entry.metadata,
       data: memoized.data,
-      integrity: memoized.entry.integrity
+      integrity: memoized.entry.integrity,
+      size: memoized.entry.size
     })
   }
   return (
@@ -41,6 +42,7 @@ function getData (byDigest, cache, key, opts) {
     }).then(data => byDigest ? data : {
       metadata: entry.metadata,
       data: data,
+      size: entry.size,
       integrity: entry.integrity
     }).then(res => {
       if (opts.memoize && byDigest) {
@@ -62,6 +64,7 @@ function getStream (cache, key, opts) {
     stream.on('newListener', function (ev, cb) {
       ev === 'metadata' && cb(memoized.entry.metadata)
       ev === 'integrity' && cb(memoized.entry.integrity)
+      ev === 'size' && cb(memoized.entry.size)
     })
     stream.write(memoized.data, () => stream.end())
     return stream
@@ -87,11 +90,14 @@ function getStream (cache, key, opts) {
     } else {
       memoStream = through()
     }
+    opts.size = opts.size == null ? entry.size : opts.size
     stream.emit('metadata', entry.metadata)
     stream.emit('integrity', entry.integrity)
+    stream.emit('size', entry.size)
     stream.on('newListener', function (ev, cb) {
       ev === 'metadata' && cb(entry.metadata)
       ev === 'integrity' && cb(entry.integrity)
+      ev === 'size' && cb(entry.size)
     })
     pipe(
       read.readStream(cache, entry.integrity, opts),

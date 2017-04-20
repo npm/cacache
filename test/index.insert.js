@@ -18,17 +18,25 @@ const index = require('../lib/entry-index')
 const KEY = 'foo'
 const BUCKET = index._bucketPath(CACHE, KEY)
 const INTEGRITY = 'sha512-deadbeef'
+const SIZE = 999
+
+function opts (extra) {
+  return Object.assign({
+    size: SIZE
+  }, extra)
+}
 
 test('basic insertion', function (t) {
-  return index.insert(CACHE, KEY, INTEGRITY, {
+  return index.insert(CACHE, KEY, INTEGRITY, opts({
     metadata: 'foo'
-  }).then(entry => {
+  })).then(entry => {
     t.deepEqual(entry, {
       key: KEY,
       integrity: INTEGRITY,
       path: contentPath(CACHE, INTEGRITY),
       time: entry.time,
-      metadata: 'foo'
+      metadata: 'foo',
+      size: SIZE
     }, 'formatted entry returned')
     return fs.readFileAsync(BUCKET, 'utf8')
   }).then(data => {
@@ -41,16 +49,17 @@ test('basic insertion', function (t) {
       key: KEY,
       integrity: INTEGRITY,
       time: entry.time,
-      metadata: 'foo'
+      metadata: 'foo',
+      size: SIZE
     }, 'entry matches what was inserted')
   })
 })
 
 test('inserts additional entries into existing key', function (t) {
-  return index.insert(CACHE, KEY, INTEGRITY, {
+  return index.insert(CACHE, KEY, INTEGRITY, opts({
     metadata: 1
-  }).then(() => (
-    index.insert(CACHE, KEY, INTEGRITY, {metadata: 2})
+  })).then(() => (
+    index.insert(CACHE, KEY, INTEGRITY, opts({metadata: 2}))
   )).then(() => {
     return fs.readFileAsync(BUCKET, 'utf8')
   }).then(data => {
@@ -61,11 +70,13 @@ test('inserts additional entries into existing key', function (t) {
     t.deepEqual(entries, [{
       key: KEY,
       integrity: INTEGRITY,
-      metadata: 1
+      metadata: 1,
+      size: SIZE
     }, {
       key: KEY,
       integrity: INTEGRITY,
-      metadata: 2
+      metadata: 2,
+      size: SIZE
     }], 'all entries present')
   })
 })
@@ -76,12 +87,13 @@ test('separates entries even if one is corrupted', function (t) {
     'foo': '\n' + JSON.stringify({
       key: KEY,
       integrity: 'meh',
-      time: 54321
+      time: 54321,
+      size: SIZE
     }) + '\n{"key": "' + KEY + '"\noway'
   }))
   fixture.create(CACHE)
   return index.insert(
-    CACHE, KEY, INTEGRITY
+    CACHE, KEY, INTEGRITY, opts()
   ).then(() => {
     return fs.readFileAsync(BUCKET, 'utf8')
   }).then(data => {
@@ -89,7 +101,8 @@ test('separates entries even if one is corrupted', function (t) {
     delete entry.time
     t.deepEqual(entry, {
       key: KEY,
-      integrity: INTEGRITY
+      integrity: INTEGRITY,
+      size: SIZE
     }, 'new entry unaffected by corruption')
   })
 })
@@ -97,7 +110,7 @@ test('separates entries even if one is corrupted', function (t) {
 test('optional arbitrary metadata', function (t) {
   const metadata = { foo: 'bar' }
   return index.insert(
-    CACHE, KEY, INTEGRITY, { metadata: metadata }
+    CACHE, KEY, INTEGRITY, opts({ metadata: metadata })
   ).then(() => {
     return fs.readFileAsync(BUCKET, 'utf8')
   }).then(data => {
@@ -106,15 +119,16 @@ test('optional arbitrary metadata', function (t) {
     t.deepEqual(entry, {
       key: KEY,
       integrity: INTEGRITY,
-      metadata: metadata
+      metadata: metadata,
+      size: SIZE
     }, 'entry includes inserted metadata')
   })
 })
 
 test('key case-sensitivity', function (t) {
   return BB.join(
-    index.insert(CACHE, KEY, INTEGRITY),
-    index.insert(CACHE, KEY.toUpperCase(), INTEGRITY + 'upper')
+    index.insert(CACHE, KEY, INTEGRITY, opts()),
+    index.insert(CACHE, KEY.toUpperCase(), INTEGRITY + 'upper', opts())
   ).then(() => {
     return BB.join(
       index.find(CACHE, KEY),
@@ -124,17 +138,21 @@ test('key case-sensitivity', function (t) {
         delete upperEntry.time
         t.deepEqual({
           key: entry.key,
-          integrity: entry.integrity
+          integrity: entry.integrity,
+          size: SIZE
         }, {
           key: KEY,
-          integrity: INTEGRITY
+          integrity: INTEGRITY,
+          size: SIZE
         }, 'regular entry exists')
         t.deepEqual({
           key: upperEntry.key,
-          integrity: upperEntry.integrity
+          integrity: upperEntry.integrity,
+          size: SIZE
         }, {
           key: KEY.toUpperCase(),
-          integrity: INTEGRITY + 'upper'
+          integrity: INTEGRITY + 'upper',
+          size: SIZE
         }, 'case-variant entry intact')
       }
     )
@@ -144,7 +162,7 @@ test('key case-sensitivity', function (t) {
 test('path-breaking characters', function (t) {
   const newKey = ';;!registry\nhttps://registry.npmjs.org/back \\ slash@Cool™?'
   return index.insert(
-    CACHE, newKey, INTEGRITY
+    CACHE, newKey, INTEGRITY, opts()
   ).then(() => {
     const bucket = index._bucketPath(CACHE, newKey)
     return fs.readFileAsync(bucket, 'utf8')
@@ -153,7 +171,8 @@ test('path-breaking characters', function (t) {
     delete entry.time
     t.deepEqual(entry, {
       key: newKey,
-      integrity: INTEGRITY
+      integrity: INTEGRITY,
+      size: SIZE
     }, 'entry exists and matches original key with invalid chars')
   })
 })
@@ -164,7 +183,7 @@ test('extremely long keys', function (t) {
     newKey += i
   }
   return index.insert(
-    CACHE, newKey, INTEGRITY
+    CACHE, newKey, INTEGRITY, opts()
   ).then(() => {
     const bucket = index._bucketPath(CACHE, newKey)
     return fs.readFileAsync(bucket, 'utf8')
@@ -173,7 +192,8 @@ test('extremely long keys', function (t) {
     delete entry.time
     t.deepEqual(entry, {
       key: newKey,
-      integrity: INTEGRITY
+      integrity: INTEGRITY,
+      size: SIZE
     }, 'entry exists in spite of INCREDIBLY LONG key')
   })
 })

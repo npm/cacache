@@ -121,6 +121,7 @@ cacache.ls(cachePath).then(console.log)
     integrity: 'sha512-BaSe64/EnCoDED+HAsh=='
     path: '.testcache/content/deadbeef', // joined with `cachePath`
     time: 12345698490,
+    size: 4023948,
     metadata: {
       name: 'blah',
       version: '1.2.3',
@@ -131,7 +132,8 @@ cacache.ls(cachePath).then(console.log)
     key: 'other-thing',
     integrity: 'sha1-ANothER+hasH=',
     path: '.testcache/content/bada55',
-    time: 11992309289
+    time: 11992309289,
+    size: 111112
   }
 }
 ```
@@ -153,6 +155,7 @@ cacache.ls.stream(cachePath).on('data', console.log)
   integrity: 'sha512-BaSe64HaSh',
   path: '.testcache/content/deadbeef', // joined with `cachePath`
   time: 12345698490,
+  size: 13423,
   metadata: {
     name: 'blah',
     version: '1.2.3',
@@ -164,7 +167,8 @@ cacache.ls.stream(cachePath).on('data', console.log)
   key: 'other-thing',
   integrity: 'whirlpool-WoWSoMuchSupport',
   path: '.testcache/content/bada55',
-  time: 11992309289
+  time: 11992309289,
+  size: 498023984029
 }
 
 {
@@ -208,7 +212,8 @@ cache.get(cachePath, 'my-thing').then(console.log)
     thingName: 'my'
   },
   integrity: 'sha512-BaSe64HaSh',
-  data: Buffer#<deadbeef>
+  data: Buffer#<deadbeef>,
+  size: 9320
 }
 
 // Look up by digest
@@ -280,6 +285,7 @@ cacache.get.info(cachePath, 'my-thing').then(console.log)
   integrity: 'sha256-MUSTVERIFY+ALL/THINGS=='
   path: '.testcache/content/deadbeef',
   time: 12345698490,
+  size: 849234,
   metadata: {
     name: 'blah',
     version: '1.2.3',
@@ -356,6 +362,8 @@ digest](#integrity)
 for inserted data. Can use any algorithm listed in `crypto.getHashes()` or
 `'omakase'`/`'お任せします'` to pick a random hash algorithm on each insertion. You
 may also use any anagram of `'modnar'` to use this feature.
+
+Has no effect if `opts.integrity` is present.
 
 ##### `opts.uid`/`opts.gid`
 

@@ -17,11 +17,19 @@ const CacheContent = require('./util/cache-content')
 
 const CACHE = path.join(testDir, 'cache')
 const CONTENT = Buffer.from('foobarbaz', 'utf8')
+const SIZE = CONTENT.length
 const KEY = 'my-test-key'
 const INTEGRITY = ssri.fromData(CONTENT).toString()
 const METADATA = { foo: 'bar' }
 
 const get = require('..').get
+
+function opts (extra) {
+  return Object.assign({
+    size: SIZE,
+    metadata: METADATA
+  }, extra)
+}
 
 // Simple wrapper util cause this gets WORDY
 function streamGet (byDigest) {
@@ -30,6 +38,7 @@ function streamGet (byDigest) {
   let dataLen = 0
   let integrity
   let metadata
+  let size
   const stream = (
     byDigest ? get.stream.byDigest : get.stream
   ).apply(null, args)
@@ -40,9 +49,11 @@ function streamGet (byDigest) {
     integrity = ssri.stringify(int)
   }).on('metadata', m => {
     metadata = m
+  }).on('size', s => {
+    size = s
   })
   return finished(stream).then(() => ({
-    data: Buffer.concat(data, dataLen), integrity, metadata
+    data: Buffer.concat(data, dataLen), integrity, metadata, size
   }))
 }
 
@@ -51,15 +62,14 @@ test('basic bulk get', t => {
     [INTEGRITY]: CONTENT
   }))
   fixture.create(CACHE)
-  return index.insert(CACHE, KEY, INTEGRITY, {
-    metadata: METADATA
-  }).then(() => {
+  return index.insert(CACHE, KEY, INTEGRITY, opts()).then(() => {
     return get(CACHE, KEY)
   }).then(res => {
     t.deepEqual(res, {
       metadata: METADATA,
       data: CONTENT,
-      integrity: INTEGRITY
+      integrity: INTEGRITY,
+      size: SIZE
     }, 'bulk key get returned proper data')
   }).then(() => {
     return get.byDigest(CACHE, INTEGRITY)
@@ -73,9 +83,7 @@ test('basic stream get', t => {
     [INTEGRITY]: CONTENT
   }))
   fixture.create(CACHE)
-  return index.insert(CACHE, KEY, INTEGRITY, {
-    metadata: METADATA
-  }).then(() => {
+  return index.insert(CACHE, KEY, INTEGRITY, opts()).then(() => {
     return BB.join(
       streamGet(false, CACHE, KEY),
       streamGet(true, CACHE, INTEGRITY),
@@ -83,7 +91,8 @@ test('basic stream get', t => {
         t.deepEqual(byKey, {
           data: CONTENT,
           integrity: INTEGRITY,
-          metadata: METADATA
+          metadata: METADATA,
+          size: SIZE
         }, 'got all expected data and fields from key fetch')
         t.deepEqual(
           byDigest.data,
@@ -109,9 +118,7 @@ test('ENOENT if not found', t => {
 })
 
 test('get.info index entry lookup', t => {
-  return index.insert(CACHE, KEY, INTEGRITY, {
-    metadata: METADATA
-  }).then(ENTRY => {
+  return index.insert(CACHE, KEY, INTEGRITY, opts()).then(ENTRY => {
     return get.info(CACHE, KEY).then(entry => {
       t.deepEqual(entry, ENTRY, 'get.info() returned the right entry')
     })
@@ -124,9 +131,7 @@ test('memoizes data on bulk read', t => {
     [INTEGRITY]: CONTENT
   }))
   fixture.create(CACHE)
-  return index.insert(CACHE, KEY, INTEGRITY, {
-    metadata: METADATA
-  }).then(ENTRY => {
+  return index.insert(CACHE, KEY, INTEGRITY, opts()).then(ENTRY => {
     return get(CACHE, KEY).then(() => {
       t.deepEqual(memo.get(CACHE, KEY), null, 'no memoization!')
       return get(CACHE, KEY, { memoize: true })
@@ -134,7 +139,8 @@ test('memoizes data on bulk read', t => {
       t.deepEqual(res, {
         metadata: METADATA,
         data: CONTENT,
-        integrity: INTEGRITY
+        integrity: INTEGRITY,
+        size: SIZE
       }, 'usual data returned')
       t.deepEqual(memo.get(CACHE, KEY), {
         entry: ENTRY,
@@ -147,7 +153,8 @@ test('memoizes data on bulk read', t => {
       t.deepEqual(res, {
         metadata: METADATA,
         data: CONTENT,
-        integrity: INTEGRITY
+        integrity: INTEGRITY,
+        size: SIZE
       }, 'memoized data fetched by default')
       return get(CACHE, KEY, { memoize: false }).then(() => {
         throw new Error('expected get to fail')
@@ -169,9 +176,7 @@ test('memoizes data on stream read', t => {
     [INTEGRITY]: CONTENT
   }))
   fixture.create(CACHE)
-  return index.insert(CACHE, KEY, INTEGRITY, {
-    metadata: METADATA
-  }).then(ENTRY => {
+  return index.insert(CACHE, KEY, INTEGRITY, opts()).then(ENTRY => {
     return BB.join(
       streamGet(false, CACHE, KEY),
       streamGet(true, CACHE, INTEGRITY),
@@ -208,7 +213,8 @@ test('memoizes data on stream read', t => {
       t.deepEqual(byKey, {
         metadata: METADATA,
         data: CONTENT,
-        integrity: INTEGRITY
+        integrity: INTEGRITY,
+        size: SIZE
       }, 'usual data returned from key fetch')
       t.deepEqual(memo.get(CACHE, KEY), {
         entry: ENTRY,
@@ -234,7 +240,8 @@ test('memoizes data on stream read', t => {
           t.deepEqual(byKey, {
             metadata: METADATA,
             data: CONTENT,
-            integrity: INTEGRITY
+            integrity: INTEGRITY,
+            size: SIZE
           }, 'key fetch fulfilled by memoization cache')
           t.deepEqual(
             byDigest.data,
@@ -266,6 +273,7 @@ test('get.info uses memoized data', t => {
     key: KEY,
     integrity: INTEGRITY,
     time: +(new Date()),
+    size: SIZE,
     metadata: null
   }
   memo.put(CACHE, ENTRY, CONTENT)
