@@ -297,9 +297,9 @@ cacache.get.info(cachePath, 'my-thing').then(console.log)
 
 #### <a name="get-hasContent"></a> `> cacache.get.hasContent(cache, integrity) -> Promise`
 
-Looks up a [Subresource Integrity hash](#integrity) in the cache. If content 
-exists for this `integrity`, it will return the specific single integrity hash
-that was found. If no content exists for this integrity, it will return `false`.
+Looks up a [Subresource Integrity hash](#integrity) in the cache. If content
+exists for this `integrity`, it will return an object, with the specific single integrity hash
+that was found in `sri` key, and the size of the found content as `size`. If no content exists for this integrity, it will return `false`.
 
 ##### Fields
 
@@ -316,10 +316,13 @@ cacache.get.hasContent(cachePath, 'sha256-MUSTVERIFY+ALL/THINGS==').then(console
 
 // Output
 {
-  source: 'sha256-MUSTVERIFY+ALL/THINGS==',
-  algorithm: 'sha256',
-  digest: 'MUSTVERIFY+ALL/THINGS==',
-  options: []
+  sri: {
+    source: 'sha256-MUSTVERIFY+ALL/THINGS==',
+    algorithm: 'sha256',
+    digest: 'MUSTVERIFY+ALL/THINGS==',
+    options: []
+  },
+  size: 9001
 }
 
 cacache.get.hasContent(cachePath, 'sha521-NOT+IN/CACHE==').then(console.log)
@@ -397,7 +400,7 @@ for inserted data. Can use any algorithm listed in `crypto.getHashes()` or
 `'omakase'`/`'お任せします'` to pick a random hash algorithm on each insertion. You
 may also use any anagram of `'modnar'` to use this feature.
 
-Currently only supports one algorithm at a time (i.e., an array length of 
+Currently only supports one algorithm at a time (i.e., an array length of
 exactly `1`). Has no effect if `opts.integrity` is present.
 
 ##### `opts.uid`/`opts.gid`

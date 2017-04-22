@@ -132,17 +132,18 @@ test('read: errors if content size does not match size option', function (t) {
   )
 })
 
-test('hasContent: returns true when a cache file exists', function (t) {
+test('hasContent: returns { sri, size } when a cache file exists', function (t) {
   const fixture = new Tacks(CacheContent({
     'sha1-deadbeef': ''
   }))
   fixture.create(CACHE)
   return BB.join(
-    read.hasContent(CACHE, 'sha1-deadbeef').then(bool => {
-      t.ok(bool, 'returned true for existing content')
+    read.hasContent(CACHE, 'sha1-deadbeef').then(content => {
+      t.ok(content.sri, 'returned sri for this content')
+      t.equal(content.size, 0, 'returned the right size for this content')
     }),
-    read.hasContent(CACHE, 'sha1-not-there').then(bool => {
-      t.equal(bool, false, 'returned false for missing content')
+    read.hasContent(CACHE, 'sha1-not-there').then(content => {
+      t.equal(content, false, 'returned false for missing content')
     })
   )
 })
