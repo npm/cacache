@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="8.0.0"></a>
+# [8.0.0](https://github.com/zkat/cacache/compare/v7.1.0...v8.0.0) (2017-04-22)
+
+
+### Features
+
+* **read:** change hasContent to return {sri, size} (#88) ([bad6c49](https://github.com/zkat/cacache/commit/bad6c49)), closes [#87](https://github.com/zkat/cacache/issues/87)
+
+
+### BREAKING CHANGES
+
+* **read:** hasContent now returns an object with `{sri, size}` instead of `sri`. Use `result.sri` anywhere that needed the old return value.
+
+
+
 <a name="7.1.0"></a>
 # [7.1.0](https://github.com/zkat/cacache/compare/v7.0.5...v7.1.0) (2017-04-20)
 
