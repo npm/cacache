@@ -418,9 +418,9 @@ If provided, cacache will memoize the given cache insertion in memory, bypassing
 any filesystem checks for that key or digest in future cache fetches. Nothing
 will be written to the in-memory cache unless this option is explicitly truthy.
 
-There is no facility for limiting memory usage short of
-[`cacache.clearMemoized()`](#clear-memoized), so be mindful of the sort of data
-you ask to get memoized!
+If `opts.memoize` is an object or a `Map`-like (that is, an object with `get`
+and `set` methods), it will be written to instead of the global memoization
+cache.
 
 Reading from existing memoized data can be forced by explicitly passing
 `memoize: false` to the reader functions, but their default will be to read from

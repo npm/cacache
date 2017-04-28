@@ -19,8 +19,8 @@ function getData (byDigest, cache, key, opts) {
   opts = opts || {}
   const memoized = (
     byDigest
-    ? memo.get.byDigest(cache, key)
-    : memo.get(cache, key)
+    ? memo.get.byDigest(cache, key, opts)
+    : memo.get(cache, key, opts)
   )
   if (memoized && opts.memoize !== false) {
     return BB.resolve(byDigest ? memoized : {
@@ -46,9 +46,9 @@ function getData (byDigest, cache, key, opts) {
       integrity: entry.integrity
     }).then(res => {
       if (opts.memoize && byDigest) {
-        memo.put.byDigest(cache, key, res)
+        memo.put.byDigest(cache, key, res, opts)
       } else if (opts.memoize) {
-        memo.put(cache, entry, res.data)
+        memo.put(cache, entry, res.data, opts)
       }
       return res
     })
@@ -59,7 +59,7 @@ module.exports.stream = getStream
 function getStream (cache, key, opts) {
   opts = opts || {}
   let stream = through()
-  const memoized = memo.get(cache, key)
+  const memoized = memo.get(cache, key, opts)
   if (memoized && opts.memoize !== false) {
     stream.on('newListener', function (ev, cb) {
       ev === 'metadata' && cb(memoized.entry.metadata)
@@ -84,7 +84,7 @@ function getStream (cache, key, opts) {
         memoLength += c.length
         cb(null, c, en)
       }, cb => {
-        memoData && memo.put(cache, entry, Buffer.concat(memoData, memoLength))
+        memoData && memo.put(cache, entry, Buffer.concat(memoData, memoLength), opts)
         cb()
       })
     } else {
@@ -111,7 +111,7 @@ function getStream (cache, key, opts) {
 module.exports.stream.byDigest = getStreamDigest
 function getStreamDigest (cache, integrity, opts) {
   opts = opts || {}
-  const memoized = memo.get.byDigest(cache, integrity)
+  const memoized = memo.get.byDigest(cache, integrity, opts)
   if (memoized && opts.memoize !== false) {
     const stream = through()
     stream.write(memoized, () => stream.end())
@@ -129,7 +129,8 @@ function getStreamDigest (cache, integrity, opts) {
         memoData && memo.put.byDigest(
           cache,
           integrity,
-          Buffer.concat(memoData, memoLength)
+          Buffer.concat(memoData, memoLength),
+          opts
         )
         cb()
       })
@@ -142,7 +143,7 @@ function getStreamDigest (cache, integrity, opts) {
 module.exports.info = info
 function info (cache, key, opts) {
   opts = opts || {}
-  const memoized = memo.get(cache, key)
+  const memoized = memo.get(cache, key, opts)
   if (memoized && opts.memoize !== false) {
     return BB.resolve(memoized.entry)
   } else {

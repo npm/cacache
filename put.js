@@ -13,7 +13,7 @@ function putData (cache, key, data, opts) {
     opts.size = res.size
     return index.insert(cache, key, res.integrity, opts).then(entry => {
       if (opts.memoize) {
-        memo.put(cache, entry, data)
+        memo.put(cache, entry, data, opts)
       }
       return res.integrity
     })
@@ -49,7 +49,7 @@ function putStream (cache, key, opts) {
       opts.size = size
       index.insert(cache, key, integrity, opts).then(entry => {
         if (opts.memoize) {
-          memo.put(cache, entry, Buffer.concat(memoData, memoTotal))
+          memo.put(cache, entry, Buffer.concat(memoData, memoTotal), opts)
         }
         stream.emit('integrity', integrity)
         cb()
