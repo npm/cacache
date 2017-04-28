@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="9.0.0"></a>
+# [9.0.0](https://github.com/zkat/cacache/compare/v8.0.0...v9.0.0) (2017-04-28)
+
+
+### Bug Fixes
+
+* **memoization:** actually use the LRU ([0e55dc9](https://github.com/zkat/cacache/commit/0e55dc9))
+
+
+### Features
+
+* **memoization:** memoizers can be injected through opts.memoize (#90) ([e5614c7](https://github.com/zkat/cacache/commit/e5614c7))
+
+
+### BREAKING CHANGES
+
+* **memoization:** If you were passing an object to opts.memoize, it will now be used as an injected memoization object. If you were only passing booleans and other non-objects through that option, no changes are needed.
+
+
+
 <a name="8.0.0"></a>
 # [8.0.0](https://github.com/zkat/cacache/compare/v7.1.0...v8.0.0) (2017-04-22)
 
