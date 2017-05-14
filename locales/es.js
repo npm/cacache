@@ -31,7 +31,7 @@ x.rm.todo = cache => rm.all(cache)
 x.rm.entrada = x.rm
 x.rm.datos = (cache, hacheo) => rm.content(cache, hacheo)
 
-x.ponLenguage = lang => setLocale(lang)
+x.ponLenguaje = lang => setLocale(lang)
 x.limpiaMemoizado = () => clearMemoized()
 
 x.tmp = {}
