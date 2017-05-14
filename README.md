@@ -20,7 +20,7 @@ _Translations: [español](README.es.md)_
 * [Features](#features)
 * [Contributing](#contributing)
 * [API](#api)
-  * [Usando el API en español](#localized-api)
+  * [Using localized APIs](#localized-api)
   * Reading
     * [`ls`](#ls)
     * [`ls.stream`](#ls-stream)
@@ -109,7 +109,7 @@ Happy hacking!
 
 ### API
 
-#### <a name="localized-api"></a> Usando el API in English
+#### <a name="localized-api"></a> Using localized APIs
 
 cacache includes a complete API in English, with the same features as other
 translations. To use the English API as documented in this README, use
@@ -119,6 +119,10 @@ translations. To use the English API as documented in this README, use
 cacache also supports other languages! You can find the list of currently
 supported ones my looking in `./locales` in the source directory. You can use
 the API in that language with `require('cacache/<lang>')`.
+
+Want to add support for a new language? Please go ahead! You should be able to
+copy `./locales/en.js` and `./locales/en.json` and fill them in. Translating the
+`README.md` is a bit more work, but also appreciated if you get around to it. 👍🏼
 
 #### <a name="ls"></a> `> cacache.ls(cache) -> Promise<Object>`
 
