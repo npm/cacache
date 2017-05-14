@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="9.2.0"></a>
+# [9.2.0](https://github.com/zkat/cacache/compare/v9.1.0...v9.2.0) (2017-05-14)
+
+
+### Features
+
+* **i18n:** add Spanish translation for API ([531f9a4](https://github.com/zkat/cacache/commit/531f9a4))
+
+
+
 <a name="9.1.0"></a>
 # [9.1.0](https://github.com/zkat/cacache/compare/v9.0.0...v9.1.0) (2017-05-14)
 
