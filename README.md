@@ -20,6 +20,7 @@ _Translations: [español](README.es.md)_
 * [Features](#features)
 * [Contributing](#contributing)
 * [API](#api)
+  * [Usando el API en español](#localized-api)
   * Reading
     * [`ls`](#ls)
     * [`ls.stream`](#ls-stream)
@@ -47,7 +48,7 @@ _Translations: [español](README.es.md)_
 ### Example
 
 ```javascript
-const cacache = require('cacache')
+const cacache = require('cacache/en')
 const fs = require('fs')
 
 const tarball = '/path/to/mytar.tgz'
@@ -107,6 +108,17 @@ Please refer to the [Changelog](CHANGELOG.md) for project history details, too.
 Happy hacking!
 
 ### API
+
+#### <a name="localized-api"></a> Usando el API in English
+
+cacache includes a complete API in English, with the same features as other
+translations. To use the English API as documented in this README, use
+`require('cacache/en')`. This is also currently the default if you do
+`require('cacache')`, but may change in the future.
+
+cacache also supports other languages! You can find the list of currently
+supported ones my looking in `./locales` in the source directory. You can use
+the API in that language with `require('cacache/<lang>')`.
 
 #### <a name="ls"></a> `> cacache.ls(cache) -> Promise<Object>`
 
