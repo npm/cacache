@@ -38,7 +38,7 @@ test('rm.entry removes entries, not content', t => {
   }).then(res => {
     throw new Error('unexpected success')
   }).catch({code: 'ENOENT'}, err => {
-    t.match(err.message, /not found/, 'entry no longer accessible')
+    t.match(err.message, KEY, 'entry no longer accessible')
   }).then(() => {
     return fs.readFileAsync(contentPath(CACHE, INTEGRITY))
   }).then(data => {

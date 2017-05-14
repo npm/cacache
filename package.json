@@ -9,7 +9,8 @@
   "main": "index.js",
   "files": [
     "*.js",
-    "lib"
+    "lib",
+    "locales"
   ],
   "scripts": {
     "benchmarks": "node test/benchmarks",
@@ -17,7 +18,7 @@
     "postrelease": "npm publish && git push --follow-tags",
     "pretest": "standard lib test *.js",
     "release": "standard-version -s",
-    "test": "nyc --all -- tap -J test/*.js",
+    "test": "cross-env CACACHE_UPDATE_LOCALE_FILES=true nyc --all -- tap -J test/*.js",
     "test-docker": "docker run -it --rm --name pacotest -v \"$PWD\":/tmp -w /tmp node:latest npm test",
     "update-coc": "weallbehave -o . && git add CODE_OF_CONDUCT.md && git commit -m 'docs(coc): updated CODE_OF_CONDUCT.md'",
     "update-contrib": "weallcontribute -o . && git add CONTRIBUTING.md && git commit -m 'docs(contributing): updated CONTRIBUTING.md'"
@@ -68,11 +69,13 @@
     "promise-inflight": "^1.0.1",
     "rimraf": "^2.6.1",
     "ssri": "^4.1.2",
-    "unique-filename": "^1.1.0"
+    "unique-filename": "^1.1.0",
+    "y18n": "^3.2.1"
   },
   "devDependencies": {
     "benchmark": "^2.1.4",
     "chalk": "^1.1.3",
+    "cross-env": "^5.0.0",
     "nyc": "^10.2.0",
     "require-inject": "^1.4.0",
     "safe-buffer": "^5.0.1",

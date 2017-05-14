@@ -8,6 +8,8 @@ get corrupted or manipulated.
 It was originally written to be used as [npm](https://npm.im)'s local cache, but
 can just as easily be used on its own
 
+_Translations: [español](README.es.md)_
+
 ## Install
 
 `$ npm install --save cacache`
@@ -33,6 +35,7 @@ can just as easily be used on its own
     * [`rm.entry`](#rm-entry)
     * [`rm.content`](#rm-content)
   * Utilities
+    * [`setLocale`](#set-locale)
     * [`clearMemoized`](#clear-memoized)
     * [`tmp.mkdir`](#tmp-mkdir)
     * [`tmp.withTmp`](#with-tmp)
@@ -105,7 +108,7 @@ Happy hacking!
 
 ### API
 
-#### <a name="ls"></a> `> cacache.ls(cache) -> Promise`
+#### <a name="ls"></a> `> cacache.ls(cache) -> Promise<Object>`
 
 Lists info for all entries currently in the cache as a single large object. Each
 entry in the object will be keyed by the unique index key, with corresponding
@@ -301,14 +304,6 @@ Looks up a [Subresource Integrity hash](#integrity) in the cache. If content
 exists for this `integrity`, it will return an object, with the specific single integrity hash
 that was found in `sri` key, and the size of the found content as `size`. If no content exists for this integrity, it will return `false`.
 
-##### Fields
-
-* `source` - The [Subresource Integrity hash](#integrity) that was provided as an
-argument and subsequently found in the cache.
-* `algorithm` - The algorithm used in the hash.
-* `digest` - The digest portion of the hash.
-* `options`
-
 ##### Example
 
 ```javascript
@@ -422,9 +417,8 @@ If `opts.memoize` is an object or a `Map`-like (that is, an object with `get`
 and `set` methods), it will be written to instead of the global memoization
 cache.
 
-Reading from existing memoized data can be forced by explicitly passing
-`memoize: false` to the reader functions, but their default will be to read from
-memory.
+Reading from disk data can be forced by explicitly passing `memoize: false` to
+the reader functions, but their default will be to read from memory.
 
 #### <a name="rm-all"></a> `> cacache.rm.all(cache) -> Promise`
 
@@ -470,6 +464,14 @@ cacache.rm.content(cachePath, 'sha512-SoMeDIGest/IN+BaSE64==').then(() => {
   console.log('data for my-thing is gone!')
 })
 ```
+
+#### <a name="set-locale"></a> `> cacache.setLocale(locale)`
+
+Configure the language/locale used for messages and errors coming from cacache.
+The list of available locales is in the `./locales` directory in the project
+root.
+
+_Interested in contributing more languages! [Submit a PR](CONTRIBUTING.md)!_
 
 #### <a name="clear-memoized"></a> `> cacache.clearMemoized()`
 
