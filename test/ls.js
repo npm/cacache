@@ -11,6 +11,7 @@ const testDir = require('./util/test-dir')(__filename)
 
 const CACHE = path.join(testDir, 'cache')
 const contentPath = require('../lib/content/path')
+const File = Tacks.File
 
 const ls = require('..').ls
 
@@ -88,6 +89,25 @@ test('separate keys in conflicting buckets', function (t) {
 
 test('works fine on an empty/missing cache', function (t) {
   return ls(CACHE).then(listing => {
-    t.deepEqual(listing, {})
+    t.deepEqual(listing, {}, 'returned an empty listing')
+  })
+})
+
+test('ignores non-dir files', function (t) {
+  const index = CacheIndex({
+    'whatever': {
+      key: 'whatever',
+      integrity: 'sha512-deadbeef',
+      time: 12345,
+      metadata: 'omgsometa',
+      size: 234234
+    }
+  })
+  index.contents['garbage'] = File('hello world')
+  const fixture = new Tacks(index)
+  fixture.create(CACHE)
+  return ls(CACHE).then(listing => {
+    t.equal(Object.keys(listing).length, 1, 'only 1 item in listing')
+    t.equal(listing.whatever.key, 'whatever', 'only the correct entry listed')
   })
 })
