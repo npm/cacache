@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="9.2.3"></a>
+## [9.2.3](https://github.com/zkat/cacache/compare/v9.2.2...v9.2.3) (2017-05-24)
+
+
+### Bug Fixes
+
+* **rm:** stop crashing if content is missing on rm ([ac90bc0](https://github.com/zkat/cacache/commit/ac90bc0))
+
+
+
 <a name="9.2.2"></a>
 ## [9.2.2](https://github.com/zkat/cacache/compare/v9.2.1...v9.2.2) (2017-05-14)
 
