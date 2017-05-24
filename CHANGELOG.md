@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="9.2.4"></a>
+## [9.2.4](https://github.com/zkat/cacache/compare/v9.2.3...v9.2.4) (2017-05-24)
+
+
+### Bug Fixes
+
+* **deps:** bumping deps ([bbccb12](https://github.com/zkat/cacache/commit/bbccb12))
+
+
+
 <a name="9.2.3"></a>
 ## [9.2.3](https://github.com/zkat/cacache/compare/v9.2.2...v9.2.3) (2017-05-24)
 
