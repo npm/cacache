@@ -4,11 +4,14 @@ const Buffer = require('safe-buffer').Buffer
 const BB = require('bluebird')
 
 const finished = BB.promisify(require('mississippi').finished)
+const fs = require('fs')
 const path = require('path')
 const ssri = require('ssri')
 const Tacks = require('tacks')
 const test = require('tap').test
 const testDir = require('./util/test-dir')(__filename)
+
+BB.promisifyAll(fs)
 
 const CACHE = path.join(testDir, 'cache')
 const CacheContent = require('./util/cache-content')
@@ -146,4 +149,21 @@ test('hasContent: returns { sri, size } when a cache file exists', function (t) 
       t.equal(content, false, 'returned false for missing content')
     })
   )
+})
+
+test('copy: copies content to a destination path', {
+  skip: !fs.copyFile && 'Not supported on node versions without fs.copyFile'
+}, t => {
+  const CONTENT = Buffer.from('foobarbaz')
+  const INTEGRITY = ssri.fromData(CONTENT)
+  const DEST = path.join(CACHE, 'foobar-file')
+  const fixture = new Tacks(CacheContent({
+    [INTEGRITY]: CONTENT
+  }))
+  fixture.create(CACHE)
+  return read.copy(CACHE, INTEGRITY, DEST).then(() => {
+    return fs.readFileAsync(DEST)
+  }).then(data => {
+    t.deepEqual(data, CONTENT, 'file successfully copied')
+  })
 })

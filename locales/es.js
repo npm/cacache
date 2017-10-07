@@ -20,6 +20,8 @@ x.saca = (cache, clave, ops) => get(cache, clave, ops)
 x.saca.porHacheo = (cache, hacheo, ops) => get.byDigest(cache, hacheo, ops)
 x.saca.flujo = (cache, clave, ops) => get.stream(cache, clave, ops)
 x.saca.flujo.porHacheo = (cache, hacheo, ops) => get.stream.byDigest(cache, hacheo, ops)
+x.sava.copia = (cache, clave, destino, opts) => get.copy(cache, clave, destino, opts)
+x.sava.copia.porHacheo = (cache, hacheo, destino, opts) => get.copy.byDigest(cache, hacheo, destino, opts)
 x.saca.info = (cache, clave) => get.info(cache, clave)
 x.saca.tieneDatos = (cache, hacheo) => get.hasContent(cache, hacheo)
 

@@ -4,6 +4,7 @@ const Buffer = require('safe-buffer').Buffer
 const BB = require('bluebird')
 
 const finished = BB.promisify(require('mississippi').finished)
+const fs = require('fs')
 const index = require('../lib/entry-index')
 const memo = require('../lib/memoization')
 const path = require('path')
@@ -12,6 +13,8 @@ const Tacks = require('tacks')
 const test = require('tap').test
 const testDir = require('./util/test-dir')(__filename)
 const ssri = require('ssri')
+
+BB.promisifyAll(fs)
 
 const CacheContent = require('./util/cache-content')
 
@@ -101,6 +104,34 @@ test('basic stream get', t => {
         )
       }
     )
+  })
+})
+
+test('get.copy', t => {
+  const DEST = path.join(CACHE, 'copymehere')
+  const fixture = new Tacks(CacheContent({
+    [INTEGRITY]: CONTENT
+  }))
+  fixture.create(CACHE)
+  return index.insert(CACHE, KEY, INTEGRITY, opts())
+  .then(() => get.copy(CACHE, KEY, DEST))
+  .then(res => {
+    t.deepEqual(res, {
+      metadata: METADATA,
+      integrity: INTEGRITY,
+      size: SIZE
+    }, 'copy operation returns basic metadata')
+    return fs.readFileAsync(DEST)
+  })
+  .then(data => {
+    t.deepEqual(data, CONTENT, 'data copied by key matches')
+    return rimraf(DEST)
+  })
+  .then(() => get.copy.byDigest(CACHE, INTEGRITY, DEST))
+  .then(() => fs.readFileAsync(DEST))
+  .then(data => {
+    t.deepEqual(data, CONTENT, 'data copied by digest matches')
+    return rimraf(DEST)
   })
 })
 

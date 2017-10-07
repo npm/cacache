@@ -1,6 +1,10 @@
 'use strict'
 
+const BB = require('bluebird')
+
 const CacheContent = require('../util/cache-content')
+const fs = BB.promisifyAll(require('fs'))
+const path = require('path')
 const Tacks = require('tacks')
 const ssri = require('ssri')
 
@@ -55,6 +59,32 @@ module.exports = (suite, CACHE) => {
         () => deferred.resolve(),
         err => deferred.reject(err)
       )
+    }
+  })
+
+  suite.add('content.read.copy()', {
+    defer: true,
+    setup () {
+      const fixture = new Tacks(CacheContent({
+        [BIGINTEGRITY]: BIGCONTENT
+      }))
+      fixture.create(CACHE)
+    },
+    fn (deferred) {
+      if (read.copy) {
+        read.copy(CACHE, BIGINTEGRITY, path.join(CACHE, 'bigdata'))
+        .then(
+          () => deferred.resolve(),
+          err => deferred.reject(err)
+        )
+      } else {
+        read(CACHE, BIGINTEGRITY)
+        .then(data => fs.writeFileAsync(path.join(CACHE, 'bigdata'), data))
+        .then(
+          () => deferred.resolve(),
+          err => deferred.reject(err)
+        )
+      }
     }
   })
 

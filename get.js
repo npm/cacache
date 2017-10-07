@@ -2,6 +2,7 @@
 
 const BB = require('bluebird')
 
+const fs = require('fs')
 const index = require('./lib/entry-index')
 const memo = require('./lib/memoization')
 const pipe = require('mississippi').pipe
@@ -152,3 +153,38 @@ function info (cache, key, opts) {
 }
 
 module.exports.hasContent = read.hasContent
+
+module.exports.copy = function cp (cache, key, dest, opts) {
+  return copy(false, cache, key, dest, opts)
+}
+module.exports.copy.byDigest = function cpDigest (cache, digest, dest, opts) {
+  return copy(true, cache, digest, dest, opts)
+}
+function copy (byDigest, cache, key, dest, opts) {
+  opts = opts || {}
+  if (read.copy) {
+    return (
+      byDigest ? BB.resolve(null) : index.find(cache, key, opts)
+    ).then(entry => {
+      if (!entry && !byDigest) {
+        throw new index.NotFoundError(cache, key)
+      }
+      return read.copy(
+        cache, byDigest ? key : entry.integrity, dest, opts
+      ).then(() => byDigest ? key : {
+        metadata: entry.metadata,
+        size: entry.size,
+        integrity: entry.integrity
+      })
+    })
+  } else {
+    return getData(byDigest, cache, key, opts).then(res => {
+      return fs.writeFileAsync(dest, byDigest ? res : res.data)
+      .then(() => byDigest ? key : {
+        metadata: res.metadata,
+        size: res.size,
+        integrity: res.integrity
+      })
+    })
+  }
+}
