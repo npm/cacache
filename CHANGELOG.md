@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="9.3.0"></a>
+# [9.3.0](https://github.com/zkat/cacache/compare/v9.2.9...v9.3.0) (2017-10-07)
+
+
+### Features
+
+* **copy:** added cacache.get.copy api for fast copies (#107) ([067b5f6](https://github.com/zkat/cacache/commit/067b5f6))
+
+
+
 <a name="9.2.9"></a>
 ## [9.2.9](https://github.com/zkat/cacache/compare/v9.2.8...v9.2.9) (2017-06-17)
 
