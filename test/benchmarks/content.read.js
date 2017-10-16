@@ -62,7 +62,33 @@ module.exports = (suite, CACHE) => {
     }
   })
 
-  suite.add('content.read.copy()', {
+  suite.add('content.read.copy() small data', {
+    defer: true,
+    setup () {
+      const fixture = new Tacks(CacheContent({
+        [INTEGRITY]: CONTENT
+      }))
+      fixture.create(CACHE)
+    },
+    fn (deferred) {
+      if (read.copy) {
+        read.copy(CACHE, INTEGRITY, path.join(CACHE, 'data'))
+        .then(
+          () => deferred.resolve(),
+          err => deferred.reject(err)
+        )
+      } else {
+        read(CACHE, INTEGRITY)
+        .then(data => fs.writeFileAsync(path.join(CACHE, 'data'), data))
+        .then(
+          () => deferred.resolve(),
+          err => deferred.reject(err)
+        )
+      }
+    }
+  })
+
+  suite.add('content.read.copy() big data', {
     defer: true,
     setup () {
       const fixture = new Tacks(CacheContent({

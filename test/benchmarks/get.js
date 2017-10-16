@@ -2,6 +2,7 @@
 
 const CacheContent = require('../util/cache-content')
 const memo = require('../../lib/memoization')
+const path = require('path')
 const Tacks = require('tacks')
 const ssri = require('ssri')
 
@@ -77,7 +78,7 @@ module.exports = (suite, CACHE) => {
     }
   })
 
-  suite.add('get.stream() big data', {
+  suite.add('get.stream.byDigest() big data', {
     defer: true,
     setup () {
       const fixture = new Tacks(CacheContent({
@@ -92,6 +93,40 @@ module.exports = (suite, CACHE) => {
       stream.on('end', () => {
         deferred.resolve()
       })
+    }
+  })
+
+  suite.add('get.copy.byDigest() small data', {
+    defer: true,
+    setup () {
+      const fixture = new Tacks(CacheContent({
+        [INTEGRITY]: CONTENT
+      }))
+      fixture.create(CACHE)
+    },
+    fn (deferred) {
+      get.copy.byDigest(CACHE, INTEGRITY, path.join(CACHE, 'data'))
+      .then(
+        () => deferred.resolve(),
+        err => deferred.reject(err)
+      )
+    }
+  })
+
+  suite.add('get.copy.byDigest() big data', {
+    defer: true,
+    setup () {
+      const fixture = new Tacks(CacheContent({
+        [BIGINTEGRITY]: BIGCONTENT
+      }))
+      fixture.create(CACHE)
+    },
+    fn (deferred) {
+      get.copy.byDigest(CACHE, BIGINTEGRITY, path.join(CACHE, 'data'))
+      .then(
+        () => deferred.resolve(),
+        err => deferred.reject(err)
+      )
     }
   })
 }
