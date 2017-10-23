@@ -56,7 +56,7 @@
       "twitter": "ReBeccaOrg"
     }
   ],
-  "license": "CC0-1.0",
+  "license": "ISC",
   "dependencies": {
     "bluebird": "^3.5.0",
     "chownr": "^1.0.1",
