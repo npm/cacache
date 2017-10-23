@@ -68,7 +68,7 @@
     "move-concurrently": "^1.0.1",
     "promise-inflight": "^1.0.1",
     "rimraf": "^2.6.1",
-    "ssri": "^4.1.6",
+    "ssri": "^5.0.0",
     "unique-filename": "^1.1.0",
     "y18n": "^3.2.1"
   },
