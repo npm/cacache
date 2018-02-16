@@ -16,7 +16,7 @@
     "benchmarks": "node test/benchmarks",
     "prerelease": "npm t",
     "postrelease": "npm publish && git push --follow-tags",
-    "pretest": "standard lib test *.js",
+    "pretest": "standard",
     "release": "standard-version -s",
     "test": "cross-env CACACHE_UPDATE_LOCALE_FILES=true nyc --all -- tap -J test/*.js",
     "test-docker": "docker run -it --rm --name pacotest -v \"$PWD\":/tmp -w /tmp node:latest npm test",

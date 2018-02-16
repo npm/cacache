@@ -1,6 +1,7 @@
 'use strict'
 
 const BB = require('bluebird')
+const Buffer = require('safe-buffer').Buffer
 
 const CacheContent = require('../util/cache-content')
 const fs = BB.promisifyAll(require('fs'))

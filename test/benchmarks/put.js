@@ -1,6 +1,7 @@
 'use strict'
 
 const BB = require('bluebird')
+const Buffer = require('safe-buffer').Buffer
 
 const finished = BB.promisify(require('mississippi').finished)
 

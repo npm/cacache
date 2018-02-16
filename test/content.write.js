@@ -1,6 +1,5 @@
 'use strict'
 
-const crypto = require('crypto')
 const fromString = require('./util/from-string')
 const fs = require('fs')
 const path = require('path')

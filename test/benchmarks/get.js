@@ -1,5 +1,7 @@
 'use strict'
 
+const Buffer = require('safe-buffer').Buffer
+
 const CacheContent = require('../util/cache-content')
 const memo = require('../../lib/memoization')
 const path = require('path')
