@@ -60,6 +60,7 @@
   "dependencies": {
     "bluebird": "^3.5.1",
     "chownr": "^1.0.1",
+    "figgy-pudding": "^3.1.0",
     "glob": "^7.1.2",
     "graceful-fs": "^4.1.11",
     "lru-cache": "^4.1.2",
