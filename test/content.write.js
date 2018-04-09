@@ -143,7 +143,7 @@ test('does not overwrite content if already on disk', t => {
 
 test('errors if input stream errors', t => {
   const stream = fromString('foobarbaz')
-  .on('end', () => stream.emit('error', new Error('bleh')))
+    .on('end', () => stream.emit('error', new Error('bleh')))
   let integrity
   const putter = write.stream(CACHE).on('integrity', int => {
     integrity = int

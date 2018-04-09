@@ -108,10 +108,10 @@ module.exports = (suite, CACHE) => {
     },
     fn (deferred) {
       get.copy.byDigest(CACHE, INTEGRITY, path.join(CACHE, 'data'))
-      .then(
-        () => deferred.resolve(),
-        err => deferred.reject(err)
-      )
+        .then(
+          () => deferred.resolve(),
+          err => deferred.reject(err)
+        )
     }
   })
 
@@ -125,10 +125,10 @@ module.exports = (suite, CACHE) => {
     },
     fn (deferred) {
       get.copy.byDigest(CACHE, BIGINTEGRITY, path.join(CACHE, 'data'))
-      .then(
-        () => deferred.resolve(),
-        err => deferred.reject(err)
-      )
+        .then(
+          () => deferred.resolve(),
+          err => deferred.reject(err)
+        )
     }
   })
 }

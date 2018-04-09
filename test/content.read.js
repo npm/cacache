@@ -142,18 +142,18 @@ test('hasContent: returns { sri, size } when a cache file exists', function (t) 
   fixture.create(CACHE)
   return BB.join(
     read.hasContent(CACHE, 'sha1-deadbeef')
-    .then(content => {
-      t.ok(content.sri, 'returned sri for this content')
-      t.equal(content.size, 0, 'returned the right size for this content')
-    }),
+      .then(content => {
+        t.ok(content.sri, 'returned sri for this content')
+        t.equal(content.size, 0, 'returned the right size for this content')
+      }),
     read.hasContent(CACHE, 'sha1-not-there')
-    .then(content => {
-      t.equal(content, false, 'returned false for missing content')
-    }),
+      .then(content => {
+        t.equal(content, false, 'returned false for missing content')
+      }),
     read.hasContent(CACHE, 'sha1-not-here sha1-also-not-here')
-    .then(content => {
-      t.equal(content, false, 'multi-content hash failures work ok')
-    })
+      .then(content => {
+        t.equal(content, false, 'multi-content hash failures work ok')
+      })
   )
 })
 

@@ -74,17 +74,17 @@ module.exports = (suite, CACHE) => {
     fn (deferred) {
       if (read.copy) {
         read.copy(CACHE, INTEGRITY, path.join(CACHE, 'data'))
-        .then(
-          () => deferred.resolve(),
-          err => deferred.reject(err)
-        )
+          .then(
+            () => deferred.resolve(),
+            err => deferred.reject(err)
+          )
       } else {
         read(CACHE, INTEGRITY)
-        .then(data => fs.writeFileAsync(path.join(CACHE, 'data'), data))
-        .then(
-          () => deferred.resolve(),
-          err => deferred.reject(err)
-        )
+          .then(data => fs.writeFileAsync(path.join(CACHE, 'data'), data))
+          .then(
+            () => deferred.resolve(),
+            err => deferred.reject(err)
+          )
       }
     }
   })
@@ -100,17 +100,17 @@ module.exports = (suite, CACHE) => {
     fn (deferred) {
       if (read.copy) {
         read.copy(CACHE, BIGINTEGRITY, path.join(CACHE, 'bigdata'))
-        .then(
-          () => deferred.resolve(),
-          err => deferred.reject(err)
-        )
+          .then(
+            () => deferred.resolve(),
+            err => deferred.reject(err)
+          )
       } else {
         read(CACHE, BIGINTEGRITY)
-        .then(data => fs.writeFileAsync(path.join(CACHE, 'bigdata'), data))
-        .then(
-          () => deferred.resolve(),
-          err => deferred.reject(err)
-        )
+          .then(data => fs.writeFileAsync(path.join(CACHE, 'bigdata'), data))
+          .then(
+            () => deferred.resolve(),
+            err => deferred.reject(err)
+          )
       }
     }
   })

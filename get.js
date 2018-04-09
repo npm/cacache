@@ -20,8 +20,8 @@ function getData (byDigest, cache, key, opts) {
   opts = opts || {}
   const memoized = (
     byDigest
-    ? memo.get.byDigest(cache, key, opts)
-    : memo.get(cache, key, opts)
+      ? memo.get.byDigest(cache, key, opts)
+      : memo.get(cache, key, opts)
   )
   if (memoized && opts.memoize !== false) {
     return BB.resolve(byDigest ? memoized : {
@@ -180,11 +180,11 @@ function copy (byDigest, cache, key, dest, opts) {
   } else {
     return getData(byDigest, cache, key, opts).then(res => {
       return fs.writeFileAsync(dest, byDigest ? res : res.data)
-      .then(() => byDigest ? key : {
-        metadata: res.metadata,
-        size: res.size,
-        integrity: res.integrity
-      })
+        .then(() => byDigest ? key : {
+          metadata: res.metadata,
+          size: res.size,
+          integrity: res.integrity
+        })
     })
   }
 }

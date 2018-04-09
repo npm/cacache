@@ -13,8 +13,8 @@ const WARN_RANGE = 5
 const suite = new Benchmark.Suite({
   onStart () {
     let previousPath = process.env.COMPARETO
-    ? path.resolve(process.env.COMPARETO)
-    : PREVIOUS
+      ? path.resolve(process.env.COMPARETO)
+      : PREVIOUS
     try {
       this.previous = require(previousPath)
     } catch (e) {}
@@ -29,14 +29,14 @@ const suite = new Benchmark.Suite({
     const prev = this.previous && this.previous[bench.name]
     const pctDelta = prev && (((bench.stats.mean - prev.stats.mean) / prev.stats.mean) * 100)
     let colorDiff = !prev
-    ? ''
-    : `${pctDelta > 0 ? '+' : ''}${pctDelta.toFixed(2)}% `
+      ? ''
+      : `${pctDelta > 0 ? '+' : ''}${pctDelta.toFixed(2)}% `
     colorDiff = ` (${
       pctDelta >= (WARN_RANGE + bench.stats.rme)
-      ? chalk.red(colorDiff)
-      : pctDelta <= -(WARN_RANGE + bench.stats.rme)
-      ? chalk.green(colorDiff)
-      : colorDiff
+        ? chalk.red(colorDiff)
+        : pctDelta <= -(WARN_RANGE + bench.stats.rme)
+          ? chalk.green(colorDiff)
+          : colorDiff
     }±${bench.stats.rme.toFixed(2)}%)`
     console.log(`     ${bench.name}`)
     console.log('------------------------------------------------')

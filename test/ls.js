@@ -149,21 +149,21 @@ test('correctly ignores deleted entries', t => {
       CACHE, contents.whatwhere.integrity)
   fixture.create(CACHE)
   return index.delete(CACHE, 'whatnot')
-  .then(() => ls(CACHE))
-  .then(listing => t.deepEqual(listing, {
-    whatever: contents.whatever,
-    whatwhere: contents.whatwhere
-  }, 'index contents correct'))
-  .then(() => {
-    const listing = []
-    const stream = ls.stream(CACHE)
-    stream.on('data', entry => {
-      listing[entry.key] = entry
-    })
-    return finished(stream)
-    .then(() => t.deepEqual(listing, {
+    .then(() => ls(CACHE))
+    .then(listing => t.deepEqual(listing, {
       whatever: contents.whatever,
       whatwhere: contents.whatwhere
-    }, 'ls is streamable'))
-  })
+    }, 'index contents correct'))
+    .then(() => {
+      const listing = []
+      const stream = ls.stream(CACHE)
+      stream.on('data', entry => {
+        listing[entry.key] = entry
+      })
+      return finished(stream)
+        .then(() => t.deepEqual(listing, {
+          whatever: contents.whatever,
+          whatwhere: contents.whatwhere
+        }, 'ls is streamable'))
+    })
 })

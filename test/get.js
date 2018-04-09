@@ -114,25 +114,25 @@ test('get.copy', t => {
   }))
   fixture.create(CACHE)
   return index.insert(CACHE, KEY, INTEGRITY, opts())
-  .then(() => get.copy(CACHE, KEY, DEST))
-  .then(res => {
-    t.deepEqual(res, {
-      metadata: METADATA,
-      integrity: INTEGRITY,
-      size: SIZE
-    }, 'copy operation returns basic metadata')
-    return fs.readFileAsync(DEST)
-  })
-  .then(data => {
-    t.deepEqual(data, CONTENT, 'data copied by key matches')
-    return rimraf(DEST)
-  })
-  .then(() => get.copy.byDigest(CACHE, INTEGRITY, DEST))
-  .then(() => fs.readFileAsync(DEST))
-  .then(data => {
-    t.deepEqual(data, CONTENT, 'data copied by digest matches')
-    return rimraf(DEST)
-  })
+    .then(() => get.copy(CACHE, KEY, DEST))
+    .then(res => {
+      t.deepEqual(res, {
+        metadata: METADATA,
+        integrity: INTEGRITY,
+        size: SIZE
+      }, 'copy operation returns basic metadata')
+      return fs.readFileAsync(DEST)
+    })
+    .then(data => {
+      t.deepEqual(data, CONTENT, 'data copied by key matches')
+      return rimraf(DEST)
+    })
+    .then(() => get.copy.byDigest(CACHE, INTEGRITY, DEST))
+    .then(() => fs.readFileAsync(DEST))
+    .then(data => {
+      t.deepEqual(data, CONTENT, 'data copied by digest matches')
+      return rimraf(DEST)
+    })
 })
 
 test('ENOENT if not found', t => {
