@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="11.0.1"></a>
+## [11.0.1](https://github.com/zkat/cacache/compare/v11.0.0...v11.0.1) (2018-04-10)
+
+
+
 <a name="11.0.0"></a>
 # [11.0.0](https://github.com/zkat/cacache/compare/v10.0.4...v11.0.0) (2018-04-09)
 
