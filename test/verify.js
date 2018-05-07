@@ -210,3 +210,40 @@ test('writes a file with last verification time', t => {
 })
 
 test('fixes permissions and users on cache contents')
+
+test('re-builds the index with the size parameter', t => {
+  const KEY2 = KEY + 'aaa'
+  const KEY3 = KEY + 'bbb'
+  return mockCache().then(() => {
+    return BB.join(
+      index.insert(CACHE, KEY2, INTEGRITY, {
+        metadata: 'haayyyy',
+        size: 20
+      }),
+      index.insert(CACHE, KEY3, INTEGRITY, {
+        metadata: 'haayyyy again',
+        size: 30
+      }))
+  }).then(() => {
+    return index.ls(CACHE).then((newEntries) => {
+      return verify(CACHE)
+        .then(stats => {
+          t.deepEqual({
+            verifiedContent: stats.verifiedContent,
+            rejectedEntries: stats.rejectedEntries,
+            totalEntries: stats.totalEntries
+          }, {
+            verifiedContent: 1,
+            rejectedEntries: 0,
+            totalEntries: 3
+          }, 'reported relevant changes')
+          return index.ls(CACHE)
+        }).then(entries => {
+          entries[KEY].time = newEntries[KEY].time
+          entries[KEY2].time = newEntries[KEY2].time
+          entries[KEY3].time = newEntries[KEY3].time
+          t.deepEqual(entries, newEntries, 'original index entries not preserved')
+        })
+    })
+  })
+})
