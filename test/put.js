@@ -1,6 +1,5 @@
 'use strict'
 
-const Buffer = require('safe-buffer').Buffer
 const BB = require('bluebird')
 
 const fromString = require('./util/from-string')

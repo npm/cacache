@@ -1,7 +1,5 @@
 'use strict'
 
-const Buffer = require('safe-buffer').Buffer
-
 const fs = require('fs')
 const glob = require('glob')
 const path = require('path')
@@ -17,7 +15,7 @@ test('all JavaScript source files use strict mode', function (t) {
     if (err) { throw err }
     const line = "'use strict'\n"
     const bytecount = line.length
-    const buf = new Buffer(bytecount)
+    const buf = Buffer.alloc(bytecount)
     files.forEach(function (f) {
       const fd = fs.openSync(path.join(root, f), 'r')
       fs.readSync(fd, buf, 0, bytecount, 0)

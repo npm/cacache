@@ -1,6 +1,5 @@
 'use strict'
 
-const Buffer = require('safe-buffer').Buffer
 const BB = require('bluebird')
 
 const fs = BB.promisifyAll(require('fs'))

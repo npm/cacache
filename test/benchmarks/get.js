@@ -1,7 +1,5 @@
 'use strict'
 
-const Buffer = require('safe-buffer').Buffer
-
 const CacheContent = require('../util/cache-content')
 const memo = require('../../lib/memoization')
 const path = require('path')
@@ -12,7 +10,7 @@ const get = require('../../get')
 
 let buf = []
 for (let i = 0; i < Math.pow(2, 8); i++) {
-  buf.push(Buffer.alloc ? Buffer.alloc(8, i) : new Buffer(8))
+  buf.push(Buffer.alloc(8, i))
 }
 
 const CONTENT = Buffer.concat(buf, buf.length * 8)
