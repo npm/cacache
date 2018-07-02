@@ -12,7 +12,7 @@ const read = require('../../lib/content/read')
 
 let buf = []
 for (let i = 0; i < Math.pow(2, 8); i++) {
-  buf.push(Buffer.alloc)
+  buf.push(Buffer.alloc(8, i))
 }
 
 const CONTENT = Buffer.concat(buf, buf.length * 8)
