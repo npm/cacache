@@ -80,7 +80,7 @@
     "require-inject": "^1.4.2",
     "standard": "^11.0.1",
     "standard-version": "^4.4.0",
-    "tacks": "^1.2.2",
+    "tacks": "^1.2.7",
     "tap": "^12.0.1",
     "weallbehave": "^1.2.0",
     "weallcontribute": "^1.0.8"
