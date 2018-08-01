@@ -29,6 +29,18 @@ test('read: returns a BB with cache content data', function (t) {
   })
 })
 
+test('read.sync: reads synchronously', t => {
+  const CONTENT = Buffer.from('foobarbaz')
+  const INTEGRITY = ssri.fromData(CONTENT)
+  const fixture = new Tacks(CacheContent({
+    [INTEGRITY]: CONTENT
+  }))
+  fixture.create(CACHE)
+  const data = read.sync(CACHE, INTEGRITY)
+  t.deepEqual(data, CONTENT, 'cache contents read correctly')
+  t.done()
+})
+
 test('read.stream: returns a stream with cache content data', function (t) {
   const CONTENT = Buffer.from('foobarbaz')
   const INTEGRITY = ssri.fromData(CONTENT)
