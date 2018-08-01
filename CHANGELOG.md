@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="11.1.0"></a>
+# [11.1.0](https://github.com/zkat/cacache/compare/v11.0.3...v11.1.0) (2018-08-01)
+
+
+### Features
+
+* **read:** add sync support for low-level content read ([b43af83](https://github.com/zkat/cacache/commit/b43af83))
+
+
+
 <a name="11.0.3"></a>
 ## [11.0.3](https://github.com/zkat/cacache/compare/v11.0.2...v11.0.3) (2018-08-01)
 
