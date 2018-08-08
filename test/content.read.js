@@ -146,7 +146,7 @@ test('read: errors if content size does not match size option', function (t) {
   )
 })
 
-test('hasContent: returns { sri, size } when a cache file exists', function (t) {
+test('hasContent: tests content existence', t => {
   const fixture = new Tacks(CacheContent({
     'sha1-deadbeef': ''
   }))
@@ -156,6 +156,7 @@ test('hasContent: returns { sri, size } when a cache file exists', function (t) 
       .then(content => {
         t.ok(content.sri, 'returned sri for this content')
         t.equal(content.size, 0, 'returned the right size for this content')
+        t.ok(content.stat.isFile(), 'returned actual stat object')
       }),
     read.hasContent(CACHE, 'sha1-not-there')
       .then(content => {
@@ -166,6 +167,28 @@ test('hasContent: returns { sri, size } when a cache file exists', function (t) 
         t.equal(content, false, 'multi-content hash failures work ok')
       })
   )
+})
+
+test('hasContent.sync: checks content existence synchronously', t => {
+  const fixture = new Tacks(CacheContent({
+    'sha1-deadbeef': ''
+  }))
+  fixture.create(CACHE)
+  const content = read.hasContent.sync(CACHE, 'sha1-deadbeef')
+  t.ok(content.sri, 'returned sri for this content')
+  t.equal(content.size, 0, 'returned the right size for this content')
+  t.ok(content.stat.isFile(), 'returned actual stat object')
+  t.equal(
+    read.hasContent.sync(CACHE, 'sha1-not-there'),
+    false,
+    'returned false for missing content'
+  )
+  t.equal(
+    read.hasContent.sync(CACHE, 'sha1-not-here sha1-also-not-here'),
+    false,
+    'multi-content hash failures work ok'
+  )
+  t.done()
 })
 
 test('copy: copies content to a destination path', {
@@ -183,4 +206,23 @@ test('copy: copies content to a destination path', {
   }).then(data => {
     t.deepEqual(data, CONTENT, 'file successfully copied')
   })
+})
+
+test('copy.sync: copies content to a destination path synchronously', {
+  skip: !fs.copyFile && 'Not supported on node versions without fs.copyFile'
+}, t => {
+  const CONTENT = Buffer.from('foobarbaz')
+  const INTEGRITY = ssri.fromData(CONTENT)
+  const DEST = path.join(CACHE, 'foobar-file')
+  const fixture = new Tacks(CacheContent({
+    [INTEGRITY]: CONTENT
+  }))
+  fixture.create(CACHE)
+  read.copy.sync(CACHE, INTEGRITY, DEST)
+  t.deepEqual(
+    fs.readFileSync(DEST),
+    CONTENT,
+    'file successfully copied'
+  )
+  t.done()
 })
