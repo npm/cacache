@@ -18,6 +18,8 @@ x.ls.stream = cache => ls.stream(cache)
 
 x.get = (cache, key, opts) => get(cache, key, opts)
 x.get.byDigest = (cache, hash, opts) => get.byDigest(cache, hash, opts)
+x.get.sync = (cache, key, opts) => get.sync(cache, key, opts)
+x.get.sync.byDigest = (cache, key, opts) => get.sync.byDigest(cache, key, opts)
 x.get.stream = (cache, key, opts) => get.stream(cache, key, opts)
 x.get.stream.byDigest = (cache, hash, opts) => get.stream.byDigest(cache, hash, opts)
 x.get.copy = (cache, key, dest, opts) => get.copy(cache, key, dest, opts)

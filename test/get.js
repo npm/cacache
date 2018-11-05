@@ -80,6 +80,24 @@ test('basic bulk get', t => {
   })
 })
 
+test('basic sync get', t => {
+  const fixture = new Tacks(CacheContent({
+    [INTEGRITY]: CONTENT
+  }))
+  fixture.create(CACHE)
+  index.insert.sync(CACHE, KEY, INTEGRITY, opts())
+  const res = get.sync(CACHE, KEY)
+  t.deepEqual(res, {
+    metadata: METADATA,
+    data: CONTENT,
+    integrity: INTEGRITY,
+    size: SIZE
+  }, 'bulk key get returned proper data')
+  const resByDig = get.sync.byDigest(CACHE, INTEGRITY)
+  t.deepEqual(resByDig, CONTENT, 'byDigest returned proper data')
+  t.done()
+})
+
 test('basic stream get', t => {
   const fixture = new Tacks(CacheContent({
     [INTEGRITY]: CONTENT

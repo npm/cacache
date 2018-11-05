@@ -18,6 +18,8 @@ x.ls.flujo = cache => ls.stream(cache)
 
 x.saca = (cache, clave, ops) => get(cache, clave, ops)
 x.saca.porHacheo = (cache, hacheo, ops) => get.byDigest(cache, hacheo, ops)
+x.saca.sinc = (cache, clave, ops) => get.sync(cache, clave, ops)
+x.saca.sinc.porHacheo = (cache, hacheo, ops) => get.sync.byDigest(cache, hacheo, ops)
 x.saca.flujo = (cache, clave, ops) => get.stream(cache, clave, ops)
 x.saca.flujo.porHacheo = (cache, hacheo, ops) => get.stream.byDigest(cache, hacheo, ops)
 x.sava.copia = (cache, clave, destino, opts) => get.copy(cache, clave, destino, opts)
