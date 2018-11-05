@@ -26,6 +26,7 @@ x.sava.copia = (cache, clave, destino, opts) => get.copy(cache, clave, destino, 
 x.sava.copia.porHacheo = (cache, hacheo, destino, opts) => get.copy.byDigest(cache, hacheo, destino, opts)
 x.saca.info = (cache, clave) => get.info(cache, clave)
 x.saca.tieneDatos = (cache, hacheo) => get.hasContent(cache, hacheo)
+x.saca.tieneDatos.sinc = (cache, hacheo) => get.hasContent.sync(cache, hacheo)
 
 x.mete = (cache, clave, datos, ops) => put(cache, clave, datos, ops)
 x.mete.flujo = (cache, clave, ops) => put.stream(cache, clave, ops)
