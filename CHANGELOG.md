@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="11.3.1"></a>
+## [11.3.1](https://github.com/zkat/cacache/compare/v11.3.0...v11.3.1) (2018-11-05)
+
+
+### Bug Fixes
+
+* **get:** export hasContent.sync properly ([d76c920](https://github.com/zkat/cacache/commit/d76c920))
+
+
+
 <a name="11.3.0"></a>
 # [11.3.0](https://github.com/zkat/cacache/compare/v11.2.0...v11.3.0) (2018-11-05)
 
