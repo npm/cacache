@@ -102,6 +102,16 @@ test('optionally memoizes data on stream insertion', t => {
   })
 })
 
+test('errors if integrity errors', t => {
+  return BB.join(
+    put(CACHE, KEY, CONTENT, {
+      integrity: 'sha1-BaDDigEST'
+    }).catch(err => {
+      t.equal(err.code, 'EINTEGRITY', 'got error from bad integrity')
+    })
+  )
+})
+
 test('signals error if error writing to cache', t => {
   return BB.join(
     put(CACHE, KEY, CONTENT, {

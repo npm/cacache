@@ -20,6 +20,7 @@ const PutOpts = figgyPudding({
   gid: {},
   single: {},
   sep: {},
+  error: {},
   strict: {}
 })
 
