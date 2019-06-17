@@ -28,7 +28,7 @@ test('provides a utility that does resource disposal on tmp', t => {
     return BB.join(
       fs.statAsync(dir).then(() => {
         throw new Error('expected fail')
-      }).catch({code: 'ENOENT'}, () => {}),
+      }).catch({ code: 'ENOENT' }, () => {}),
       fs.statAsync(path.join(CACHE, 'tmp')),
       (nope, yes) => {
         t.notOk(nope, 'tmp subdir removed')

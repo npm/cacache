@@ -43,8 +43,8 @@ test('index.find cache hit', function (t) {
 
 test('index.find cache miss', function (t) {
   const fixture = new Tacks(CacheIndex({
-    'foo': {key: 'foo'},
-    'w/e': {key: 'w/e'}
+    'foo': { key: 'foo' },
+    'w/e': { key: 'w/e' }
   }))
   fixture.create(CACHE)
   return index.find(

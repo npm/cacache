@@ -36,7 +36,7 @@ test('rm.entry removes entries, not content', t => {
     return get(CACHE, KEY)
   }).then(res => {
     throw new Error('unexpected success')
-  }).catch({code: 'ENOENT'}, err => {
+  }).catch({ code: 'ENOENT' }, err => {
     t.match(err.message, KEY, 'entry no longer accessible')
   }).then(() => {
     return fs.readFileAsync(contentPath(CACHE, INTEGRITY))
@@ -58,13 +58,13 @@ test('rm.content removes content, not entries', t => {
     return get(CACHE, KEY)
   }).then(res => {
     throw new Error('unexpected success')
-  }).catch({code: 'ENOENT'}, err => {
+  }).catch({ code: 'ENOENT' }, err => {
     t.match(err.message, /no such file/, 'entry no longer accessible')
   }).then(() => {
     return fs.readFileAsync(contentPath(CACHE, INTEGRITY))
   }).then(() => {
     throw new Error('unexpected success')
-  }).catch({code: 'ENOENT'}, err => {
+  }).catch({ code: 'ENOENT' }, err => {
     t.match(err.message, /no such file/, 'content gone')
   })
 })

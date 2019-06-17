@@ -59,7 +59,7 @@ test('inserts additional entries into existing key', function (t) {
   return index.insert(CACHE, KEY, INTEGRITY, opts({
     metadata: 1
   })).then(() => (
-    index.insert(CACHE, KEY, INTEGRITY, opts({metadata: 2}))
+    index.insert(CACHE, KEY, INTEGRITY, opts({ metadata: 2 }))
   )).then(() => {
     return fs.readFileAsync(BUCKET, 'utf8')
   }).then(data => {

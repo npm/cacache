@@ -46,7 +46,7 @@ test('basic stream insertion', t => {
 })
 
 test('adds correct entry to index before finishing', t => {
-  return put(CACHE, KEY, CONTENT, {metadata: METADATA}).then(() => {
+  return put(CACHE, KEY, CONTENT, { metadata: METADATA }).then(() => {
     return index.find(CACHE, KEY)
   }).then(entry => {
     t.ok(entry, 'got an entry')

@@ -143,7 +143,7 @@ test('removes corrupted content', t => {
     }, 'reported correct collection counts')
     return fs.statAsync(cpath).then(() => {
       throw new Error('expected a failure')
-    }).catch({code: 'ENOENT'}, err => {
+    }).catch({ code: 'ENOENT' }, err => {
       t.match(err.message, /no such file/, 'content no longer in cache')
     })
   })
@@ -182,7 +182,7 @@ test('cleans up contents of tmp dir', t => {
     )
   }).then(() => {
     return BB.join(
-      fs.statAsync(tmpFile).catch({code: 'ENOENT'}, e => e),
+      fs.statAsync(tmpFile).catch({ code: 'ENOENT' }, e => e),
       fs.statAsync(misc),
       (err, stat) => {
         t.equal(err.code, 'ENOENT', 'tmp file was blown away')

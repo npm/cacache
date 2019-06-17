@@ -54,7 +54,7 @@ test('read.stream: returns a stream with cache content data', function (t) {
   stream.on('data', function (data) { buf += data })
   return BB.join(
     finished(stream).then(() => Buffer.from(buf)),
-    read(CACHE, INTEGRITY, {size: CONTENT.length}),
+    read(CACHE, INTEGRITY, { size: CONTENT.length }),
     (fromStream, fromBulk) => {
       t.deepEqual(fromStream, CONTENT, 'stream data checks out')
       t.deepEqual(fromBulk, CONTENT, 'promise data checks out')
@@ -65,7 +65,7 @@ test('read.stream: returns a stream with cache content data', function (t) {
 test('read: allows hashAlgorithm configuration', function (t) {
   const CONTENT = Buffer.from('foobarbaz')
   const HASH = 'whirlpool'
-  const INTEGRITY = ssri.fromData(CONTENT, {algorithms: [HASH]})
+  const INTEGRITY = ssri.fromData(CONTENT, { algorithms: [HASH] })
   const fixture = new Tacks(CacheContent({
     [INTEGRITY]: CONTENT
   }))
@@ -93,8 +93,8 @@ test('read: errors if content missing', function (t) {
     throw new Error('end was called even though stream errored')
   })
   return BB.join(
-    finished(stream).catch({code: 'ENOENT'}, err => err),
-    read(CACHE, 'sha512-whatnot').catch({code: 'ENOENT'}, err => err),
+    finished(stream).catch({ code: 'ENOENT' }, err => err),
+    read(CACHE, 'sha512-whatnot').catch({ code: 'ENOENT' }, err => err),
     (streamErr, bulkErr) => {
       t.equal(streamErr.code, 'ENOENT', 'stream got the right error')
       t.equal(bulkErr.code, 'ENOENT', 'bulk got the right error')
@@ -114,8 +114,8 @@ test('read: errors if content fails checksum', function (t) {
     throw new Error('end was called even though stream errored')
   })
   return BB.join(
-    finished(stream).catch({code: 'EINTEGRITY'}, err => err),
-    read(CACHE, INTEGRITY).catch({code: 'EINTEGRITY'}, err => err),
+    finished(stream).catch({ code: 'EINTEGRITY' }, err => err),
+    read(CACHE, INTEGRITY).catch({ code: 'EINTEGRITY' }, err => err),
     (streamErr, bulkErr) => {
       t.equal(streamErr.code, 'EINTEGRITY', 'stream got the right error')
       t.equal(bulkErr.code, 'EINTEGRITY', 'bulk got the right error')
@@ -135,10 +135,10 @@ test('read: errors if content size does not match size option', function (t) {
     throw new Error('end was called even though stream errored')
   })
   return BB.join(
-    finished(stream).catch({code: 'EBADSIZE'}, err => err),
+    finished(stream).catch({ code: 'EBADSIZE' }, err => err),
     read(CACHE, INTEGRITY, {
       size: CONTENT.length
-    }).catch({code: 'EBADSIZE'}, err => err),
+    }).catch({ code: 'EBADSIZE' }, err => err),
     (streamErr, bulkErr) => {
       t.equal(streamErr.code, 'EBADSIZE', 'stream got the right error')
       t.equal(bulkErr.code, 'EBADSIZE', 'bulk got the right error')

@@ -44,8 +44,8 @@ module.exports = (suite, CACHE) => {
     },
     onStart () {
       const fixture = new Tacks(CacheIndex({
-        'foo': {key: 'foo'},
-        'w/e': {key: 'w/e'}
+        'foo': { key: 'foo' },
+        'w/e': { key: 'w/e' }
       }))
       fixture.create(CACHE)
       this.fixture = fixture

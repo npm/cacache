@@ -71,5 +71,5 @@ fs.readdir(__dirname, (err, files) => {
       require('./' + f)(suite, path.join(CACHE, path.basename(f, '.js')))
     }
   })
-  suite.run({async: true})
+  suite.run({ async: true })
 })
