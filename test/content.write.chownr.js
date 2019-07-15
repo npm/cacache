@@ -1,24 +1,46 @@
 'use strict'
 
-const fromString = require('./util/from-string')
+const testDir = require('./util/test-dir')(__filename)
 const path = require('path')
+const CACHE = path.join(testDir, 'cache')
+const fs = require('fs')
+
+const NEWUID = process.getuid() + 1
+const NEWGID = process.getgid() + 1
+const stat = fs.lstat
+fs.lstat = (path, cb) => {
+  stat(path, (er, st) => {
+    if (st && path === testDir) {
+      st.uid = NEWUID
+      st.gid = NEWGID
+    }
+    cb(er, st)
+  })
+}
+
+const statSync = fs.lstatSync
+fs.lstatSync = path => {
+  const st = statSync(path)
+  if (path === testDir) {
+    st.uid = NEWUID
+    st.gid = NEWGID
+  }
+  return st
+}
+
+const fromString = require('./util/from-string')
 const pipe = require('mississippi').pipe
 const requireInject = require('require-inject')
 const ssri = require('ssri')
 const test = require('tap').test
-const testDir = require('./util/test-dir')(__filename)
-
-const CACHE = path.join(testDir, 'cache')
 
 const contentPath = require('../lib/content/path')
 
-test('allows setting a custom uid for cache contents on write', {
+test('infers ownership from cache folder owner', {
   skip: process.getuid ? false : 'test only works on platforms that can set uid/gid'
 }, t => {
   const CONTENT = 'foobarbaz'
   const INTEGRITY = ssri.fromData(CONTENT)
-  const NEWUID = process.getuid() + 1
-  const NEWGID = process.getgid() + 1
   const updatedPaths = []
   const write = requireInject('../lib/content/write', {
     chownr: function (p, uid, gid, cb) {
@@ -33,8 +55,6 @@ test('allows setting a custom uid for cache contents on write', {
   })
   t.plan(7)
   pipe(fromString(CONTENT), write.stream(CACHE, {
-    uid: NEWUID,
-    gid: NEWGID,
     hashAlgorithm: 'sha1'
   }), function (err) {
     if (err) { throw err }
