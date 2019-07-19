@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [12.0.1](https://github.com/npm/cacache/compare/v12.0.0...v12.0.1) (2019-07-19)
+
+* **deps** Abstracted out `lib/util/infer-owner.js` to
+  [@npmcli/infer-owner](https://www.npmjs.com/package/@npmcli/infer-owner)
+  so that it could be more easily used in other parts of the npm CLI.
+
+
 ## [12.0.0](https://github.com/npm/cacache/compare/v11.3.3...v12.0.0) (2019-07-15)
 
 
