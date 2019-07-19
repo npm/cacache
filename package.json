@@ -58,12 +58,12 @@
   ],
   "license": "ISC",
   "dependencies": {
-    "@npmcli/infer-owner": "^1.0.1",
     "bluebird": "^3.5.5",
     "chownr": "^1.1.1",
     "figgy-pudding": "^3.5.1",
     "glob": "^7.1.4",
     "graceful-fs": "^4.1.15",
+    "infer-owner": "^1.0.3",
     "lru-cache": "^5.1.1",
     "mississippi": "^3.0.0",
     "mkdirp": "^0.5.1",
