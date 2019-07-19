@@ -58,6 +58,7 @@
   ],
   "license": "ISC",
   "dependencies": {
+    "@npmcli/infer-owner": "^1.0.1",
     "bluebird": "^3.5.5",
     "chownr": "^1.1.1",
     "figgy-pudding": "^3.5.1",
