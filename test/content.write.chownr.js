@@ -1,12 +1,14 @@
 'use strict'
 
+const NEWUID = process.getuid() + 1
+const NEWGID = process.getgid() + 1
+
+process.getuid = () => 0
+
 const testDir = require('./util/test-dir')(__filename)
 const path = require('path')
 const CACHE = path.join(testDir, 'cache')
 const fs = require('fs')
-
-const NEWUID = process.getuid() + 1
-const NEWGID = process.getgid() + 1
 const stat = fs.lstat
 fs.lstat = (path, cb) => {
   stat(path, (er, st) => {
