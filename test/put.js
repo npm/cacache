@@ -103,17 +103,15 @@ test('optionally memoizes data on stream insertion', t => {
 })
 
 test('errors if integrity errors', t => {
-  return BB.join(
-    put(CACHE, KEY, CONTENT, {
-      integrity: 'sha1-BaDDigEST'
-    }).catch(err => {
-      t.equal(err.code, 'EINTEGRITY', 'got error from bad integrity')
-    })
-  )
+  return put(CACHE, KEY, CONTENT, {
+    integrity: 'sha1-BaDDigEST'
+  }).catch(err => {
+    t.equal(err.code, 'EINTEGRITY', 'got error from bad integrity')
+  })
 })
 
 test('signals error if error writing to cache', t => {
-  return BB.join(
+  return Promise.all([
     put(CACHE, KEY, CONTENT, {
       size: 2
     }).then(() => {
@@ -123,12 +121,11 @@ test('signals error if error writing to cache', t => {
       size: 2
     })).then(() => {
       throw new Error('expected error')
-    }).catch(err => err),
-    (bulkErr, streamErr) => {
-      t.equal(bulkErr.code, 'EBADSIZE', 'got error from bulk write')
-      t.equal(streamErr.code, 'EBADSIZE', 'got error from stream write')
-    }
-  )
+    }).catch(err => err)
+  ]).then(([bulkErr, streamErr]) => {
+    t.equal(bulkErr.code, 'EBADSIZE', 'got error from bulk write')
+    t.equal(streamErr.code, 'EBADSIZE', 'got error from stream write')
+  })
 })
 
 test('errors if input stream errors', t => {

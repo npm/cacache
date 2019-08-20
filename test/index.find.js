@@ -81,7 +81,7 @@ test('index.find key case-sensitivity', function (t) {
     }
   }))
   fixture.create(CACHE)
-  return BB.join(
+  return Promise.all([
     index.find(CACHE, 'JSONStream').then(info => {
       t.ok(info, 'found an entry for JSONStream')
       t.equal(info.key, 'JSONStream', 'fetched the correct entry')
@@ -93,7 +93,7 @@ test('index.find key case-sensitivity', function (t) {
     index.find(CACHE, 'jsonStream').then(info => {
       t.ok(!info, 'no entry for jsonStream')
     })
-  )
+  ])
 })
 
 test('index.find path-breaking characters', function (t) {
@@ -180,8 +180,8 @@ test('index.find garbled data in index file', function (t) {
   })
   const fixture = new Tacks(CacheIndex({
     'whatever': '\n' +
-    `${index._hashEntry(stringified)}\t${stringified}` +
-    '\n{"key": "' + key + '"\noway'
+      `${index._hashEntry(stringified)}\t${stringified}` +
+      '\n{"key": "' + key + '"\noway'
   }))
   fixture.create(CACHE)
   return index.find(CACHE, key).then(info => {

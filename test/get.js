@@ -104,23 +104,22 @@ test('basic stream get', t => {
   }))
   fixture.create(CACHE)
   return index.insert(CACHE, KEY, INTEGRITY, opts()).then(() => {
-    return BB.join(
+    return Promise.all([
       streamGet(false, CACHE, KEY),
-      streamGet(true, CACHE, INTEGRITY),
-      (byKey, byDigest) => {
-        t.deepEqual(byKey, {
-          data: CONTENT,
-          integrity: INTEGRITY,
-          metadata: METADATA,
-          size: SIZE
-        }, 'got all expected data and fields from key fetch')
-        t.deepEqual(
-          byDigest.data,
-          CONTENT,
-          'got correct data from digest fetch'
-        )
-      }
-    )
+      streamGet(true, CACHE, INTEGRITY)
+    ]).then(([byKey, byDigest]) => {
+      t.deepEqual(byKey, {
+        data: CONTENT,
+        integrity: INTEGRITY,
+        metadata: METADATA,
+        size: SIZE
+      }, 'got all expected data and fields from key fetch')
+      t.deepEqual(
+        byDigest.data,
+        CONTENT,
+        'got correct data from digest fetch'
+      )
+    })
   })
 })
 
@@ -225,18 +224,17 @@ test('memoizes data on stream read', t => {
   }))
   fixture.create(CACHE)
   return index.insert(CACHE, KEY, INTEGRITY, opts()).then(ENTRY => {
-    return BB.join(
+    return Promise.all([
       streamGet(false, CACHE, KEY),
-      streamGet(true, CACHE, INTEGRITY),
-      () => {
-        t.deepEqual(memo.get(CACHE, KEY), null, 'no memoization by key!')
-        t.deepEqual(
-          memo.get.byDigest(CACHE, INTEGRITY),
-          null,
-          'no memoization by digest!'
-        )
-      }
-    ).then(() => {
+      streamGet(true, CACHE, INTEGRITY)
+    ]).then(() => {
+      t.deepEqual(memo.get(CACHE, KEY), null, 'no memoization by key!')
+      t.deepEqual(
+        memo.get.byDigest(CACHE, INTEGRITY),
+        null,
+        'no memoization by digest!'
+      )
+    }).then(() => {
       memo.clearMemoized()
       return streamGet(true, CACHE, INTEGRITY, {
         memoize: true
@@ -281,36 +279,34 @@ test('memoizes data on stream read', t => {
     }).then(() => {
       return rimraf(CACHE)
     }).then(() => {
-      return BB.join(
+      return Promise.all([
         streamGet(false, CACHE, KEY),
-        streamGet(true, CACHE, INTEGRITY),
-        (byKey, byDigest) => {
-          t.deepEqual(byKey, {
-            metadata: METADATA,
-            data: CONTENT,
-            integrity: INTEGRITY,
-            size: SIZE
-          }, 'key fetch fulfilled by memoization cache')
-          t.deepEqual(
-            byDigest.data,
-            CONTENT,
-            'digest fetch fulfilled by memoization cache'
-          )
-        }
-      )
+        streamGet(true, CACHE, INTEGRITY)
+      ]).then(([byKey, byDigest]) => {
+        t.deepEqual(byKey, {
+          metadata: METADATA,
+          data: CONTENT,
+          integrity: INTEGRITY,
+          size: SIZE
+        }, 'key fetch fulfilled by memoization cache')
+        t.deepEqual(
+          byDigest.data,
+          CONTENT,
+          'digest fetch fulfilled by memoization cache'
+        )
+      })
     }).then(() => {
-      return BB.join(
+      return Promise.all([
         streamGet(false, CACHE, KEY, {
           memoize: false
         }).catch(err => err),
         streamGet(true, CACHE, INTEGRITY, {
           memoize: false
-        }).catch(err => err),
-        (keyErr, digestErr) => {
-          t.equal(keyErr.code, 'ENOENT', 'key get memoization bypassed')
-          t.equal(keyErr.code, 'ENOENT', 'digest get memoization bypassed')
-        }
-      )
+        }).catch(err => err)
+      ]).then(([keyErr, digestErr]) => {
+        t.equal(keyErr.code, 'ENOENT', 'key get memoization bypassed')
+        t.equal(keyErr.code, 'ENOENT', 'digest get memoization bypassed')
+      })
     })
   })
 })

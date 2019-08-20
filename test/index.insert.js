@@ -126,36 +126,35 @@ test('optional arbitrary metadata', function (t) {
 })
 
 test('key case-sensitivity', function (t) {
-  return BB.join(
+  return Promise.all([
     index.insert(CACHE, KEY, INTEGRITY, opts()),
-    index.insert(CACHE, KEY.toUpperCase(), INTEGRITY + 'upper', opts())
+    index.insert(CACHE, KEY.toUpperCase(), INTEGRITY + 'upper', opts())]
   ).then(() => {
-    return BB.join(
+    return Promise.all([
       index.find(CACHE, KEY),
-      index.find(CACHE, KEY.toUpperCase()),
-      (entry, upperEntry) => {
-        delete entry.time
-        delete upperEntry.time
-        t.deepEqual({
-          key: entry.key,
-          integrity: entry.integrity,
-          size: SIZE
-        }, {
-          key: KEY,
-          integrity: INTEGRITY,
-          size: SIZE
-        }, 'regular entry exists')
-        t.deepEqual({
-          key: upperEntry.key,
-          integrity: upperEntry.integrity,
-          size: SIZE
-        }, {
-          key: KEY.toUpperCase(),
-          integrity: INTEGRITY + 'upper',
-          size: SIZE
-        }, 'case-variant entry intact')
-      }
-    )
+      index.find(CACHE, KEY.toUpperCase())
+    ]).then(([entry, upperEntry]) => {
+      delete entry.time
+      delete upperEntry.time
+      t.deepEqual({
+        key: entry.key,
+        integrity: entry.integrity,
+        size: SIZE
+      }, {
+        key: KEY,
+        integrity: INTEGRITY,
+        size: SIZE
+      }, 'regular entry exists')
+      t.deepEqual({
+        key: upperEntry.key,
+        integrity: upperEntry.integrity,
+        size: SIZE
+      }, {
+        key: KEY.toUpperCase(),
+        integrity: INTEGRITY + 'upper',
+        size: SIZE
+      }, 'case-variant entry intact')
+    })
   })
 })
 
