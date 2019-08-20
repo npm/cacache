@@ -4,7 +4,7 @@ const BB = require('bluebird')
 
 const finished = BB.promisify(require('mississippi').finished)
 
-let buf = []
+const buf = []
 for (let i = 0; i < Math.pow(2, 8); i++) {
   buf.push(Buffer.alloc(8, i))
 }
@@ -17,7 +17,7 @@ for (let i = 0; i < 100; i++) {
 const BIGCONTENT = Buffer.concat(arr, CONTENT.length * 1000)
 const KEY = 'my-test-key'
 
-var put = require('../../put')
+const put = require('../../put')
 
 module.exports = (suite, CACHE) => {
   suite.add('cacache.put()', {

@@ -19,7 +19,7 @@ const INTEGRITY = ssri.fromData(CONTENT).toString()
 const METADATA = { foo: 'bar' }
 const contentPath = require('../lib/content/path')
 
-var put = require('..').put
+const put = require('..').put
 
 test('basic bulk insertion', t => {
   return put(CACHE, KEY, CONTENT).then(integrity => {

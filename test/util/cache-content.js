@@ -9,7 +9,7 @@ const File = Tacks.File
 
 module.exports = CacheContent
 function CacheContent (entries) {
-  var tree = Dir({})
+  const tree = Dir({})
   Object.keys(entries).forEach(function (k) {
     const cpath = contentPath('', k)
     const content = entries[k]
