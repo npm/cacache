@@ -1,7 +1,5 @@
 'use strict'
 
-const BB = require('bluebird')
-
 const figgyPudding = require('figgy-pudding')
 const fs = require('fs')
 const index = require('./lib/entry-index')
@@ -31,7 +29,7 @@ function getData (byDigest, cache, key, opts) {
       : memo.get(cache, key, opts)
   )
   if (memoized && opts.memoize !== false) {
-    return BB.resolve(byDigest ? memoized : {
+    return Promise.resolve(byDigest ? memoized : {
       metadata: memoized.entry.metadata,
       data: memoized.data,
       integrity: memoized.entry.integrity,
@@ -39,7 +37,7 @@ function getData (byDigest, cache, key, opts) {
     })
   }
   return (
-    byDigest ? BB.resolve(null) : index.find(cache, key, opts)
+    byDigest ? Promise.resolve(null) : index.find(cache, key, opts)
   ).then(entry => {
     if (!entry && !byDigest) {
       throw new index.NotFoundError(cache, key)
@@ -203,7 +201,7 @@ function info (cache, key, opts) {
   opts = GetOpts(opts)
   const memoized = memo.get(cache, key, opts)
   if (memoized && opts.memoize !== false) {
-    return BB.resolve(memoized.entry)
+    return Promise.resolve(memoized.entry)
   } else {
     return index.find(cache, key)
   }
@@ -221,7 +219,7 @@ function copy (byDigest, cache, key, dest, opts) {
   opts = GetOpts(opts)
   if (read.copy) {
     return (
-      byDigest ? BB.resolve(null) : index.find(cache, key, opts)
+      byDigest ? Promise.resolve(null) : index.find(cache, key, opts)
     ).then(entry => {
       if (!entry && !byDigest) {
         throw new index.NotFoundError(cache, key)
