@@ -85,18 +85,17 @@ test('accepts function for custom user filtering of index entries', t => {
   const KEY2 = KEY + 'aaa'
   const KEY3 = KEY + 'bbb'
   return mockCache().then(() => {
-    return BB.join(
+    return Promise.all([
       index.insert(CACHE, KEY2, INTEGRITY, {
         metadata: 'haayyyy'
       }),
       index.insert(CACHE, KEY3, INTEGRITY, {
         metadata: 'haayyyy again'
-      }),
-      (entryA, entryB) => ({
-        [entryA.key]: entryA,
-        [entryB.key]: entryB
       })
-    )
+    ]).then(([entryA, entryB]) => ({
+      [entryA.key]: entryA,
+      [entryB.key]: entryB
+    }))
   }).then(newEntries => {
     return verify(CACHE, {
       filter (entry) {
@@ -175,36 +174,38 @@ test('cleans up contents of tmp dir', t => {
   const tmpFile = path.join(CACHE, 'tmp', 'x')
   const misc = path.join(CACHE, 'y')
   return mockCache().then(() => {
-    return BB.join(
+    return Promise.all([
       fs.writeFileAsync(tmpFile, ''),
-      fs.writeFileAsync(misc, ''),
-      () => verify(CACHE)
-    )
+      fs.writeFileAsync(misc, '')
+    ]).then(() => verify(CACHE))
   }).then(() => {
-    return BB.join(
-      fs.statAsync(tmpFile).catch({ code: 'ENOENT' }, e => e),
-      fs.statAsync(misc),
-      (err, stat) => {
-        t.equal(err.code, 'ENOENT', 'tmp file was blown away')
-        t.ok(stat, 'misc file was not touched')
-      }
-    )
+    return Promise.all([
+      fs.statAsync(tmpFile).catch((err) => {
+        if (err.code === 'ENOENT') {
+          return err
+        }
+        throw err
+      }),
+      fs.statAsync(misc)
+    ]).then(([err, stat]) => {
+      t.equal(err.code, 'ENOENT', 'tmp file was blown away')
+      t.ok(stat, 'misc file was not touched')
+    })
   })
 })
 
 test('writes a file with last verification time', t => {
   return verify(CACHE).then(() => {
-    return BB.join(
+    return Promise.all([
       verify.lastRun(CACHE),
       fs.readFileAsync(
         path.join(CACHE, '_lastverified'), 'utf8'
       ).then(data => {
         return new Date(parseInt(data))
-      }),
-      (fromLastRun, fromFile) => {
-        t.equal(+fromLastRun, +fromFile, 'last verified was writen')
-      }
-    )
+      })
+    ]).then(([fromLastRun, fromFile]) => {
+      t.equal(+fromLastRun, +fromFile, 'last verified was writen')
+    })
   })
 })
 
@@ -214,7 +215,7 @@ test('re-builds the index with the size parameter', t => {
   const KEY2 = KEY + 'aaa'
   const KEY3 = KEY + 'bbb'
   return mockCache().then(() => {
-    return BB.join(
+    return Promise.all([
       index.insert(CACHE, KEY2, INTEGRITY, {
         metadata: 'haayyyy',
         size: 20
@@ -222,7 +223,7 @@ test('re-builds the index with the size parameter', t => {
       index.insert(CACHE, KEY3, INTEGRITY, {
         metadata: 'haayyyy again',
         size: 30
-      }))
+      })])
   }).then(() => {
     return index.ls(CACHE).then((newEntries) => {
       return verify(CACHE)

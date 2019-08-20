@@ -25,16 +25,20 @@ test('provides a utility that does resource disposal on tmp', t => {
       t.ok(stat.isDirectory(), 'path points to an existing directory')
     }).then(() => dir)
   }).then(dir => {
-    return BB.join(
+    return Promise.all([
       fs.statAsync(dir).then(() => {
         throw new Error('expected fail')
-      }).catch({ code: 'ENOENT' }, () => {}),
-      fs.statAsync(path.join(CACHE, 'tmp')),
-      (nope, yes) => {
-        t.notOk(nope, 'tmp subdir removed')
-        t.ok(yes.isDirectory(), 'tmp parent dir left intact')
-      }
-    )
+      }).catch((err) => {
+        if (err.code === 'ENOENT') {
+          return undefined
+        }
+        throw err
+      }),
+      fs.statAsync(path.join(CACHE, 'tmp'))
+    ]).then(([nope, yes]) => {
+      t.notOk(nope, 'tmp subdir removed')
+      t.ok(yes.isDirectory(), 'tmp parent dir left intact')
+    })
   })
 })
 
