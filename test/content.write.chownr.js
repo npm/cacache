@@ -31,7 +31,7 @@ fs.lstatSync = path => {
 }
 
 const fromString = require('./util/from-string')
-const pipe = require('mississippi').pipe
+const { pipe } = require('mississippi')
 const requireInject = require('require-inject')
 const ssri = require('ssri')
 const test = require('tap').test

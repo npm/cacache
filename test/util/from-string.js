@@ -1,6 +1,6 @@
 'use strict'
 
-const through = require('mississippi').through
+const { through } = require('mississippi')
 
 module.exports = fromString
 function fromString (str) {

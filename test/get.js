@@ -13,7 +13,7 @@ const test = require('tap').test
 const testDir = require('./util/test-dir')(__filename)
 const ssri = require('ssri')
 
-BB.promisifyAll(fs)
+const readFile = BB.promisify(fs.readFile)
 
 const CacheContent = require('./util/cache-content')
 
@@ -66,7 +66,7 @@ test('basic bulk get', t => {
   fixture.create(CACHE)
   return index.insert(CACHE, KEY, INTEGRITY, opts()).then(() => {
     return get(CACHE, KEY)
-  }).then(res => {
+  }).then((res) => {
     t.deepEqual(res, {
       metadata: METADATA,
       data: CONTENT,
@@ -75,7 +75,7 @@ test('basic bulk get', t => {
     }, 'bulk key get returned proper data')
   }).then(() => {
     return get.byDigest(CACHE, INTEGRITY)
-  }).then(res => {
+  }).then((res) => {
     t.deepEqual(res, CONTENT, 'byDigest returned proper data')
   })
 })
@@ -131,21 +131,21 @@ test('get.copy', t => {
   fixture.create(CACHE)
   return index.insert(CACHE, KEY, INTEGRITY, opts())
     .then(() => get.copy(CACHE, KEY, DEST))
-    .then(res => {
+    .then((res) => {
       t.deepEqual(res, {
         metadata: METADATA,
         integrity: INTEGRITY,
         size: SIZE
       }, 'copy operation returns basic metadata')
-      return fs.readFileAsync(DEST)
+      return readFile(DEST)
     })
-    .then(data => {
+    .then((data) => {
       t.deepEqual(data, CONTENT, 'data copied by key matches')
       return rimraf(DEST)
     })
     .then(() => get.copy.byDigest(CACHE, INTEGRITY, DEST))
-    .then(() => fs.readFileAsync(DEST))
-    .then(data => {
+    .then(() => readFile(DEST))
+    .then((data) => {
       t.deepEqual(data, CONTENT, 'data copied by digest matches')
       return rimraf(DEST)
     })
@@ -166,7 +166,7 @@ test('ENOENT if not found', t => {
 
 test('get.info index entry lookup', t => {
   return index.insert(CACHE, KEY, INTEGRITY, opts()).then(ENTRY => {
-    return get.info(CACHE, KEY).then(entry => {
+    return get.info(CACHE, KEY).then((entry) => {
       t.deepEqual(entry, ENTRY, 'get.info() returned the right entry')
     })
   })
@@ -182,7 +182,7 @@ test('memoizes data on bulk read', t => {
     return get(CACHE, KEY).then(() => {
       t.deepEqual(memo.get(CACHE, KEY), null, 'no memoization!')
       return get(CACHE, KEY, { memoize: true })
-    }).then(res => {
+    }).then((res) => {
       t.deepEqual(res, {
         metadata: METADATA,
         data: CONTENT,
@@ -196,7 +196,7 @@ test('memoizes data on bulk read', t => {
       return rimraf(CACHE)
     }).then(() => {
       return get(CACHE, KEY)
-    }).then(res => {
+    }).then((res) => {
       t.deepEqual(res, {
         metadata: METADATA,
         data: CONTENT,
@@ -239,7 +239,7 @@ test('memoizes data on stream read', t => {
       return streamGet(true, CACHE, INTEGRITY, {
         memoize: true
       })
-    }).then(byDigest => {
+    }).then((byDigest) => {
       t.deepEqual(byDigest.data, CONTENT, 'usual data returned from stream')
       t.deepEqual(memo.get(CACHE, KEY), null, 'digest fetch = no key entry')
       t.deepEqual(
@@ -255,7 +255,7 @@ test('memoizes data on stream read', t => {
     }).then(() => {
       memo.clearMemoized()
       return streamGet(false, CACHE, KEY, { memoize: true })
-    }).then(byKey => {
+    }).then((byKey) => {
       t.deepEqual(byKey, {
         metadata: METADATA,
         data: CONTENT,
@@ -321,7 +321,7 @@ test('get.info uses memoized data', t => {
     metadata: null
   }
   memo.put(CACHE, ENTRY, CONTENT)
-  return get.info(CACHE, KEY).then(info => {
+  return get.info(CACHE, KEY).then((info) => {
     t.deepEqual(info, ENTRY, 'got the entry from memoization cache')
   })
 })

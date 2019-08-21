@@ -4,7 +4,7 @@ const figgyPudding = require('figgy-pudding')
 const index = require('./lib/entry-index')
 const memo = require('./lib/memoization')
 const write = require('./lib/content/write')
-const to = require('mississippi').to
+const { to } = require('mississippi')
 
 const PutOpts = figgyPudding({
   algorithms: {
@@ -25,10 +25,10 @@ const PutOpts = figgyPudding({
 module.exports = putData
 function putData (cache, key, data, opts) {
   opts = PutOpts(opts)
-  return write(cache, data, opts).then(res => {
+  return write(cache, data, opts).then((res) => {
     return index.insert(
       cache, key, res.integrity, opts.concat({ size: res.size })
-    ).then(entry => {
+    ).then((entry) => {
       if (opts.memoize) {
         memo.put(cache, entry, data, opts)
       }
@@ -62,7 +62,7 @@ function putStream (cache, key, opts) {
     })
   }, cb => {
     contentStream.end(() => {
-      index.insert(cache, key, integrity, opts.concat({ size })).then(entry => {
+      index.insert(cache, key, integrity, opts.concat({ size })).then((entry) => {
         if (opts.memoize) {
           memo.put(cache, entry, Buffer.concat(memoData, memoTotal), opts)
         }

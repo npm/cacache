@@ -1,13 +1,15 @@
 'use strict'
 
+const BB = require('bluebird')
+
 const figgyPudding = require('figgy-pudding')
 const fs = require('fs')
+const { pipe, pipeline, through } = require('mississippi')
 const index = require('./lib/entry-index')
 const memo = require('./lib/memoization')
-const pipe = require('mississippi').pipe
-const pipeline = require('mississippi').pipeline
 const read = require('./lib/content/read')
-const through = require('mississippi').through
+
+const writeFile = BB.promisify(fs.writeFile)
 
 const GetOpts = figgyPudding({
   integrity: {},
@@ -38,19 +40,19 @@ function getData (byDigest, cache, key, opts) {
   }
   return (
     byDigest ? Promise.resolve(null) : index.find(cache, key, opts)
-  ).then(entry => {
+  ).then((entry) => {
     if (!entry && !byDigest) {
       throw new index.NotFoundError(cache, key)
     }
     return read(cache, byDigest ? key : entry.integrity, {
       integrity: opts.integrity,
       size: opts.size
-    }).then(data => byDigest ? data : {
+    }).then((data) => byDigest ? data : {
       metadata: entry.metadata,
       data: data,
       size: entry.size,
       integrity: entry.integrity
-    }).then(res => {
+    }).then((res) => {
       if (opts.memoize && byDigest) {
         memo.put.byDigest(cache, key, res, opts)
       } else if (opts.memoize) {
@@ -124,7 +126,7 @@ function getStream (cache, key, opts) {
     stream.write(memoized.data, () => stream.end())
     return stream
   }
-  index.find(cache, key).then(entry => {
+  index.find(cache, key).then((entry) => {
     if (!entry) {
       return stream.emit(
         'error', new index.NotFoundError(cache, key)
@@ -220,7 +222,7 @@ function copy (byDigest, cache, key, dest, opts) {
   if (read.copy) {
     return (
       byDigest ? Promise.resolve(null) : index.find(cache, key, opts)
-    ).then(entry => {
+    ).then((entry) => {
       if (!entry && !byDigest) {
         throw new index.NotFoundError(cache, key)
       }
@@ -233,8 +235,8 @@ function copy (byDigest, cache, key, dest, opts) {
       })
     })
   } else {
-    return getData(byDigest, cache, key, opts).then(res => {
-      return fs.writeFileAsync(dest, byDigest ? res : res.data)
+    return getData(byDigest, cache, key, opts).then((res) => {
+      return writeFile(dest, byDigest ? res : res.data)
         .then(() => byDigest ? key : {
           metadata: res.metadata,
           size: res.size,
