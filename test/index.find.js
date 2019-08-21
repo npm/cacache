@@ -57,7 +57,7 @@ test('index.find cache miss', function (t) {
 test('index.find no cache', function (t) {
   return fs.statAsync(CACHE).then(() => {
     throw new Error('expected cache directory')
-  }).catch(err => {
+  }).catch((err) => {
     t.assert(err, 'cache directory does not exist')
     return index.find(CACHE, 'whatever')
   }).then(info => {

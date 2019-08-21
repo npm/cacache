@@ -23,7 +23,7 @@ test('removes a content entry', function (t) {
     fs.statAsync(contentPath(CACHE, 'sha1-deadbeef'))
   )).then(() => {
     throw new Error('expected an error')
-  }).catch(err => {
+  }).catch((err) => {
     t.ok(err, 'fs.stat failed on rmed content')
     t.equal('ENOENT', err.code, 'file does not exist anymore')
   })
@@ -36,7 +36,7 @@ test('works fine if entry missing', function (t) {
     fs.statAsync(contentPath(CACHE, 'sha1-deadbeef'))
   )).then(() => {
     throw new Error('expected an error')
-  }).catch(err => {
+  }).catch((err) => {
     t.ok(err, 'fs.stat failed on rmed content')
     t.equal('ENOENT', err.code, 'file does not exist anymore')
   })

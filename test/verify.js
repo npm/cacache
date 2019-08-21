@@ -142,8 +142,12 @@ test('removes corrupted content', t => {
     }, 'reported correct collection counts')
     return fs.statAsync(cpath).then(() => {
       throw new Error('expected a failure')
-    }).catch({ code: 'ENOENT' }, err => {
-      t.match(err.message, /no such file/, 'content no longer in cache')
+    }).catch((err) => {
+      if (err.code === 'ENOENT') {
+        t.match(err.message, /no such file/, 'content no longer in cache')
+        return
+      }
+      throw err
     })
   })
 })

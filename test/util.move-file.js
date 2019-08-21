@@ -23,7 +23,7 @@ test('move a file', function (t) {
     return fs.readFileAsync('dest', 'utf8')
   }).then(data => {
     t.equal(data, 'foo', 'file data correct')
-    return fs.statAsync('src').catch(err => {
+    return fs.statAsync('src').catch((err) => {
       t.ok(err, 'src read error')
       t.equal(err.code, 'ENOENT', 'src does not exist')
     })
@@ -40,7 +40,7 @@ test('does not clobber existing files', function (t) {
     return fs.readFileAsync('dest', 'utf8')
   }).then(data => {
     t.equal(data, 'bar', 'conflicting file left intact')
-    return fs.statAsync('src').catch(err => {
+    return fs.statAsync('src').catch((err) => {
       t.ok(err, 'src read error')
       t.equal(err.code, 'ENOENT', 'src file still deleted')
     })
@@ -74,7 +74,7 @@ test('does not error if destination file is open', function (t) {
       return fs.readFileAsync('dest', 'utf8')
     }).then(data => {
       t.equal(data, 'bar', 'destination left intact')
-      return fs.statAsync('src').catch(err => {
+      return fs.statAsync('src').catch((err) => {
         t.ok(err, 'src read error')
         t.equal(err.code, 'ENOENT', 'src does not exist')
       })
@@ -93,7 +93,7 @@ test('errors if dest is not writable', {
   return fs.chmodAsync('dest', parseInt('400', 8)).then(() => {
     return moveFile('src', path.join('dest', 'file')).then(() => {
       throw new Error('move succeeded and should not have')
-    }).catch(err => {
+    }).catch((err) => {
       t.ok(err, 'error was returned')
       t.equal(err.code, 'EACCES', 'error is about permissions')
       return fs.readFileAsync('src', 'utf8')
