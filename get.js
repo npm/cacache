@@ -160,7 +160,7 @@ function getStream (cache, key, opts) {
       memoStream,
       stream
     )
-  }).catch(err => stream.emit('error', err))
+  }).catch((err) => stream.emit('error', err))
   return stream
 }
 

@@ -105,7 +105,7 @@ test('optionally memoizes data on stream insertion', t => {
 test('errors if integrity errors', t => {
   return put(CACHE, KEY, CONTENT, {
     integrity: 'sha1-BaDDigEST'
-  }).catch(err => {
+  }).catch((err) => {
     t.equal(err.code, 'EINTEGRITY', 'got error from bad integrity')
   })
 })
@@ -116,12 +116,12 @@ test('signals error if error writing to cache', t => {
       size: 2
     }).then(() => {
       throw new Error('expected error')
-    }).catch(err => err),
+    }).catch((err) => err),
     pipe(fromString(CONTENT), put.stream(CACHE, KEY, {
       size: 2
     })).then(() => {
       throw new Error('expected error')
-    }).catch(err => err)
+    }).catch((err) => err)
   ]).then(([bulkErr, streamErr]) => {
     t.equal(bulkErr.code, 'EBADSIZE', 'got error from bulk write')
     t.equal(streamErr.code, 'EBADSIZE', 'got error from stream write')
@@ -138,7 +138,7 @@ test('errors if input stream errors', t => {
     stream, putter
   ).then(() => {
     throw new Error('expected error')
-  }).catch(err => {
+  }).catch((err) => {
     t.ok(err, 'got an error')
     t.ok(!int, 'no integrity returned')
     t.match(

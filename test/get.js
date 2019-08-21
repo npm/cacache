@@ -154,11 +154,11 @@ test('get.copy', t => {
 test('ENOENT if not found', t => {
   return get(CACHE, KEY).then(() => {
     throw new Error('lookup should fail')
-  }).catch(err => {
+  }).catch((err) => {
     t.ok(err, 'got an error')
     t.equal(err.code, 'ENOENT', 'error code is ENOENT')
     return get.info(CACHE, KEY)
-  }).catch(err => {
+  }).catch((err) => {
     t.ok(err, 'got an error')
     t.equal(err.code, 'ENOENT', 'error code is ENOENT')
   })
@@ -205,7 +205,7 @@ test('memoizes data on bulk read', t => {
       }, 'memoized data fetched by default')
       return get(CACHE, KEY, { memoize: false }).then(() => {
         throw new Error('expected get to fail')
-      }).catch(err => {
+      }).catch((err) => {
         t.ok(err, 'got an error from unmemoized get')
         t.equal(err.code, 'ENOENT', 'cached content not found')
         t.deepEqual(memo.get(CACHE, KEY), {
@@ -299,10 +299,10 @@ test('memoizes data on stream read', t => {
       return Promise.all([
         streamGet(false, CACHE, KEY, {
           memoize: false
-        }).catch(err => err),
+        }).catch((err) => err),
         streamGet(true, CACHE, INTEGRITY, {
           memoize: false
-        }).catch(err => err)
+        }).catch((err) => err)
       ]).then(([keyErr, digestErr]) => {
         t.equal(keyErr.code, 'ENOENT', 'key get memoization bypassed')
         t.equal(keyErr.code, 'ENOENT', 'digest get memoization bypassed')
