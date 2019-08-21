@@ -41,7 +41,7 @@ test('basic listing', function (t) {
     contentPath(
       CACHE, contents.whatnot.integrity)
   fixture.create(CACHE)
-  return ls(CACHE).then(listing => {
+  return ls(CACHE).then((listing) => {
     t.deepEqual(listing, contents, 'index contents correct')
   }).then(() => {
     const listing = []
@@ -83,13 +83,13 @@ test('separate keys in conflicting buckets', function (t) {
     contentPath(
       CACHE, contents.whatev.integrity)
   fixture.create(CACHE)
-  return ls(CACHE).then(listing => {
+  return ls(CACHE).then((listing) => {
     t.deepEqual(listing, contents, 'index contents correct')
   })
 })
 
 test('works fine on an empty/missing cache', function (t) {
-  return ls(CACHE).then(listing => {
+  return ls(CACHE).then((listing) => {
     t.deepEqual(listing, {}, 'returned an empty listing')
   })
 })
@@ -107,7 +107,7 @@ test('ignores non-dir files', function (t) {
   index.contents['garbage'] = File('hello world')
   const fixture = new Tacks(index)
   fixture.create(CACHE)
-  return ls(CACHE).then(listing => {
+  return ls(CACHE).then((listing) => {
     t.equal(Object.keys(listing).length, 1, 'only 1 item in listing')
     t.equal(listing.whatever.key, 'whatever', 'only the correct entry listed')
   })
@@ -150,7 +150,7 @@ test('correctly ignores deleted entries', t => {
   fixture.create(CACHE)
   return index.delete(CACHE, 'whatnot')
     .then(() => ls(CACHE))
-    .then(listing => t.deepEqual(listing, {
+    .then((listing) => t.deepEqual(listing, {
       whatever: contents.whatever,
       whatwhere: contents.whatwhere
     }, 'index contents correct'))

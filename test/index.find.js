@@ -8,7 +8,7 @@ const Tacks = require('tacks')
 const test = require('tap').test
 const testDir = require('./util/test-dir')(__filename)
 
-BB.promisifyAll(fs)
+const stat = BB.promisify(fs.stat)
 
 const CACHE = path.join(testDir, 'cache')
 const SIZE = 999
@@ -29,7 +29,7 @@ test('index.find cache hit', function (t) {
   fixture.create(CACHE)
   return index.find(
     CACHE, entry.key
-  ).then(info => {
+  ).then((info) => {
     t.ok(info, 'cache hit')
     t.equal(
       info.path,
@@ -49,18 +49,18 @@ test('index.find cache miss', function (t) {
   fixture.create(CACHE)
   return index.find(
     CACHE, 'whatever'
-  ).then(info => {
+  ).then((info) => {
     t.ok(!info, 'cache miss when specific key not present')
   })
 })
 
 test('index.find no cache', function (t) {
-  return fs.statAsync(CACHE).then(() => {
+  return stat(CACHE).then(() => {
     throw new Error('expected cache directory')
   }).catch((err) => {
     t.assert(err, 'cache directory does not exist')
     return index.find(CACHE, 'whatever')
-  }).then(info => {
+  }).then((info) => {
     t.ok(!info, 'if there is no cache dir, behaves like a cache miss')
   })
 })
@@ -82,15 +82,15 @@ test('index.find key case-sensitivity', function (t) {
   }))
   fixture.create(CACHE)
   return Promise.all([
-    index.find(CACHE, 'JSONStream').then(info => {
+    index.find(CACHE, 'JSONStream').then((info) => {
       t.ok(info, 'found an entry for JSONStream')
       t.equal(info.key, 'JSONStream', 'fetched the correct entry')
     }),
-    index.find(CACHE, 'jsonstream').then(info => {
+    index.find(CACHE, 'jsonstream').then((info) => {
       t.ok(info, 'found an entry for jsonstream')
       t.equal(info.key, 'jsonstream', 'fetched the correct entry')
     }),
-    index.find(CACHE, 'jsonStream').then(info => {
+    index.find(CACHE, 'jsonStream').then((info) => {
       t.ok(!info, 'no entry for jsonStream')
     })
   ])
@@ -108,7 +108,7 @@ test('index.find path-breaking characters', function (t) {
     [entry.key]: entry
   }))
   fixture.create(CACHE)
-  return index.find(CACHE, entry.key).then(info => {
+  return index.find(CACHE, entry.key).then((info) => {
     t.ok(info, 'cache hit')
     delete info.path
     t.deepEqual(
@@ -135,7 +135,7 @@ test('index.find extremely long keys', function (t) {
     [entry.key]: entry
   }))
   fixture.create(CACHE)
-  return index.find(CACHE, entry.key).then(info => {
+  return index.find(CACHE, entry.key).then((info) => {
     t.ok(info, 'cache hit')
     delete info.path
     t.deepEqual(
@@ -155,7 +155,7 @@ test('index.find multiple index entries for key', function (t) {
     ]
   }))
   fixture.create(CACHE)
-  return index.find(CACHE, key).then(info => {
+  return index.find(CACHE, key).then((info) => {
     t.ok(info, 'cache hit')
     t.equal(info.integrity, 'sha1-bada55', 'most recent entry wins')
   })
@@ -184,7 +184,7 @@ test('index.find garbled data in index file', function (t) {
       '\n{"key": "' + key + '"\noway'
   }))
   fixture.create(CACHE)
-  return index.find(CACHE, key).then(info => {
+  return index.find(CACHE, key).then((info) => {
     t.ok(info, 'cache hit in spite of crash-induced fail')
     t.equal(info.integrity, 'sha1-deadbeef', ' recent entry wins')
   })
@@ -207,7 +207,7 @@ test('index.find hash conflict in same bucket', function (t) {
     ]
   }))
   fixture.create(CACHE)
-  return index.find(CACHE, entry.key).then(info => {
+  return index.find(CACHE, entry.key).then((info) => {
     t.ok(info, 'cache hit')
     delete info.path
     t.deepEqual(

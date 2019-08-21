@@ -2,7 +2,7 @@
 
 const BB = require('bluebird')
 
-const fs = BB.promisifyAll(require('fs'))
+const fs = require('fs')
 const index = require('../lib/entry-index')
 const path = require('path')
 const Tacks = require('tacks')
@@ -22,6 +22,11 @@ const get = require('..').get
 
 const rm = require('..').rm
 
+const readFile = BB.promisify(fs.readFile)
+const mkdir = BB.promisify(fs.mkdir)
+const writeFile = BB.promisify(fs.writeFile)
+const readdir = BB.promisify(fs.readdir)
+
 test('rm.entry removes entries, not content', t => {
   const fixture = new Tacks(CacheContent({
     [INTEGRITY]: CONTENT
@@ -34,7 +39,7 @@ test('rm.entry removes entries, not content', t => {
     return rm.entry(CACHE, KEY)
   }).then(() => {
     return get(CACHE, KEY)
-  }).then(res => {
+  }).then((res) => {
     throw new Error('unexpected success')
   }).catch((err) => {
     if (err.code === 'ENOENT') {
@@ -43,8 +48,8 @@ test('rm.entry removes entries, not content', t => {
     }
     throw err
   }).then(() => {
-    return fs.readFileAsync(contentPath(CACHE, INTEGRITY))
-  }).then(data => {
+    return readFile(contentPath(CACHE, INTEGRITY))
+  }).then((data) => {
     t.deepEqual(data, CONTENT, 'content remains in cache')
   })
 })
@@ -60,7 +65,7 @@ test('rm.content removes content, not entries', t => {
     return rm.content(CACHE, INTEGRITY)
   }).then(() => {
     return get(CACHE, KEY)
-  }).then(res => {
+  }).then((res) => {
     throw new Error('unexpected success')
   }).catch((err) => {
     if (err.code === 'ENOENT') {
@@ -69,7 +74,7 @@ test('rm.content removes content, not entries', t => {
     }
     throw err
   }).then(() => {
-    return fs.readFileAsync(contentPath(CACHE, INTEGRITY))
+    return readFile(contentPath(CACHE, INTEGRITY))
   }).then(() => {
     throw new Error('unexpected success')
   }).catch((err) => {
@@ -89,14 +94,14 @@ test('rm.all deletes content and index dirs', t => {
   return index.insert(CACHE, KEY, INTEGRITY, {
     metadata: METADATA
   }).then(() => {
-    return fs.mkdirAsync(path.join(CACHE, 'tmp'))
+    return mkdir(path.join(CACHE, 'tmp'))
   }).then(() => {
-    return fs.writeFileAsync(path.join(CACHE, 'other.js'), 'hi')
+    return writeFile(path.join(CACHE, 'other.js'), 'hi')
   }).then(() => {
     return rm.all(CACHE)
   }).then(() => {
-    return fs.readdirAsync(CACHE)
-  }).then(files => {
+    return readdir(CACHE)
+  }).then((files) => {
     t.deepEqual(files.sort(), [
       'other.js',
       'tmp'

@@ -3,14 +3,15 @@
 const BB = require('bluebird')
 
 const CacheContent = require('../util/cache-content')
-const fs = BB.promisifyAll(require('fs'))
+const fs = require('fs')
 const path = require('path')
 const Tacks = require('tacks')
 const ssri = require('ssri')
-
 const read = require('../../lib/content/read')
 
-let buf = []
+const writeFile = BB.promisify(fs.writeFile)
+
+const buf = []
 for (let i = 0; i < Math.pow(2, 8); i++) {
   buf.push(Buffer.alloc(8, i))
 }
@@ -79,7 +80,7 @@ module.exports = (suite, CACHE) => {
           )
       } else {
         read(CACHE, INTEGRITY)
-          .then(data => fs.writeFileAsync(path.join(CACHE, 'data'), data))
+          .then((data) => writeFile(path.join(CACHE, 'data'), data))
           .then(
             () => deferred.resolve(),
             err => deferred.reject(err)
@@ -105,7 +106,7 @@ module.exports = (suite, CACHE) => {
           )
       } else {
         read(CACHE, BIGINTEGRITY)
-          .then(data => fs.writeFileAsync(path.join(CACHE, 'bigdata'), data))
+          .then((data) => writeFile(path.join(CACHE, 'bigdata'), data))
           .then(
             () => deferred.resolve(),
             err => deferred.reject(err)

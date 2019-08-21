@@ -4,7 +4,7 @@ const BB = require('bluebird')
 
 const contentPath = require('../lib/content/path')
 const index = require('../lib/entry-index')
-const fs = BB.promisifyAll(require('graceful-fs'))
+const fs = require('graceful-fs')
 const path = require('path')
 const Tacks = require('tacks')
 const test = require('tap').test
@@ -22,12 +22,19 @@ const BUCKET = index._bucketPath(CACHE, KEY)
 
 const verify = require('..').verify
 
+const mkdir = BB.promisify(fs.mkdir)
+const readFile = BB.promisify(fs.readFile)
+const truncate = BB.promisify(fs.truncate)
+const stat = BB.promisify(fs.stat)
+const appendFile = BB.promisify(fs.appendFile)
+const writeFile = BB.promisify(fs.writeFile)
+
 function mockCache () {
   const fixture = new Tacks(CacheContent({
     [INTEGRITY]: CONTENT
   }))
   fixture.create(CACHE)
-  return fs.mkdirAsync(path.join(CACHE, 'tmp')).then(() => {
+  return mkdir(path.join(CACHE, 'tmp')).then(() => {
     return index.insert(CACHE, KEY, INTEGRITY, {
       metadata: METADATA
     })
@@ -36,15 +43,15 @@ function mockCache () {
 
 test('removes corrupted index entries from buckets', t => {
   return mockCache().then(() => {
-    return fs.readFileAsync(BUCKET, 'utf8').then(BUCKETDATA => {
+    return readFile(BUCKET, 'utf8').then((BUCKETDATA) => {
       // traaaaash
-      return fs.appendFileAsync(BUCKET, '\n234uhhh').then(() => {
+      return appendFile(BUCKET, '\n234uhhh').then(() => {
         return verify(CACHE)
-      }).then(stats => {
+      }).then((stats) => {
         t.equal(stats.missingContent, 0, 'content valid because of good entry')
         t.equal(stats.totalEntries, 1, 'only one entry counted')
-        return fs.readFileAsync(BUCKET, 'utf8')
-      }).then(bucketData => {
+        return readFile(BUCKET, 'utf8')
+      }).then((bucketData) => {
         const bucketEntry = JSON.parse(bucketData.split('\t')[1])
         const targetEntry = JSON.parse(BUCKETDATA.split('\t')[1])
         targetEntry.time = bucketEntry.time // different timestamps
@@ -59,12 +66,12 @@ test('removes shadowed index entries from buckets', t => {
   return mockCache().then(() => {
     return index.insert(CACHE, KEY, INTEGRITY, {
       metadata: 'meh'
-    }).then(newEntry => {
-      return verify(CACHE).then(stats => {
+    }).then((newEntry) => {
+      return verify(CACHE).then((stats) => {
         t.equal(stats.missingContent, 0, 'content valid because of good entry')
         t.equal(stats.totalEntries, 1, 'only one entry counted')
-        return fs.readFileAsync(BUCKET, 'utf8')
-      }).then(bucketData => {
+        return readFile(BUCKET, 'utf8')
+      }).then((bucketData) => {
         const stringified = JSON.stringify({
           key: newEntry.key,
           integrity: newEntry.integrity.toString(),
@@ -96,12 +103,12 @@ test('accepts function for custom user filtering of index entries', t => {
       [entryA.key]: entryA,
       [entryB.key]: entryB
     }))
-  }).then(newEntries => {
+  }).then((newEntries) => {
     return verify(CACHE, {
       filter (entry) {
         return entry.key.length === KEY2.length
       }
-    }).then(stats => {
+    }).then((stats) => {
       t.deepEqual({
         verifiedContent: stats.verifiedContent,
         rejectedEntries: stats.rejectedEntries,
@@ -112,7 +119,7 @@ test('accepts function for custom user filtering of index entries', t => {
         totalEntries: 2
       }, 'reported relevant changes')
       return index.ls(CACHE)
-    }).then(entries => {
+    }).then((entries) => {
       entries[KEY2].time = newEntries[KEY2].time
       entries[KEY3].time = newEntries[KEY3].time
       t.deepEqual(entries, newEntries, 'original entry not included')
@@ -123,10 +130,10 @@ test('accepts function for custom user filtering of index entries', t => {
 test('removes corrupted content', t => {
   const cpath = contentPath(CACHE, INTEGRITY)
   return mockCache().then(() => {
-    return fs.truncateAsync(cpath, CONTENT.length - 1)
+    return truncate(cpath, CONTENT.length - 1)
   }).then(() => {
     return verify(CACHE)
-  }).then(stats => {
+  }).then((stats) => {
     delete stats.startTime
     delete stats.runTime
     delete stats.endTime
@@ -140,7 +147,7 @@ test('removes corrupted content', t => {
       rejectedEntries: 1,
       totalEntries: 0
     }, 'reported correct collection counts')
-    return fs.statAsync(cpath).then(() => {
+    return stat(cpath).then(() => {
       throw new Error('expected a failure')
     }).catch((err) => {
       if (err.code === 'ENOENT') {
@@ -157,7 +164,7 @@ test('removes content not referenced by any entries', t => {
     [INTEGRITY]: CONTENT
   }))
   fixture.create(CACHE)
-  return verify(CACHE).then(stats => {
+  return verify(CACHE).then((stats) => {
     delete stats.startTime
     delete stats.runTime
     delete stats.endTime
@@ -179,18 +186,18 @@ test('cleans up contents of tmp dir', t => {
   const misc = path.join(CACHE, 'y')
   return mockCache().then(() => {
     return Promise.all([
-      fs.writeFileAsync(tmpFile, ''),
-      fs.writeFileAsync(misc, '')
+      writeFile(tmpFile, ''),
+      writeFile(misc, '')
     ]).then(() => verify(CACHE))
   }).then(() => {
     return Promise.all([
-      fs.statAsync(tmpFile).catch((err) => {
+      stat(tmpFile).catch((err) => {
         if (err.code === 'ENOENT') {
           return err
         }
         throw err
       }),
-      fs.statAsync(misc)
+      stat(misc)
     ]).then(([err, stat]) => {
       t.equal(err.code, 'ENOENT', 'tmp file was blown away')
       t.ok(stat, 'misc file was not touched')
@@ -202,9 +209,9 @@ test('writes a file with last verification time', t => {
   return verify(CACHE).then(() => {
     return Promise.all([
       verify.lastRun(CACHE),
-      fs.readFileAsync(
+      readFile(
         path.join(CACHE, '_lastverified'), 'utf8'
-      ).then(data => {
+      ).then((data) => {
         return new Date(parseInt(data))
       })
     ]).then(([fromLastRun, fromFile]) => {
@@ -231,7 +238,7 @@ test('re-builds the index with the size parameter', t => {
   }).then(() => {
     return index.ls(CACHE).then((newEntries) => {
       return verify(CACHE)
-        .then(stats => {
+        .then((stats) => {
           t.deepEqual({
             verifiedContent: stats.verifiedContent,
             rejectedEntries: stats.rejectedEntries,
@@ -242,7 +249,7 @@ test('re-builds the index with the size parameter', t => {
             totalEntries: 3
           }, 'reported relevant changes')
           return index.ls(CACHE)
-        }).then(entries => {
+        }).then((entries) => {
           entries[KEY].time = newEntries[KEY].time
           entries[KEY2].time = newEntries[KEY2].time
           entries[KEY3].time = newEntries[KEY3].time

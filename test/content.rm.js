@@ -8,7 +8,7 @@ const Tacks = require('tacks')
 const test = require('tap').test
 const testDir = require('./util/test-dir')(__filename)
 
-BB.promisifyAll(fs)
+const stat = BB.promisify(fs.stat)
 
 const CACHE = path.join(testDir, 'cache')
 const CacheContent = require('./util/cache-content')
@@ -20,7 +20,7 @@ test('removes a content entry', function (t) {
   }))
   fixture.create(CACHE)
   return rm(CACHE, 'sha1-deadbeef').then(() => (
-    fs.statAsync(contentPath(CACHE, 'sha1-deadbeef'))
+    stat(contentPath(CACHE, 'sha1-deadbeef'))
   )).then(() => {
     throw new Error('expected an error')
   }).catch((err) => {
@@ -33,7 +33,7 @@ test('works fine if entry missing', function (t) {
   const fixture = new Tacks(CacheContent({}))
   fixture.create(CACHE)
   return rm(CACHE, 'sha1-deadbeef').then(() => (
-    fs.statAsync(contentPath(CACHE, 'sha1-deadbeef'))
+    stat(contentPath(CACHE, 'sha1-deadbeef'))
   )).then(() => {
     throw new Error('expected an error')
   }).catch((err) => {

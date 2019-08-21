@@ -10,7 +10,7 @@ const Tacks = require('tacks')
 const test = require('tap').test
 const testDir = require('./util/test-dir')(__filename)
 
-BB.promisifyAll(fs)
+const readFile = BB.promisify(fs.readFile)
 
 const CACHE = path.join(testDir, 'cache')
 const index = require('../lib/entry-index')
@@ -29,7 +29,7 @@ function opts (extra) {
 test('basic insertion', function (t) {
   return index.insert(CACHE, KEY, INTEGRITY, opts({
     metadata: 'foo'
-  })).then(entry => {
+  })).then((entry) => {
     t.deepEqual(entry, {
       key: KEY,
       integrity: INTEGRITY,
@@ -38,8 +38,8 @@ test('basic insertion', function (t) {
       metadata: 'foo',
       size: SIZE
     }, 'formatted entry returned')
-    return fs.readFileAsync(BUCKET, 'utf8')
-  }).then(data => {
+    return readFile(BUCKET, 'utf8')
+  }).then((data) => {
     t.equal(data[0], '\n', 'first entry starts with a \\n')
     const split = data.split('\t')
     t.equal(split[0].slice(1), index._hashEntry(split[1]), 'consistency header correct')
@@ -61,8 +61,8 @@ test('inserts additional entries into existing key', function (t) {
   })).then(() => (
     index.insert(CACHE, KEY, INTEGRITY, opts({ metadata: 2 }))
   )).then(() => {
-    return fs.readFileAsync(BUCKET, 'utf8')
-  }).then(data => {
+    return readFile(BUCKET, 'utf8')
+  }).then((data) => {
     const entries = data.split('\n').slice(1).map(line => {
       return JSON.parse(line.split('\t')[1])
     })
@@ -95,8 +95,8 @@ test('separates entries even if one is corrupted', function (t) {
   return index.insert(
     CACHE, KEY, INTEGRITY, opts()
   ).then(() => {
-    return fs.readFileAsync(BUCKET, 'utf8')
-  }).then(data => {
+    return readFile(BUCKET, 'utf8')
+  }).then((data) => {
     const entry = JSON.parse(data.split('\n')[4].split('\t')[1])
     delete entry.time
     t.deepEqual(entry, {
@@ -112,8 +112,8 @@ test('optional arbitrary metadata', function (t) {
   return index.insert(
     CACHE, KEY, INTEGRITY, opts({ metadata: metadata })
   ).then(() => {
-    return fs.readFileAsync(BUCKET, 'utf8')
-  }).then(data => {
+    return readFile(BUCKET, 'utf8')
+  }).then((data) => {
     const entry = JSON.parse(data.split('\t')[1])
     delete entry.time
     t.deepEqual(entry, {
@@ -164,8 +164,8 @@ test('path-breaking characters', function (t) {
     CACHE, newKey, INTEGRITY, opts()
   ).then(() => {
     const bucket = index._bucketPath(CACHE, newKey)
-    return fs.readFileAsync(bucket, 'utf8')
-  }).then(data => {
+    return readFile(bucket, 'utf8')
+  }).then((data) => {
     const entry = JSON.parse(data.split('\t')[1])
     delete entry.time
     t.deepEqual(entry, {
@@ -185,8 +185,8 @@ test('extremely long keys', function (t) {
     CACHE, newKey, INTEGRITY, opts()
   ).then(() => {
     const bucket = index._bucketPath(CACHE, newKey)
-    return fs.readFileAsync(bucket, 'utf8')
-  }).then(data => {
+    return readFile(bucket, 'utf8')
+  }).then((data) => {
     const entry = JSON.parse(data.split('\t')[1])
     delete entry.time
     t.deepEqual(entry, {

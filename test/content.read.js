@@ -10,7 +10,7 @@ const Tacks = require('tacks')
 const test = require('tap').test
 const testDir = require('./util/test-dir')(__filename)
 
-BB.promisifyAll(fs)
+const readFile = BB.promisify(fs.readFile)
 
 const CACHE = path.join(testDir, 'cache')
 const CacheContent = require('./util/cache-content')
@@ -24,7 +24,7 @@ test('read: returns a BB with cache content data', function (t) {
     [INTEGRITY]: CONTENT
   }))
   fixture.create(CACHE)
-  return read(CACHE, INTEGRITY).then(data => {
+  return read(CACHE, INTEGRITY).then((data) => {
     t.deepEqual(data, CONTENT, 'cache contents read correctly')
   })
 })
@@ -178,17 +178,17 @@ test('hasContent: tests content existence', t => {
   fixture.create(CACHE)
   return Promise.all([
     read.hasContent(CACHE, 'sha1-deadbeef')
-      .then(content => {
+      .then((content) => {
         t.ok(content.sri, 'returned sri for this content')
         t.equal(content.size, 0, 'returned the right size for this content')
         t.ok(content.stat.isFile(), 'returned actual stat object')
       }),
     read.hasContent(CACHE, 'sha1-not-there')
-      .then(content => {
+      .then((content) => {
         t.equal(content, false, 'returned false for missing content')
       }),
     read.hasContent(CACHE, 'sha1-not-here sha1-also-not-here')
-      .then(content => {
+      .then((content) => {
         t.equal(content, false, 'multi-content hash failures work ok')
       })
   ])
@@ -227,8 +227,8 @@ test('copy: copies content to a destination path', {
   }))
   fixture.create(CACHE)
   return read.copy(CACHE, INTEGRITY, DEST).then(() => {
-    return fs.readFileAsync(DEST)
-  }).then(data => {
+    return readFile(DEST)
+  }).then((data) => {
     t.deepEqual(data, CONTENT, 'file successfully copied')
   })
 })

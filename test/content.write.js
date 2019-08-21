@@ -3,7 +3,7 @@
 const fromString = require('./util/from-string')
 const fs = require('fs')
 const path = require('path')
-const pipe = require('mississippi').pipe
+const { pipe } = require('mississippi')
 const rimraf = require('rimraf')
 const ssri = require('ssri')
 const Tacks = require('tacks')
