@@ -1,10 +1,10 @@
 'use strict'
 
-const BB = require('bluebird')
+const util = require('util')
 
 const CacheIndex = require('./util/cache-index')
 const contentPath = require('../lib/content/path')
-const finished = BB.promisify(require('mississippi').finished)
+const finished = util.promisify(require('mississippi').finished)
 const index = require('../lib/entry-index.js')
 const path = require('path')
 const Tacks = require('tacks')

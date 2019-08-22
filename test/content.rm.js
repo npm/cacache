@@ -3,12 +3,12 @@
 const contentPath = require('../lib/content/path')
 const fs = require('graceful-fs')
 const path = require('path')
-const BB = require('bluebird')
+const util = require('util')
 const Tacks = require('tacks')
 const test = require('tap').test
 const testDir = require('./util/test-dir')(__filename)
 
-const stat = BB.promisify(fs.stat)
+const stat = util.promisify(fs.stat)
 
 const CACHE = path.join(testDir, 'cache')
 const CacheContent = require('./util/cache-content')

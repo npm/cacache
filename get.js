@@ -1,6 +1,6 @@
 'use strict'
 
-const BB = require('bluebird')
+const util = require('util')
 
 const figgyPudding = require('figgy-pudding')
 const fs = require('fs')
@@ -9,7 +9,7 @@ const index = require('./lib/entry-index')
 const memo = require('./lib/memoization')
 const read = require('./lib/content/read')
 
-const writeFile = BB.promisify(fs.writeFile)
+const writeFile = util.promisify(fs.writeFile)
 
 const GetOpts = figgyPudding({
   integrity: {},

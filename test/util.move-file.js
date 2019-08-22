@@ -1,6 +1,6 @@
 'use strict'
 
-const BB = require('bluebird')
+const util = require('util')
 
 const fs = require('fs')
 const path = require('path')
@@ -12,12 +12,12 @@ const Dir = Tacks.Dir
 const File = Tacks.File
 const moveFile = require('../lib/util/move-file')
 
-const readFile = BB.promisify(fs.readFile)
-const stat = BB.promisify(fs.stat)
-const open = BB.promisify(fs.open)
-const close = BB.promisify(fs.close)
-const readdir = BB.promisify(fs.readdir)
-const chmod = BB.promisify(fs.chmod)
+const readFile = util.promisify(fs.readFile)
+const stat = util.promisify(fs.stat)
+const open = util.promisify(fs.open)
+const close = util.promisify(fs.close)
+const readdir = util.promisify(fs.readdir)
+const chmod = util.promisify(fs.chmod)
 
 test('move a file', function (t) {
   const fixture = new Tacks(Dir({

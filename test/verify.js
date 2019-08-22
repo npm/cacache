@@ -1,6 +1,6 @@
 'use strict'
 
-const BB = require('bluebird')
+const util = require('util')
 
 const contentPath = require('../lib/content/path')
 const index = require('../lib/entry-index')
@@ -22,12 +22,12 @@ const BUCKET = index._bucketPath(CACHE, KEY)
 
 const verify = require('..').verify
 
-const mkdir = BB.promisify(fs.mkdir)
-const readFile = BB.promisify(fs.readFile)
-const truncate = BB.promisify(fs.truncate)
-const stat = BB.promisify(fs.stat)
-const appendFile = BB.promisify(fs.appendFile)
-const writeFile = BB.promisify(fs.writeFile)
+const mkdir = util.promisify(fs.mkdir)
+const readFile = util.promisify(fs.readFile)
+const truncate = util.promisify(fs.truncate)
+const stat = util.promisify(fs.stat)
+const appendFile = util.promisify(fs.appendFile)
+const writeFile = util.promisify(fs.writeFile)
 
 function mockCache () {
   const fixture = new Tacks(CacheContent({

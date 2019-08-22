@@ -1,6 +1,6 @@
 'use strict'
 
-const BB = require('bluebird')
+const util = require('util')
 
 const CacheIndex = require('./util/cache-index')
 const contentPath = require('../lib/content/path')
@@ -10,7 +10,7 @@ const Tacks = require('tacks')
 const test = require('tap').test
 const testDir = require('./util/test-dir')(__filename)
 
-const readFile = BB.promisify(fs.readFile)
+const readFile = util.promisify(fs.readFile)
 
 const CACHE = path.join(testDir, 'cache')
 const index = require('../lib/entry-index')
