@@ -68,6 +68,7 @@
     "mississippi": "^3.0.0",
     "mkdirp": "^0.5.1",
     "move-concurrently": "^1.0.1",
+    "p-map": "^3.0.0",
     "promise-inflight": "^1.0.1",
     "rimraf": "^2.6.3",
     "ssri": "^6.0.1",
