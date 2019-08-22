@@ -1,6 +1,6 @@
 'use strict'
 
-const BB = require('bluebird')
+const util = require('util')
 
 const fs = require('fs')
 const index = require('../lib/entry-index')
@@ -22,10 +22,10 @@ const get = require('..').get
 
 const rm = require('..').rm
 
-const readFile = BB.promisify(fs.readFile)
-const mkdir = BB.promisify(fs.mkdir)
-const writeFile = BB.promisify(fs.writeFile)
-const readdir = BB.promisify(fs.readdir)
+const readFile = util.promisify(fs.readFile)
+const mkdir = util.promisify(fs.mkdir)
+const writeFile = util.promisify(fs.writeFile)
+const readdir = util.promisify(fs.readdir)
 
 test('rm.entry removes entries, not content', t => {
   const fixture = new Tacks(CacheContent({

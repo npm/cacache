@@ -1,8 +1,8 @@
 'use strict'
 
-const BB = require('bluebird')
+const util = require('util')
 
-const finished = BB.promisify(require('mississippi').finished)
+const finished = util.promisify(require('mississippi').finished)
 
 const buf = []
 for (let i = 0; i < Math.pow(2, 8); i++) {

@@ -1,6 +1,6 @@
 'use strict'
 
-const BB = require('bluebird')
+const util = require('util')
 
 const CacheContent = require('../util/cache-content')
 const fs = require('fs')
@@ -9,7 +9,7 @@ const Tacks = require('tacks')
 const ssri = require('ssri')
 const read = require('../../lib/content/read')
 
-const writeFile = BB.promisify(fs.writeFile)
+const writeFile = util.promisify(fs.writeFile)
 
 const buf = []
 for (let i = 0; i < Math.pow(2, 8); i++) {

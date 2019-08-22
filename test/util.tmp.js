@@ -1,6 +1,6 @@
 'use strict'
 
-const BB = require('bluebird')
+const util = require('util')
 
 const fs = require('graceful-fs')
 const path = require('path')
@@ -10,7 +10,7 @@ const CACHE = require('./util/test-dir')(__filename)
 
 const tmp = require('../lib/util/tmp')
 
-const stat = BB.promisify(fs.stat)
+const stat = util.promisify(fs.stat)
 
 test('creates a unique tmpdir inside the cache', t => {
   return tmp.mkdir(CACHE).then((dir) => {

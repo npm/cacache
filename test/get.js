@@ -1,19 +1,19 @@
 'use strict'
 
-const BB = require('bluebird')
+const util = require('util')
 
-const finished = BB.promisify(require('mississippi').finished)
+const finished = util.promisify(require('mississippi').finished)
 const fs = require('fs')
 const index = require('../lib/entry-index')
 const memo = require('../lib/memoization')
 const path = require('path')
-const rimraf = BB.promisify(require('rimraf'))
+const rimraf = util.promisify(require('rimraf'))
 const Tacks = require('tacks')
 const test = require('tap').test
 const testDir = require('./util/test-dir')(__filename)
 const ssri = require('ssri')
 
-const readFile = BB.promisify(fs.readFile)
+const readFile = util.promisify(fs.readFile)
 
 const CacheContent = require('./util/cache-content')
 

@@ -1,8 +1,8 @@
 'use strict'
 
-const BB = require('bluebird')
+const util = require('util')
 
-const finished = BB.promisify(require('mississippi').finished)
+const finished = util.promisify(require('mississippi').finished)
 const fs = require('fs')
 const path = require('path')
 const ssri = require('ssri')
@@ -10,7 +10,7 @@ const Tacks = require('tacks')
 const test = require('tap').test
 const testDir = require('./util/test-dir')(__filename)
 
-const readFile = BB.promisify(fs.readFile)
+const readFile = util.promisify(fs.readFile)
 
 const CACHE = path.join(testDir, 'cache')
 const CacheContent = require('./util/cache-content')
