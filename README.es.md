@@ -1,6 +1,6 @@
 # cacache [![npm version](https://img.shields.io/npm/v/cacache.svg)](https://npm.im/cacache) [![license](https://img.shields.io/npm/l/cacache.svg)](https://npm.im/cacache) [![Travis](https://img.shields.io/travis/zkat/cacache.svg)](https://travis-ci.org/zkat/cacache) [![AppVeyor](https://ci.appveyor.com/api/projects/status/github/zkat/cacache?svg=true)](https://ci.appveyor.com/project/zkat/cacache) [![Coverage Status](https://coveralls.io/repos/github/zkat/cacache/badge.svg?branch=latest)](https://coveralls.io/github/zkat/cacache?branch=latest)
 
-[`cacache`](https://github.com/zkat/cacache) es una librería de Node.js para
+[`cacache`](https://github.com/npm/cacache) es una librería de Node.js para
 manejar caches locales en disco, con acceso tanto con claves únicas como
 direcciones de contenido (hashes/hacheos). Es súper rápida, excelente con el
 acceso concurrente, y jamás te dará datos incorrectos, aún si se corrompen o
