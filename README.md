@@ -229,7 +229,7 @@ instead.
 
 ```javascript
 // Look up by key
-cache.get(cachePath, 'my-thing').then(console.log)
+cacache.get(cachePath, 'my-thing').then(console.log)
 // Output:
 {
   metadata: {
@@ -241,7 +241,7 @@ cache.get(cachePath, 'my-thing').then(console.log)
 }
 
 // Look up by digest
-cache.get.byDigest(cachePath, 'sha512-BaSe64HaSh').then(console.log)
+cacache.get.byDigest(cachePath, 'sha512-BaSe64HaSh').then(console.log)
 // Output:
 Buffer#<deadbeef>
 ```
@@ -264,7 +264,7 @@ version does not emit the `metadata` and `integrity` events at all.
 
 ```javascript
 // Look up by key
-cache.get.stream(
+cacache.get.stream(
   cachePath, 'my-thing'
 ).on('metadata', metadata => {
   console.log('metadata:', metadata)
@@ -278,7 +278,7 @@ metadata: { ... }
 integrity: 'sha512-SoMeDIGest+64=='
 
 // Look up by digest
-cache.get.stream.byDigest(
+cacache.get.stream.byDigest(
   cachePath, 'sha512-SoMeDIGest+64=='
 ).pipe(
   fs.createWriteStream('./x.tgz')

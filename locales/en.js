@@ -40,6 +40,7 @@ x.setLocale = lang => setLocale(lang)
 x.clearMemoized = () => clearMemoized()
 
 x.tmp = {}
+x.tmp.fix = (cache) => tmp.fix(cache)
 x.tmp.mkdir = (cache, opts) => tmp.mkdir(cache, opts)
 x.tmp.withTmp = (cache, opts, cb) => tmp.withTmp(cache, opts, cb)
 
