@@ -93,6 +93,7 @@
     "statements": 80,
     "exclude": [
       "node_modules/**",
+      "coverage/**",
       "test/**"
     ]
   }
