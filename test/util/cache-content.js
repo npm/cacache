@@ -8,6 +8,7 @@ const Dir = Tacks.Dir
 const File = Tacks.File
 
 module.exports = CacheContent
+
 function CacheContent (entries) {
   const tree = Dir({})
   Object.keys(entries).forEach(function (k) {

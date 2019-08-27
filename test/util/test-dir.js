@@ -8,12 +8,15 @@ const tap = require('tap')
 const cacheDir = path.resolve(__dirname, '../cache')
 
 module.exports = testDir
+
 function testDir (filename) {
   const base = path.basename(filename, '.js')
   const dir = path.join(cacheDir, base)
-  tap.beforeEach(cb => {
-    reset(dir, err => {
-      if (err) { throw err }
+  tap.beforeEach((cb) => {
+    reset(dir, (err) => {
+      if (err) {
+        throw err
+      }
       cb()
     })
   })
@@ -29,12 +32,17 @@ function testDir (filename) {
 }
 
 module.exports.reset = reset
+
 function reset (testDir, cb) {
   process.chdir(__dirname)
   rimraf(testDir, function (err) {
-    if (err) { return cb(err) }
+    if (err) {
+      return cb(err)
+    }
     mkdirp(testDir, function (err) {
-      if (err) { return cb(err) }
+      if (err) {
+        return cb(err)
+      }
       process.chdir(testDir)
       cb()
     })

@@ -3,6 +3,7 @@
 const { through } = require('mississippi')
 
 module.exports = fromString
+
 function fromString (str) {
   const stream = through()
   setTimeout(function () {
