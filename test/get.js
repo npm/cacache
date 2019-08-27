@@ -9,7 +9,7 @@ const memo = require('../lib/memoization')
 const path = require('path')
 const rimraf = util.promisify(require('rimraf'))
 const Tacks = require('tacks')
-const test = require('tap').test
+const { test } = require('tap')
 const testDir = require('./util/test-dir')(__filename)
 const ssri = require('ssri')
 
@@ -24,13 +24,16 @@ const KEY = 'my-test-key'
 const INTEGRITY = ssri.fromData(CONTENT).toString()
 const METADATA = { foo: 'bar' }
 
-const get = require('..').get
+const { get } = require('..')
 
 function opts (extra) {
-  return Object.assign({
-    size: SIZE,
-    metadata: METADATA
-  }, extra)
+  return Object.assign(
+    {
+      size: SIZE,
+      metadata: METADATA
+    },
+    extra
+  )
 }
 
 // Simple wrapper util cause this gets WORDY
@@ -41,102 +44,133 @@ function streamGet (byDigest) {
   let integrity
   let metadata
   let size
-  const stream = (
-    byDigest ? get.stream.byDigest : get.stream
-  ).apply(null, args)
-  stream.on('data', d => {
-    data.push(d)
-    dataLen += d.length
-  }).on('integrity', int => {
-    integrity = ssri.stringify(int)
-  }).on('metadata', m => {
-    metadata = m
-  }).on('size', s => {
-    size = s
-  })
+  const stream = (byDigest ? get.stream.byDigest : get.stream).apply(null, args)
+  stream
+    .on('data', (d) => {
+      data.push(d)
+      dataLen += d.length
+    })
+    .on('integrity', (int) => {
+      integrity = ssri.stringify(int)
+    })
+    .on('metadata', (m) => {
+      metadata = m
+    })
+    .on('size', (s) => {
+      size = s
+    })
   return finished(stream).then(() => ({
-    data: Buffer.concat(data, dataLen), integrity, metadata, size
+    data: Buffer.concat(data, dataLen),
+    integrity,
+    metadata,
+    size
   }))
 }
 
-test('basic bulk get', t => {
-  const fixture = new Tacks(CacheContent({
-    [INTEGRITY]: CONTENT
-  }))
+test('basic bulk get', (t) => {
+  const fixture = new Tacks(
+    CacheContent({
+      [INTEGRITY]: CONTENT
+    })
+  )
   fixture.create(CACHE)
-  return index.insert(CACHE, KEY, INTEGRITY, opts()).then(() => {
-    return get(CACHE, KEY)
-  }).then((res) => {
-    t.deepEqual(res, {
+  return index
+    .insert(CACHE, KEY, INTEGRITY, opts())
+    .then(() => {
+      return get(CACHE, KEY)
+    })
+    .then((res) => {
+      t.deepEqual(
+        res,
+        {
+          metadata: METADATA,
+          data: CONTENT,
+          integrity: INTEGRITY,
+          size: SIZE
+        },
+        'bulk key get returned proper data'
+      )
+    })
+    .then(() => {
+      return get.byDigest(CACHE, INTEGRITY)
+    })
+    .then((res) => {
+      t.deepEqual(res, CONTENT, 'byDigest returned proper data')
+    })
+})
+
+test('basic sync get', (t) => {
+  const fixture = new Tacks(
+    CacheContent({
+      [INTEGRITY]: CONTENT
+    })
+  )
+  fixture.create(CACHE)
+  index.insert.sync(CACHE, KEY, INTEGRITY, opts())
+  const res = get.sync(CACHE, KEY)
+  t.deepEqual(
+    res,
+    {
       metadata: METADATA,
       data: CONTENT,
       integrity: INTEGRITY,
       size: SIZE
-    }, 'bulk key get returned proper data')
-  }).then(() => {
-    return get.byDigest(CACHE, INTEGRITY)
-  }).then((res) => {
-    t.deepEqual(res, CONTENT, 'byDigest returned proper data')
-  })
-})
-
-test('basic sync get', t => {
-  const fixture = new Tacks(CacheContent({
-    [INTEGRITY]: CONTENT
-  }))
-  fixture.create(CACHE)
-  index.insert.sync(CACHE, KEY, INTEGRITY, opts())
-  const res = get.sync(CACHE, KEY)
-  t.deepEqual(res, {
-    metadata: METADATA,
-    data: CONTENT,
-    integrity: INTEGRITY,
-    size: SIZE
-  }, 'bulk key get returned proper data')
+    },
+    'bulk key get returned proper data'
+  )
   const resByDig = get.sync.byDigest(CACHE, INTEGRITY)
   t.deepEqual(resByDig, CONTENT, 'byDigest returned proper data')
   t.done()
 })
 
-test('basic stream get', t => {
-  const fixture = new Tacks(CacheContent({
-    [INTEGRITY]: CONTENT
-  }))
+test('basic stream get', (t) => {
+  const fixture = new Tacks(
+    CacheContent({
+      [INTEGRITY]: CONTENT
+    })
+  )
   fixture.create(CACHE)
   return index.insert(CACHE, KEY, INTEGRITY, opts()).then(() => {
     return Promise.all([
       streamGet(false, CACHE, KEY),
       streamGet(true, CACHE, INTEGRITY)
     ]).then(([byKey, byDigest]) => {
-      t.deepEqual(byKey, {
-        data: CONTENT,
-        integrity: INTEGRITY,
-        metadata: METADATA,
-        size: SIZE
-      }, 'got all expected data and fields from key fetch')
       t.deepEqual(
-        byDigest.data,
-        CONTENT,
-        'got correct data from digest fetch'
+        byKey,
+        {
+          data: CONTENT,
+          integrity: INTEGRITY,
+          metadata: METADATA,
+          size: SIZE
+        },
+        'got all expected data and fields from key fetch'
       )
+      t.deepEqual(byDigest.data, CONTENT, 'got correct data from digest fetch')
     })
   })
 })
 
-test('get.copy', t => {
+test('get.copy', (t) => {
   const DEST = path.join(CACHE, 'copymehere')
-  const fixture = new Tacks(CacheContent({
-    [INTEGRITY]: CONTENT
-  }))
+  const fixture = new Tacks(
+    CacheContent({
+      [INTEGRITY]: CONTENT
+    })
+  )
   fixture.create(CACHE)
-  return index.insert(CACHE, KEY, INTEGRITY, opts())
+  return index
+    .insert(CACHE, KEY, INTEGRITY, opts())
     .then(() => get.copy(CACHE, KEY, DEST))
     .then((res) => {
-      t.deepEqual(res, {
-        metadata: METADATA,
-        integrity: INTEGRITY,
-        size: SIZE
-      }, 'copy operation returns basic metadata')
+      t.deepEqual(
+        res,
+        {
+          metadata: METADATA,
+          integrity: INTEGRITY,
+          size: SIZE
+        },
+        'copy operation returns basic metadata'
+      )
       return readFile(DEST)
     })
     .then((data) => {
@@ -151,172 +185,221 @@ test('get.copy', t => {
     })
 })
 
-test('ENOENT if not found', t => {
-  return get(CACHE, KEY).then(() => {
-    throw new Error('lookup should fail')
-  }).catch((err) => {
-    t.ok(err, 'got an error')
-    t.equal(err.code, 'ENOENT', 'error code is ENOENT')
-    return get.info(CACHE, KEY)
-  }).catch((err) => {
-    t.ok(err, 'got an error')
-    t.equal(err.code, 'ENOENT', 'error code is ENOENT')
-  })
+test('ENOENT if not found', (t) => {
+  return get(CACHE, KEY)
+    .then(() => {
+      throw new Error('lookup should fail')
+    })
+    .catch((err) => {
+      t.ok(err, 'got an error')
+      t.equal(err.code, 'ENOENT', 'error code is ENOENT')
+      return get.info(CACHE, KEY)
+    })
+    .catch((err) => {
+      t.ok(err, 'got an error')
+      t.equal(err.code, 'ENOENT', 'error code is ENOENT')
+    })
 })
 
-test('get.info index entry lookup', t => {
-  return index.insert(CACHE, KEY, INTEGRITY, opts()).then(ENTRY => {
+test('get.info index entry lookup', (t) => {
+  return index.insert(CACHE, KEY, INTEGRITY, opts()).then((ENTRY) => {
     return get.info(CACHE, KEY).then((entry) => {
       t.deepEqual(entry, ENTRY, 'get.info() returned the right entry')
     })
   })
 })
 
-test('memoizes data on bulk read', t => {
+test('memoizes data on bulk read', (t) => {
   memo.clearMemoized()
-  const fixture = new Tacks(CacheContent({
-    [INTEGRITY]: CONTENT
-  }))
-  fixture.create(CACHE)
-  return index.insert(CACHE, KEY, INTEGRITY, opts()).then(ENTRY => {
-    return get(CACHE, KEY).then(() => {
-      t.deepEqual(memo.get(CACHE, KEY), null, 'no memoization!')
-      return get(CACHE, KEY, { memoize: true })
-    }).then((res) => {
-      t.deepEqual(res, {
-        metadata: METADATA,
-        data: CONTENT,
-        integrity: INTEGRITY,
-        size: SIZE
-      }, 'usual data returned')
-      t.deepEqual(memo.get(CACHE, KEY), {
-        entry: ENTRY,
-        data: CONTENT
-      }, 'data inserted into memoization cache')
-      return rimraf(CACHE)
-    }).then(() => {
-      return get(CACHE, KEY)
-    }).then((res) => {
-      t.deepEqual(res, {
-        metadata: METADATA,
-        data: CONTENT,
-        integrity: INTEGRITY,
-        size: SIZE
-      }, 'memoized data fetched by default')
-      return get(CACHE, KEY, { memoize: false }).then(() => {
-        throw new Error('expected get to fail')
-      }).catch((err) => {
-        t.ok(err, 'got an error from unmemoized get')
-        t.equal(err.code, 'ENOENT', 'cached content not found')
-        t.deepEqual(memo.get(CACHE, KEY), {
-          entry: ENTRY,
-          data: CONTENT
-        }, 'data still in memoization cache')
-      })
+  const fixture = new Tacks(
+    CacheContent({
+      [INTEGRITY]: CONTENT
     })
+  )
+  fixture.create(CACHE)
+  return index.insert(CACHE, KEY, INTEGRITY, opts()).then((ENTRY) => {
+    return get(CACHE, KEY)
+      .then(() => {
+        t.deepEqual(memo.get(CACHE, KEY), null, 'no memoization!')
+        return get(CACHE, KEY, { memoize: true })
+      })
+      .then((res) => {
+        t.deepEqual(
+          res,
+          {
+            metadata: METADATA,
+            data: CONTENT,
+            integrity: INTEGRITY,
+            size: SIZE
+          },
+          'usual data returned'
+        )
+        t.deepEqual(
+          memo.get(CACHE, KEY),
+          {
+            entry: ENTRY,
+            data: CONTENT
+          },
+          'data inserted into memoization cache'
+        )
+        return rimraf(CACHE)
+      })
+      .then(() => {
+        return get(CACHE, KEY)
+      })
+      .then((res) => {
+        t.deepEqual(
+          res,
+          {
+            metadata: METADATA,
+            data: CONTENT,
+            integrity: INTEGRITY,
+            size: SIZE
+          },
+          'memoized data fetched by default'
+        )
+        return get(CACHE, KEY, { memoize: false })
+          .then(() => {
+            throw new Error('expected get to fail')
+          })
+          .catch((err) => {
+            t.ok(err, 'got an error from unmemoized get')
+            t.equal(err.code, 'ENOENT', 'cached content not found')
+            t.deepEqual(
+              memo.get(CACHE, KEY),
+              {
+                entry: ENTRY,
+                data: CONTENT
+              },
+              'data still in memoization cache'
+            )
+          })
+      })
   })
 })
 
-test('memoizes data on stream read', t => {
+test('memoizes data on stream read', (t) => {
   memo.clearMemoized()
-  const fixture = new Tacks(CacheContent({
-    [INTEGRITY]: CONTENT
-  }))
+  const fixture = new Tacks(
+    CacheContent({
+      [INTEGRITY]: CONTENT
+    })
+  )
   fixture.create(CACHE)
-  return index.insert(CACHE, KEY, INTEGRITY, opts()).then(ENTRY => {
+  return index.insert(CACHE, KEY, INTEGRITY, opts()).then((ENTRY) => {
     return Promise.all([
       streamGet(false, CACHE, KEY),
       streamGet(true, CACHE, INTEGRITY)
-    ]).then(() => {
-      t.deepEqual(memo.get(CACHE, KEY), null, 'no memoization by key!')
-      t.deepEqual(
-        memo.get.byDigest(CACHE, INTEGRITY),
-        null,
-        'no memoization by digest!'
-      )
-    }).then(() => {
-      memo.clearMemoized()
-      return streamGet(true, CACHE, INTEGRITY, {
-        memoize: true
-      })
-    }).then((byDigest) => {
-      t.deepEqual(byDigest.data, CONTENT, 'usual data returned from stream')
-      t.deepEqual(memo.get(CACHE, KEY), null, 'digest fetch = no key entry')
-      t.deepEqual(
-        memo.get.byDigest(CACHE, INTEGRITY),
-        CONTENT,
-        'content memoized'
-      )
-      t.deepEqual(
-        memo.get.byDigest('whatev', INTEGRITY),
-        null,
-        'content memoization filtered by cache'
-      )
-    }).then(() => {
-      memo.clearMemoized()
-      return streamGet(false, CACHE, KEY, { memoize: true })
-    }).then((byKey) => {
-      t.deepEqual(byKey, {
-        metadata: METADATA,
-        data: CONTENT,
-        integrity: INTEGRITY,
-        size: SIZE
-      }, 'usual data returned from key fetch')
-      t.deepEqual(memo.get(CACHE, KEY), {
-        entry: ENTRY,
-        data: CONTENT
-      }, 'data inserted into memoization cache')
-      t.deepEqual(
-        memo.get.byDigest(CACHE, INTEGRITY),
-        CONTENT,
-        'content memoized by digest, too'
-      )
-      t.deepEqual(
-        memo.get('whatev', KEY),
-        null,
-        'entry memoization filtered by cache'
-      )
-    }).then(() => {
-      return rimraf(CACHE)
-    }).then(() => {
-      return Promise.all([
-        streamGet(false, CACHE, KEY),
-        streamGet(true, CACHE, INTEGRITY)
-      ]).then(([byKey, byDigest]) => {
-        t.deepEqual(byKey, {
-          metadata: METADATA,
-          data: CONTENT,
-          integrity: INTEGRITY,
-          size: SIZE
-        }, 'key fetch fulfilled by memoization cache')
+    ])
+      .then(() => {
+        t.deepEqual(memo.get(CACHE, KEY), null, 'no memoization by key!')
         t.deepEqual(
-          byDigest.data,
-          CONTENT,
-          'digest fetch fulfilled by memoization cache'
+          memo.get.byDigest(CACHE, INTEGRITY),
+          null,
+          'no memoization by digest!'
         )
       })
-    }).then(() => {
-      return Promise.all([
-        streamGet(false, CACHE, KEY, {
-          memoize: false
-        }).catch((err) => err),
-        streamGet(true, CACHE, INTEGRITY, {
-          memoize: false
-        }).catch((err) => err)
-      ]).then(([keyErr, digestErr]) => {
-        t.equal(keyErr.code, 'ENOENT', 'key get memoization bypassed')
-        t.equal(keyErr.code, 'ENOENT', 'digest get memoization bypassed')
+      .then(() => {
+        memo.clearMemoized()
+        return streamGet(true, CACHE, INTEGRITY, {
+          memoize: true
+        })
       })
-    })
+      .then((byDigest) => {
+        t.deepEqual(byDigest.data, CONTENT, 'usual data returned from stream')
+        t.deepEqual(memo.get(CACHE, KEY), null, 'digest fetch = no key entry')
+        t.deepEqual(
+          memo.get.byDigest(CACHE, INTEGRITY),
+          CONTENT,
+          'content memoized'
+        )
+        t.deepEqual(
+          memo.get.byDigest('whatev', INTEGRITY),
+          null,
+          'content memoization filtered by cache'
+        )
+      })
+      .then(() => {
+        memo.clearMemoized()
+        return streamGet(false, CACHE, KEY, { memoize: true })
+      })
+      .then((byKey) => {
+        t.deepEqual(
+          byKey,
+          {
+            metadata: METADATA,
+            data: CONTENT,
+            integrity: INTEGRITY,
+            size: SIZE
+          },
+          'usual data returned from key fetch'
+        )
+        t.deepEqual(
+          memo.get(CACHE, KEY),
+          {
+            entry: ENTRY,
+            data: CONTENT
+          },
+          'data inserted into memoization cache'
+        )
+        t.deepEqual(
+          memo.get.byDigest(CACHE, INTEGRITY),
+          CONTENT,
+          'content memoized by digest, too'
+        )
+        t.deepEqual(
+          memo.get('whatev', KEY),
+          null,
+          'entry memoization filtered by cache'
+        )
+      })
+      .then(() => {
+        return rimraf(CACHE)
+      })
+      .then(() => {
+        return Promise.all([
+          streamGet(false, CACHE, KEY),
+          streamGet(true, CACHE, INTEGRITY)
+        ]).then(([byKey, byDigest]) => {
+          t.deepEqual(
+            byKey,
+            {
+              metadata: METADATA,
+              data: CONTENT,
+              integrity: INTEGRITY,
+              size: SIZE
+            },
+            'key fetch fulfilled by memoization cache'
+          )
+          t.deepEqual(
+            byDigest.data,
+            CONTENT,
+            'digest fetch fulfilled by memoization cache'
+          )
+        })
+      })
+      .then(() => {
+        return Promise.all([
+          streamGet(false, CACHE, KEY, {
+            memoize: false
+          }).catch((err) => err),
+          streamGet(true, CACHE, INTEGRITY, {
+            memoize: false
+          }).catch((err) => err)
+        ]).then(([keyErr, digestErr]) => {
+          t.equal(keyErr.code, 'ENOENT', 'key get memoization bypassed')
+          t.equal(keyErr.code, 'ENOENT', 'digest get memoization bypassed')
+        })
+      })
   })
 })
 
-test('get.info uses memoized data', t => {
+test('get.info uses memoized data', (t) => {
   memo.clearMemoized()
   const ENTRY = {
     key: KEY,
     integrity: INTEGRITY,
-    time: +(new Date()),
+    time: +new Date(),
     size: SIZE,
     metadata: null
   }

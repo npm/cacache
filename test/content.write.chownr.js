@@ -21,7 +21,7 @@ fs.lstat = (path, cb) => {
 }
 
 const statSync = fs.lstatSync
-fs.lstatSync = path => {
+fs.lstatSync = (path) => {
   const st = statSync(path)
   if (path === testDir) {
     st.uid = NEWUID
@@ -34,41 +34,54 @@ const fromString = require('./util/from-string')
 const { pipe } = require('mississippi')
 const requireInject = require('require-inject')
 const ssri = require('ssri')
-const test = require('tap').test
+const { test } = require('tap')
 
 const contentPath = require('../lib/content/path')
 
-test('infers ownership from cache folder owner', {
-  skip: process.getuid ? false : 'test only works on platforms that can set uid/gid'
-}, t => {
-  const CONTENT = 'foobarbaz'
-  const INTEGRITY = ssri.fromData(CONTENT)
-  const updatedPaths = []
-  const write = requireInject('../lib/content/write', {
-    chownr: function (p, uid, gid, cb) {
-      process.nextTick(function () {
-        const rel = path.relative(CACHE, p)
-        t.equal(uid, NEWUID, 'new uid set for ' + rel)
-        t.equal(gid, NEWGID, 'new gid set for ' + rel)
-        updatedPaths.push(p)
-        cb(null)
-      })
-    }
-  })
-  t.plan(7)
-  pipe(fromString(CONTENT), write.stream(CACHE, {
-    hashAlgorithm: 'sha1'
-  }), function (err) {
-    if (err) { throw err }
-    const cpath = contentPath(CACHE, INTEGRITY)
-    const expectedPaths = [
-      CACHE,
-      path.join(CACHE, path.relative(CACHE, cpath).split(path.sep)[0]),
-      cpath
-    ]
-    t.deepEqual(
-      updatedPaths.sort(),
-      expectedPaths,
-      'all paths that needed user stuff set got set')
-  })
-})
+test(
+  'infers ownership from cache folder owner',
+  {
+    skip: process.getuid
+      ? false
+      : 'test only works on platforms that can set uid/gid'
+  },
+  (t) => {
+    const CONTENT = 'foobarbaz'
+    const INTEGRITY = ssri.fromData(CONTENT)
+    const updatedPaths = []
+    const write = requireInject('../lib/content/write', {
+      chownr: function (p, uid, gid, cb) {
+        process.nextTick(function () {
+          const rel = path.relative(CACHE, p)
+          t.equal(uid, NEWUID, 'new uid set for ' + rel)
+          t.equal(gid, NEWGID, 'new gid set for ' + rel)
+          updatedPaths.push(p)
+          cb(null)
+        })
+      }
+    })
+    t.plan(7)
+    pipe(
+      fromString(CONTENT),
+      write.stream(CACHE, {
+        hashAlgorithm: 'sha1'
+      }),
+      function (err) {
+        if (err) {
+          throw err
+        }
+        const cpath = contentPath(CACHE, INTEGRITY)
+        const expectedPaths = [
+          CACHE,
+          path.join(CACHE, path.relative(CACHE, cpath).split(path.sep)[0]),
+          cpath
+        ]
+        t.deepEqual(
+          updatedPaths.sort(),
+          expectedPaths,
+          'all paths that needed user stuff set got set'
+        )
+      }
+    )
+  }
+)

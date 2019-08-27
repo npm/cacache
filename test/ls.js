@@ -8,24 +8,24 @@ const finished = util.promisify(require('mississippi').finished)
 const index = require('../lib/entry-index.js')
 const path = require('path')
 const Tacks = require('tacks')
-const test = require('tap').test
+const { test } = require('tap')
 const testDir = require('./util/test-dir')(__filename)
 
 const CACHE = path.join(testDir, 'cache')
 const File = Tacks.File
 
-const ls = require('..').ls
+const { ls } = require('..')
 
 test('basic listing', function (t) {
   const contents = {
-    'whatever': {
+    whatever: {
       key: 'whatever',
       integrity: 'sha512-deadbeef',
       time: 12345,
       metadata: 'omgsometa',
       size: 234234
     },
-    'whatnot': {
+    whatnot: {
       key: 'whatnot',
       integrity: 'sha512-bada55',
       time: 54321,
@@ -34,37 +34,35 @@ test('basic listing', function (t) {
     }
   }
   const fixture = new Tacks(CacheIndex(contents))
-  contents.whatever.path =
-    contentPath(
-      CACHE, contents.whatever.integrity)
-  contents.whatnot.path =
-    contentPath(
-      CACHE, contents.whatnot.integrity)
+  contents.whatever.path = contentPath(CACHE, contents.whatever.integrity)
+  contents.whatnot.path = contentPath(CACHE, contents.whatnot.integrity)
   fixture.create(CACHE)
-  return ls(CACHE).then((listing) => {
-    t.deepEqual(listing, contents, 'index contents correct')
-  }).then(() => {
-    const listing = []
-    const stream = ls.stream(CACHE)
-    stream.on('data', entry => {
-      listing[entry.key] = entry
+  return ls(CACHE)
+    .then((listing) => {
+      t.deepEqual(listing, contents, 'index contents correct')
     })
-    return finished(stream).then(() => {
-      t.deepEqual(listing, contents, 'ls is streamable')
+    .then(() => {
+      const listing = []
+      const stream = ls.stream(CACHE)
+      stream.on('data', (entry) => {
+        listing[entry.key] = entry
+      })
+      return finished(stream).then(() => {
+        t.deepEqual(listing, contents, 'ls is streamable')
+      })
     })
-  })
 })
 
 test('separate keys in conflicting buckets', function (t) {
   const contents = {
-    'whatever': {
+    whatever: {
       key: 'whatever',
       integrity: 'sha512-deadbeef',
       time: 12345,
       metadata: 'omgsometa',
       size: 5
     },
-    'whatev': {
+    whatev: {
       key: 'whatev',
       integrity: 'sha512-bada55',
       time: 54321,
@@ -72,16 +70,14 @@ test('separate keys in conflicting buckets', function (t) {
       size: 99234234
     }
   }
-  const fixture = new Tacks(CacheIndex({
-    // put both in the same bucket
-    'whatever': [contents.whatever, contents.whatev]
-  }))
-  contents.whatever.path =
-    contentPath(
-      CACHE, contents.whatever.integrity)
-  contents.whatev.path =
-    contentPath(
-      CACHE, contents.whatev.integrity)
+  const fixture = new Tacks(
+    CacheIndex({
+      // put both in the same bucket
+      whatever: [contents.whatever, contents.whatev]
+    })
+  )
+  contents.whatever.path = contentPath(CACHE, contents.whatever.integrity)
+  contents.whatev.path = contentPath(CACHE, contents.whatev.integrity)
   fixture.create(CACHE)
   return ls(CACHE).then((listing) => {
     t.deepEqual(listing, contents, 'index contents correct')
@@ -96,7 +92,7 @@ test('works fine on an empty/missing cache', function (t) {
 
 test('ignores non-dir files', function (t) {
   const index = CacheIndex({
-    'whatever': {
+    whatever: {
       key: 'whatever',
       integrity: 'sha512-deadbeef',
       time: 12345,
@@ -113,23 +109,23 @@ test('ignores non-dir files', function (t) {
   })
 })
 
-test('correctly ignores deleted entries', t => {
+test('correctly ignores deleted entries', (t) => {
   const contents = {
-    'whatever': {
+    whatever: {
       key: 'whatever',
       integrity: 'sha512-deadbeef',
       time: 12345,
       metadata: 'omgsometa',
       size: 234234
     },
-    'whatnot': {
+    whatnot: {
       key: 'whatnot',
       integrity: 'sha512-bada55',
       time: 54321,
       metadata: null,
       size: 425345345
     },
-    'whatwhere': {
+    whatwhere: {
       key: 'whatwhere',
       integrity: 'sha512-bada55e5',
       time: 54321,
@@ -138,32 +134,38 @@ test('correctly ignores deleted entries', t => {
     }
   }
   const fixture = new Tacks(CacheIndex(contents))
-  contents.whatever.path =
-    contentPath(
-      CACHE, contents.whatever.integrity)
-  contents.whatnot.path =
-    contentPath(
-      CACHE, contents.whatnot.integrity)
-  contents.whatwhere.path =
-    contentPath(
-      CACHE, contents.whatwhere.integrity)
+  contents.whatever.path = contentPath(CACHE, contents.whatever.integrity)
+  contents.whatnot.path = contentPath(CACHE, contents.whatnot.integrity)
+  contents.whatwhere.path = contentPath(CACHE, contents.whatwhere.integrity)
   fixture.create(CACHE)
-  return index.delete(CACHE, 'whatnot')
+  return index
+    .delete(CACHE, 'whatnot')
     .then(() => ls(CACHE))
-    .then((listing) => t.deepEqual(listing, {
-      whatever: contents.whatever,
-      whatwhere: contents.whatwhere
-    }, 'index contents correct'))
+    .then((listing) =>
+      t.deepEqual(
+        listing,
+        {
+          whatever: contents.whatever,
+          whatwhere: contents.whatwhere
+        },
+        'index contents correct'
+      )
+    )
     .then(() => {
       const listing = []
       const stream = ls.stream(CACHE)
-      stream.on('data', entry => {
+      stream.on('data', (entry) => {
         listing[entry.key] = entry
       })
-      return finished(stream)
-        .then(() => t.deepEqual(listing, {
-          whatever: contents.whatever,
-          whatwhere: contents.whatwhere
-        }, 'ls is streamable'))
+      return finished(stream).then(() =>
+        t.deepEqual(
+          listing,
+          {
+            whatever: contents.whatever,
+            whatwhere: contents.whatwhere
+          },
+          'ls is streamable'
+        )
+      )
     })
 })

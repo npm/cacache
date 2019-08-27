@@ -1,6 +1,6 @@
 'use strict'
 
-const test = require('tap').test
+const { test } = require('tap')
 
 const memo = require('../lib/memoization')
 
@@ -13,24 +13,32 @@ const ENTRY = {
 }
 const DATA = 'foobarbaz'
 
-test('memoizes entry and data by key', t => {
+test('memoizes entry and data by key', (t) => {
   memo.put(CACHE, ENTRY, DATA)
-  t.deepEqual(memo.clearMemoized(), {
-    [`key:${CACHE}:${ENTRY.key}`]: {
-      entry: ENTRY,
-      data: DATA
+  t.deepEqual(
+    memo.clearMemoized(),
+    {
+      [`key:${CACHE}:${ENTRY.key}`]: {
+        entry: ENTRY,
+        data: DATA
+      },
+      [`digest:${CACHE}:${ENTRY.integrity}`]: DATA
     },
-    [`digest:${CACHE}:${ENTRY.integrity}`]: DATA
-  }, 'cache has both key and digest entries')
+    'cache has both key and digest entries'
+  )
   t.done()
 })
 
-test('can fetch data by key', t => {
+test('can fetch data by key', (t) => {
   memo.put(CACHE, ENTRY, DATA)
-  t.deepEqual(memo.get(CACHE, ENTRY.key), {
-    entry: ENTRY,
-    data: DATA
-  }, 'fetched data correctly')
+  t.deepEqual(
+    memo.get(CACHE, ENTRY.key),
+    {
+      entry: ENTRY,
+      data: DATA
+    },
+    'fetched data correctly'
+  )
   t.deepEqual(
     memo.get(CACHE + 'meh', ENTRY.key),
     null,
@@ -40,7 +48,7 @@ test('can fetch data by key', t => {
   t.done()
 })
 
-test('can fetch data by digest', t => {
+test('can fetch data by digest', (t) => {
   memo.put(CACHE, ENTRY, DATA)
   t.deepEqual(
     memo.get.byDigest(CACHE, ENTRY.integrity),
@@ -51,14 +59,10 @@ test('can fetch data by digest', t => {
   t.done()
 })
 
-test('can clear out the memoization cache', t => {
+test('can clear out the memoization cache', (t) => {
   memo.put(CACHE, ENTRY, DATA)
   memo.clearMemoized()
-  t.deepEqual(
-    memo.get(CACHE, ENTRY.key),
-    null,
-    'entry not there anymore'
-  )
+  t.deepEqual(memo.get(CACHE, ENTRY.key), null, 'entry not there anymore')
   t.deepEqual(
     memo.get.byDigest(ENTRY.integrity),
     null,
@@ -67,7 +71,7 @@ test('can clear out the memoization cache', t => {
   t.done()
 })
 
-test('accepts optional injected cache', t => {
+test('accepts optional injected cache', (t) => {
   memo.clearMemoized()
   const MEMO = new Map()
   memo.put(CACHE, ENTRY, DATA, { memoize: MEMO })

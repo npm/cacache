@@ -5,7 +5,7 @@ const fs = require('fs')
 const path = require('path')
 const util = require('util')
 const Tacks = require('tacks')
-const test = require('tap').test
+const { test } = require('tap')
 const testDir = require('./util/test-dir')(__filename)
 
 const stat = util.promisify(fs.stat)
@@ -23,13 +23,13 @@ test('index.find cache hit', function (t) {
     metadata: 'omgsometa',
     size: 5
   }
-  const fixture = new Tacks(CacheIndex({
-    'whatever': entry
-  }))
+  const fixture = new Tacks(
+    CacheIndex({
+      whatever: entry
+    })
+  )
   fixture.create(CACHE)
-  return index.find(
-    CACHE, entry.key
-  ).then((info) => {
+  return index.find(CACHE, entry.key).then((info) => {
     t.ok(info, 'cache hit')
     t.equal(
       info.path,
@@ -42,44 +42,49 @@ test('index.find cache hit', function (t) {
 })
 
 test('index.find cache miss', function (t) {
-  const fixture = new Tacks(CacheIndex({
-    'foo': { key: 'foo' },
-    'w/e': { key: 'w/e' }
-  }))
+  const fixture = new Tacks(
+    CacheIndex({
+      foo: { key: 'foo' },
+      'w/e': { key: 'w/e' }
+    })
+  )
   fixture.create(CACHE)
-  return index.find(
-    CACHE, 'whatever'
-  ).then((info) => {
+  return index.find(CACHE, 'whatever').then((info) => {
     t.ok(!info, 'cache miss when specific key not present')
   })
 })
 
 test('index.find no cache', function (t) {
-  return stat(CACHE).then(() => {
-    throw new Error('expected cache directory')
-  }).catch((err) => {
-    t.assert(err, 'cache directory does not exist')
-    return index.find(CACHE, 'whatever')
-  }).then((info) => {
-    t.ok(!info, 'if there is no cache dir, behaves like a cache miss')
-  })
+  return stat(CACHE)
+    .then(() => {
+      throw new Error('expected cache directory')
+    })
+    .catch((err) => {
+      t.assert(err, 'cache directory does not exist')
+      return index.find(CACHE, 'whatever')
+    })
+    .then((info) => {
+      t.ok(!info, 'if there is no cache dir, behaves like a cache miss')
+    })
 })
 
 test('index.find key case-sensitivity', function (t) {
-  const fixture = new Tacks(CacheIndex({
-    'jsonstream': {
-      key: 'jsonstream',
-      integrity: 'sha1-lowercase',
-      time: 54321,
-      size: SIZE
-    },
-    'JSONStream': {
-      key: 'JSONStream',
-      integrity: 'sha1-capitalised',
-      time: 12345,
-      size: SIZE
-    }
-  }))
+  const fixture = new Tacks(
+    CacheIndex({
+      jsonstream: {
+        key: 'jsonstream',
+        integrity: 'sha1-lowercase',
+        time: 54321,
+        size: SIZE
+      },
+      JSONStream: {
+        key: 'JSONStream',
+        integrity: 'sha1-capitalised',
+        time: 12345,
+        size: SIZE
+      }
+    })
+  )
   fixture.create(CACHE)
   return Promise.all([
     index.find(CACHE, 'JSONStream').then((info) => {
@@ -104,9 +109,11 @@ test('index.find path-breaking characters', function (t) {
     metadata: 'omgsometa',
     size: 9
   }
-  const fixture = new Tacks(CacheIndex({
-    [entry.key]: entry
-  }))
+  const fixture = new Tacks(
+    CacheIndex({
+      [entry.key]: entry
+    })
+  )
   fixture.create(CACHE)
   return index.find(CACHE, entry.key).then((info) => {
     t.ok(info, 'cache hit')
@@ -131,29 +138,29 @@ test('index.find extremely long keys', function (t) {
     metadata: 'woo',
     size: 10
   }
-  const fixture = new Tacks(CacheIndex({
-    [entry.key]: entry
-  }))
+  const fixture = new Tacks(
+    CacheIndex({
+      [entry.key]: entry
+    })
+  )
   fixture.create(CACHE)
   return index.find(CACHE, entry.key).then((info) => {
     t.ok(info, 'cache hit')
     delete info.path
-    t.deepEqual(
-      info,
-      entry,
-      'info remains intact even with absurdly long key'
-    )
+    t.deepEqual(info, entry, 'info remains intact even with absurdly long key')
   })
 })
 
 test('index.find multiple index entries for key', function (t) {
   const key = 'whatever'
-  const fixture = new Tacks(CacheIndex({
-    'whatever': [
-      { key: key, integrity: 'sha1-deadbeef', time: 54321 },
-      { key: key, integrity: 'sha1-bada55', time: 12345 }
-    ]
-  }))
+  const fixture = new Tacks(
+    CacheIndex({
+      whatever: [
+        { key: key, integrity: 'sha1-deadbeef', time: 54321 },
+        { key: key, integrity: 'sha1-bada55', time: 12345 }
+      ]
+    })
+  )
   fixture.create(CACHE)
   return index.find(CACHE, key).then((info) => {
     t.ok(info, 'cache hit')
@@ -178,11 +185,16 @@ test('index.find garbled data in index file', function (t) {
     integrity: 'sha1-deadbeef',
     time: 54321
   })
-  const fixture = new Tacks(CacheIndex({
-    'whatever': '\n' +
-      `${index._hashEntry(stringified)}\t${stringified}` +
-      '\n{"key": "' + key + '"\noway'
-  }))
+  const fixture = new Tacks(
+    CacheIndex({
+      whatever:
+        '\n' +
+        `${index.hashEntry(stringified)}\t${stringified}` +
+        '\n{"key": "' +
+        key +
+        '"\noway'
+    })
+  )
   fixture.create(CACHE)
   return index.find(CACHE, key).then((info) => {
     t.ok(info, 'cache hit in spite of crash-induced fail')
@@ -199,13 +211,15 @@ test('index.find hash conflict in same bucket', function (t) {
     metadata: 'yay',
     size: 8
   }
-  const fixture = new Tacks(CacheIndex({
-    'whatever': [
-      { key: 'ohnoes', integrity: 'sha1-welp!' },
-      entry,
-      { key: 'nope', integrity: 'sha1-bada55' }
-    ]
-  }))
+  const fixture = new Tacks(
+    CacheIndex({
+      whatever: [
+        { key: 'ohnoes', integrity: 'sha1-welp!' },
+        entry,
+        { key: 'nope', integrity: 'sha1-bada55' }
+      ]
+    })
+  )
   fixture.create(CACHE)
   return index.find(CACHE, entry.key).then((info) => {
     t.ok(info, 'cache hit')

@@ -23,11 +23,9 @@ module.exports = (suite, CACHE) => {
   suite.add('cacache.put()', {
     defer: true,
     fn (deferred) {
-      put(
-        CACHE, KEY + this.count, CONTENT + this.count
-      ).then(
+      put(CACHE, KEY + this.count, CONTENT + this.count).then(
         () => deferred.resolve(),
-        err => deferred.reject(err)
+        (err) => deferred.reject(err)
       )
     }
   })
@@ -35,11 +33,9 @@ module.exports = (suite, CACHE) => {
   suite.add('cacache.put() big data', {
     defer: true,
     fn (deferred) {
-      put(
-        CACHE, KEY + this.count, BIGCONTENT + this.count
-      ).then(
+      put(CACHE, KEY + this.count, BIGCONTENT + this.count).then(
         () => deferred.resolve(),
-        err => deferred.reject(err)
+        (err) => deferred.reject(err)
       )
     }
   })
@@ -48,11 +44,9 @@ module.exports = (suite, CACHE) => {
     defer: true,
     fn (deferred) {
       const stream = put.stream(CACHE, KEY + this.count)
-      finished(
-        stream
-      ).then(
+      finished(stream).then(
         () => deferred.resolve(),
-        err => deferred.reject(err)
+        (err) => deferred.reject(err)
       )
       stream.write(CONTENT + this.count)
       stream.end()
@@ -65,11 +59,9 @@ module.exports = (suite, CACHE) => {
     maxTime: 30,
     fn (deferred) {
       const stream = put.stream(CACHE, KEY + this.count)
-      finished(
-        stream
-      ).then(
+      finished(stream).then(
         () => deferred.resolve(),
-        err => deferred.reject(err)
+        (err) => deferred.reject(err)
       )
       stream.write(BIGCONTENT + this.count)
       stream.end()
