@@ -40,7 +40,6 @@ _Translations: [español](README.es.md)_
     * [`rm.entry`](#rm-entry)
     * [`rm.content`](#rm-content)
   * Utilities
-    * [`setLocale`](#set-locale)
     * [`clearMemoized`](#clear-memoized)
     * [`tmp.mkdir`](#tmp-mkdir)
     * [`tmp.withTmp`](#with-tmp)
@@ -52,7 +51,7 @@ _Translations: [español](README.es.md)_
 ### Example
 
 ```javascript
-const cacache = require('cacache/en')
+const cacache = require('cacache')
 const fs = require('fs')
 
 const tarball = '/path/to/mytar.tgz'
@@ -112,21 +111,6 @@ Please refer to the [Changelog](CHANGELOG.md) for project history details, too.
 Happy hacking!
 
 ### API
-
-#### <a name="localized-api"></a> Using localized APIs
-
-cacache includes a complete API in English, with the same features as other
-translations. To use the English API as documented in this README, use
-`require('cacache/en')`. This is also currently the default if you do
-`require('cacache')`, but may change in the future.
-
-cacache also supports other languages! You can find the list of currently
-supported ones by looking in `./locales` in the source directory. You can use
-the API in that language with `require('cacache/<lang>')`.
-
-Want to add support for a new language? Please go ahead! You should be able to
-copy `./locales/en.js` and `./locales/en.json` and fill them in. Translating the
-`README.md` is a bit more work, but also appreciated if you get around to it. 👍🏼
 
 #### <a name="ls"></a> `> cacache.ls(cache) -> Promise<Object>`
 
@@ -477,14 +461,6 @@ cacache.rm.content(cachePath, 'sha512-SoMeDIGest/IN+BaSE64==').then(() => {
   console.log('data for my-thing is gone!')
 })
 ```
-
-#### <a name="set-locale"></a> `> cacache.setLocale(locale)`
-
-Configure the language/locale used for messages and errors coming from cacache.
-The list of available locales is in the `./locales` directory in the project
-root.
-
-_Interested in contributing more languages! [Submit a PR](CONTRIBUTING.md)!_
 
 #### <a name="clear-memoized"></a> `> cacache.clearMemoized()`
 

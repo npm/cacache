@@ -18,7 +18,7 @@
     "postrelease": "npm publish && git push --follow-tags",
     "pretest": "standard",
     "release": "standard-version -s",
-    "test": "cross-env CACACHE_UPDATE_LOCALE_FILES=true nyc --all --reporter=lcov --reporter=text --reporter=text-summary -- tap -J test/*.js",
+    "test": "nyc --all --reporter=lcov --reporter=text --reporter=text-summary -- tap -J test/*.js",
     "test-docker": "docker run -it --rm --name pacotest -v \"$PWD\":/tmp -w /tmp node:latest npm test",
     "update-coc": "weallbehave -o . && git add CODE_OF_CONDUCT.md && git commit -m 'docs(coc): updated CODE_OF_CONDUCT.md'",
     "update-contrib": "weallcontribute -o . && git add CONTRIBUTING.md && git commit -m 'docs(contributing): updated CONTRIBUTING.md'"
@@ -71,8 +71,7 @@
     "promise-inflight": "^1.0.1",
     "rimraf": "^2.6.3",
     "ssri": "^6.0.1",
-    "unique-filename": "^1.1.1",
-    "y18n": "^4.0.0"
+    "unique-filename": "^1.1.1"
   },
   "devDependencies": {
     "benchmark": "^2.1.4",
