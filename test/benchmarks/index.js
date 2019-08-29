@@ -12,7 +12,7 @@ const WARN_RANGE = 5
 
 const suite = new Benchmark.Suite({
   onStart () {
-    let previousPath = process.env.COMPARETO
+    const previousPath = process.env.COMPARETO
       ? path.resolve(process.env.COMPARETO)
       : PREVIOUS
     try {

@@ -11,6 +11,7 @@ const rimraf = util.promisify(require('rimraf'))
 const Tacks = require('tacks')
 const { test } = require('tap')
 const testDir = require('./util/test-dir')(__filename)
+const reset = util.promisify(require('./util/test-dir').reset)
 const ssri = require('ssri')
 
 const readFile = util.promisify(fs.readFile)
@@ -39,7 +40,7 @@ function opts (extra) {
 // Simple wrapper util cause this gets WORDY
 function streamGet (byDigest) {
   const args = [].slice.call(arguments, 1)
-  let data = []
+  const data = []
   let dataLen = 0
   let integrity
   let metadata
@@ -66,6 +67,32 @@ function streamGet (byDigest) {
     size
   }))
 }
+
+test('get.sync will throw ENOENT if not found', (t) => {
+  try {
+    get.sync('foo', 'bar')
+  } catch (err) {
+    t.same(err.message, 'No cache entry for bar found in foo')
+    t.same(err.code, 'ENOENT')
+    t.done()
+  }
+})
+
+test('get will throw ENOENT if not found', (t) => {
+  return get(CACHE, KEY)
+    .then(() => {
+      throw new Error('lookup should fail')
+    })
+    .catch((err) => {
+      t.ok(err, 'got an error')
+      t.equal(err.code, 'ENOENT', 'error code is ENOENT')
+      return get.info(CACHE, KEY)
+    })
+    .catch((err) => {
+      t.ok(err, 'got an error')
+      t.equal(err.code, 'ENOENT', 'error code is ENOENT')
+    })
+})
 
 test('basic bulk get', (t) => {
   const fixture = new Tacks(
@@ -99,7 +126,7 @@ test('basic bulk get', (t) => {
     })
 })
 
-test('basic sync get', (t) => {
+test('get.sync.byDigest without memoization', (t) => {
   const fixture = new Tacks(
     CacheContent({
       [INTEGRITY]: CONTENT
@@ -121,6 +148,231 @@ test('basic sync get', (t) => {
   const resByDig = get.sync.byDigest(CACHE, INTEGRITY)
   t.deepEqual(resByDig, CONTENT, 'byDigest returned proper data')
   t.done()
+})
+
+test('get.sync.byDigest with memoization', (t) => {
+  const fixture = new Tacks(
+    CacheContent({
+      [INTEGRITY]: CONTENT
+    })
+  )
+  fixture.create(CACHE)
+  index.insert.sync(CACHE, KEY, INTEGRITY, opts())
+  const res = get.sync(CACHE, KEY, { memoize: true })
+  t.deepEqual(
+    res,
+    {
+      metadata: METADATA,
+      data: CONTENT,
+      integrity: INTEGRITY,
+      size: SIZE
+    },
+    'bulk key get returned proper data'
+  )
+  memo.clearMemoized()
+  t.same(memo.get.byDigest(CACHE, INTEGRITY), undefined)
+  const resByDig = get.sync.byDigest(CACHE, INTEGRITY, { memoize: true })
+  t.deepEqual(resByDig, CONTENT, 'byDigest returned proper data')
+  t.notSame(memo.get.byDigest(CACHE, INTEGRITY), undefined)
+  const resByDig2 = get.sync.byDigest(CACHE, INTEGRITY, { memoize: true })
+  t.deepEqual(resByDig2, CONTENT, 'byDigest returned proper data')
+  t.done()
+})
+
+test('get.sync with memoization', (t) => {
+  const fixture = new Tacks(
+    CacheContent({
+      [INTEGRITY]: CONTENT
+    })
+  )
+  fixture.create(CACHE)
+  index.insert.sync(CACHE, KEY, INTEGRITY, opts())
+  memo.clearMemoized()
+  t.same(memo.get(CACHE, KEY), undefined)
+  const res = get.sync(CACHE, KEY, { memoize: true })
+  t.deepEqual(
+    res,
+    {
+      metadata: METADATA,
+      data: CONTENT,
+      integrity: INTEGRITY,
+      size: SIZE
+    },
+    'bulk key get returned proper data'
+  )
+  t.notSame(memo.get(CACHE, KEY), undefined)
+  const resByDig = get.sync(CACHE, KEY, { memoize: true })
+  t.deepEqual(resByDig, {
+    metadata: METADATA,
+    data: CONTENT,
+    integrity: INTEGRITY,
+    size: SIZE
+  }, 'get returned proper data')
+  t.done()
+})
+
+test('get.byDigest without memoization', (t) => {
+  const fixture = new Tacks(
+    CacheContent({
+      [INTEGRITY]: CONTENT
+    })
+  )
+  fixture.create(CACHE)
+  index.insert.sync(CACHE, KEY, INTEGRITY, opts())
+  get(CACHE, KEY)
+    .then((res) => {
+      t.deepEqual(
+        res,
+        {
+          metadata: METADATA,
+          data: CONTENT,
+          integrity: INTEGRITY,
+          size: SIZE
+        },
+        'bulk key get returned proper data')
+
+      memo.clearMemoized()
+      t.same(memo.get.byDigest(CACHE, INTEGRITY), undefined)
+      return get.byDigest(CACHE, INTEGRITY)
+        .then((resByDig) => {
+          t.deepEqual(resByDig, CONTENT, 'byDigest returned proper data')
+          t.same(memo.get.byDigest(CACHE, INTEGRITY), undefined)
+
+          return get.byDigest(CACHE, INTEGRITY)
+        })
+        .then((resByDigMemo) => {
+          t.deepEqual(resByDigMemo, CONTENT, 'byDigest returned proper data')
+          t.done()
+        })
+    })
+})
+
+test('get.byDigest with memoization', (t) => {
+  const fixture = new Tacks(
+    CacheContent({
+      [INTEGRITY]: CONTENT
+    })
+  )
+  fixture.create(CACHE)
+  index.insert.sync(CACHE, KEY, INTEGRITY, opts())
+  get(CACHE, KEY)
+    .then((res) => {
+      t.deepEqual(
+        res,
+        {
+          metadata: METADATA,
+          data: CONTENT,
+          integrity: INTEGRITY,
+          size: SIZE
+        },
+        'bulk key get returned proper data')
+
+      memo.clearMemoized()
+      t.same(memo.get.byDigest(CACHE, INTEGRITY), undefined)
+      return get.byDigest(CACHE, INTEGRITY, { memoize: true })
+        .then((resByDig) => {
+          t.deepEqual(resByDig, CONTENT, 'byDigest returned proper data')
+          t.notSame(memo.get.byDigest(CACHE, INTEGRITY), undefined)
+
+          return get.byDigest(CACHE, INTEGRITY, { memoize: true })
+        })
+        .then((resByDigMemo) => {
+          t.deepEqual(resByDigMemo, CONTENT, 'byDigest returned proper data')
+          t.done()
+        })
+    })
+})
+
+test('get without memoization', (t) => {
+  const fixture = new Tacks(
+    CacheContent({
+      [INTEGRITY]: CONTENT
+    })
+  )
+  fixture.create(CACHE)
+  index.insert.sync(CACHE, KEY, INTEGRITY, opts())
+  get(CACHE, KEY)
+    .then((res) => {
+      t.deepEqual(
+        res,
+        {
+          metadata: METADATA,
+          data: CONTENT,
+          integrity: INTEGRITY,
+          size: SIZE
+        },
+        'bulk key get returned proper data')
+
+      memo.clearMemoized()
+      t.same(memo.get(CACHE, KEY), undefined)
+      return get(CACHE, KEY)
+        .then((resByDig) => {
+          t.deepEqual(resByDig, {
+            metadata: METADATA,
+            data: CONTENT,
+            integrity: INTEGRITY,
+            size: SIZE
+          }, 'get returned proper data')
+          t.same(memo.get(CACHE, KEY), undefined)
+
+          return get(CACHE, KEY)
+        })
+        .then((resByDigMemo) => {
+          t.deepEqual(resByDigMemo, {
+            metadata: METADATA,
+            data: CONTENT,
+            integrity: INTEGRITY,
+            size: SIZE
+          }, 'get returned proper data')
+          t.done()
+        })
+    })
+})
+
+test('get with memoization', (t) => {
+  const fixture = new Tacks(
+    CacheContent({
+      [INTEGRITY]: CONTENT
+    })
+  )
+  fixture.create(CACHE)
+  index.insert.sync(CACHE, KEY, INTEGRITY, opts())
+  get(CACHE, KEY)
+    .then((res) => {
+      t.deepEqual(
+        res,
+        {
+          metadata: METADATA,
+          data: CONTENT,
+          integrity: INTEGRITY,
+          size: SIZE
+        },
+        'bulk key get returned proper data')
+
+      memo.clearMemoized()
+      t.same(memo.get(CACHE, KEY), undefined)
+      return get(CACHE, KEY, { memoize: true })
+        .then((resByDig) => {
+          t.deepEqual(resByDig, {
+            metadata: METADATA,
+            data: CONTENT,
+            integrity: INTEGRITY,
+            size: SIZE
+          }, 'get returned proper data')
+          t.notSame(memo.get(CACHE, KEY), undefined)
+
+          return get(CACHE, KEY, { memoize: true })
+        })
+        .then((resByDigMemo) => {
+          t.deepEqual(resByDigMemo, {
+            metadata: METADATA,
+            data: CONTENT,
+            integrity: INTEGRITY,
+            size: SIZE
+          }, 'get returned proper data')
+          t.done()
+        })
+    })
 })
 
 test('basic stream get', (t) => {
@@ -185,28 +437,15 @@ test('get.copy', (t) => {
     })
 })
 
-test('ENOENT if not found', (t) => {
-  return get(CACHE, KEY)
-    .then(() => {
-      throw new Error('lookup should fail')
-    })
-    .catch((err) => {
-      t.ok(err, 'got an error')
-      t.equal(err.code, 'ENOENT', 'error code is ENOENT')
-      return get.info(CACHE, KEY)
-    })
-    .catch((err) => {
-      t.ok(err, 'got an error')
-      t.equal(err.code, 'ENOENT', 'error code is ENOENT')
-    })
-})
-
 test('get.info index entry lookup', (t) => {
-  return index.insert(CACHE, KEY, INTEGRITY, opts()).then((ENTRY) => {
-    return get.info(CACHE, KEY).then((entry) => {
-      t.deepEqual(entry, ENTRY, 'get.info() returned the right entry')
+  return reset(CACHE)
+    .then(() => {
+      return index.insert(CACHE, KEY, INTEGRITY, opts()).then((ENTRY) => {
+        return get.info(CACHE, KEY).then((entry) => {
+          t.deepEqual(entry, ENTRY, 'get.info() returned the right entry')
+        })
+      })
     })
-  })
 })
 
 test('memoizes data on bulk read', (t) => {

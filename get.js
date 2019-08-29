@@ -122,7 +122,7 @@ module.exports.stream = getStream
 
 function getStream (cache, key, opts) {
   opts = GetOpts(opts)
-  let stream = through()
+  const stream = through()
   const memoized = memo.get(cache, key, opts)
   if (memoized && opts.memoize !== false) {
     stream.on('newListener', function (ev, cb) {
@@ -141,7 +141,7 @@ function getStream (cache, key, opts) {
       }
       let memoStream
       if (opts.memoize) {
-        let memoData = []
+        const memoData = []
         let memoLength = 0
         memoStream = through(
           (c, en, cb) => {
@@ -194,7 +194,7 @@ function getStreamDigest (cache, integrity, opts) {
   } else {
     let stream = read.readStream(cache, integrity, opts)
     if (opts.memoize) {
-      let memoData = []
+      const memoData = []
       let memoLength = 0
       const memoStream = through(
         (c, en, cb) => {
