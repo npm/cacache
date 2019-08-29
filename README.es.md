@@ -24,32 +24,31 @@ _Traducciones: [English](README.md)_
   * [Usando el API en español](#localized-api)
   * Leer
     * [`ls`](#ls)
-    * [`ls.flujo`](#ls-stream)
-    * [`saca`](#get-data)
-    * [`saca.flujo`](#get-stream)
-    * [`saca.info`](#get-info)
-    * [`saca.tieneDatos`](#get-hasContent)
+    * [`ls.stream`](#ls-stream)
+    * [`get`](#get-data)
+    * [`get.stream`](#get-stream)
+    * [`get.info`](#get-info)
+    * [`get.hasContent`](#get-hasContent)
   * Escribir
-    * [`mete`](#put-data)
-    * [`mete.flujo`](#put-stream)
-    * [opciones para `mete*`](#put-options)
-    * [`rm.todo`](#rm-all)
-    * [`rm.entrada`](#rm-entry)
-    * [`rm.datos`](#rm-content)
+    * [`put`](#put-data)
+    * [`put.stream`](#put-stream)
+    * [`put*` opts](#put-options)
+    * [`rm.all`](#rm-all)
+    * [`rm.entry`](#rm-entry)
+    * [`rm.content`](#rm-content)
   * Utilidades
-    * [`ponLenguaje`](#set-locale)
-    * [`limpiaMemoizado`](#clear-memoized)
-    * [`tmp.hazdir`](#tmp-mkdir)
-    * [`tmp.conTmp`](#with-tmp)
+    * [`clearMemoized`](#clear-memoized)
+    * [`tmp.mkdir`](#tmp-mkdir)
+    * [`tmp.withTmp`](#with-tmp)
   * Integridad
     * [Subresource Integrity](#integrity)
-    * [`verifica`](#verify)
-    * [`verifica.ultimaVez`](#verify-last-run)
-
+    * [`verify`](#verify)
+    * [`verify.lastRun`](#verify-last-run)
+    
 ### Ejemplo
 
 ```javascript
-const cacache = require('cacache/es')
+const cacache = require('cacache')
 const fs = require('fs')
 
 const tarbol = '/ruta/a/mi-tar.tgz'
@@ -57,14 +56,14 @@ const rutaCache = '/tmp/my-toy-cache'
 const clave = 'mi-clave-única-1234'
 
 // ¡Añádelo al caché! Usa `rutaCache` como raíz del caché.
-cacache.mete(rutaCache, clave, '10293801983029384').then(integrity => {
+cacache.put(rutaCache, clave, '10293801983029384').then(integrity => {
   console.log(`Saved content to ${rutaCache}.`)
 })
 
 const destino = '/tmp/mytar.tgz'
 
-// Copia el contenido del caché a otro fichero, pero esta vez con flujos.
-cacache.saca.flujo(
+// Copia el contenido del caché a otro fichero, pero esta vez con streams.
+cacache.get.stream(
   rutaCache, clave
 ).pipe(
   fs.createWriteStream(destino)
@@ -73,9 +72,9 @@ cacache.saca.flujo(
 })
 
 // La misma cosa, pero accesando el contenido directamente, sin tocar el índice.
-cacache.saca.porHacheo(rutaCache, integridad).then(datos => {
+cacache.get.byDigest(rutaCache, integridad).then(datos => {
   fs.writeFile(destino, datos, err => {
-    console.log('datos del tarbol sacados basado en su sha512, y escrito a otro fichero')
+    console.log('datos del tarbol getdos basado en su sha512, y escrito a otro fichero')
   })
 })
 ```
@@ -107,26 +106,15 @@ Todos los participantes en este proyecto deben obedecer el [Código de Conducta]
 
 Por favor refiérase al [Historial de Cambios](CHANGELOG.md) (en inglés) para detalles sobre cambios importantes incluídos en cada versión.
 
-Finalmente, cacache tiene un sistema de localización de lenguaje. Si te interesa añadir lenguajes o mejorar los que existen, mira en el directorio `./locales` para comenzar.
-
 Happy hacking!
 
 ### API
-
-#### <a name="localized-api"></a> Usando el API en español
-
-cacache incluye una traducción completa de su API al castellano, con las mismas
-características. Para usar el API como está documentado en este documento, usa
-`require('cacache/es')`
-
-cacache también tiene otros lenguajes: encuéntralos bajo `./locales`, y podrás
-usar el API en ese lenguaje con `require('cacache/<lenguaje>')`
 
 #### <a name="ls"></a> `> cacache.ls(cache) -> Promise<Object>`
 
 Enumera todas las entradas en el caché, dentro de un solo objeto. Cada entrada
 en el objeto tendrá como clave la clave única usada para el índice, el valor
-siendo un objeto de [`saca.info`](#get-info).
+siendo un objeto de [`get.info`](#get-info).
 
 ##### Ejemplo
 
@@ -156,15 +144,15 @@ cacache.ls(rutaCache).then(console.log)
 }
 ```
 
-#### <a name="ls-stream"></a> `> cacache.ls.flujo(cache) -> Readable`
+#### <a name="ls-stream"></a> `> cacache.ls.stream(cache) -> Readable`
 
 Enumera todas las entradas en el caché, emitiendo un objeto de
-[`saca.info`](#get-info) por cada evento de `data` en el flujo.
+[`get.info`](#get-info) por cada evento de `data` en el stream.
 
 ##### Ejemplo
 
 ```javascript
-cacache.ls.flujo(rutaCache).on('data', console.log)
+cacache.ls.stream(rutaCache).on('data', console.log)
 // Salida
 {
   key: 'my-thing',
@@ -192,7 +180,7 @@ cacache.ls.flujo(rutaCache).on('data', console.log)
 }
 ```
 
-#### <a name="get-data"></a> `> cacache.saca(cache, clave, [ops]) -> Promise({data, metadata, integrity})`
+#### <a name="get-data"></a> `> cacache.get(cache, clave, [ops]) -> Promise({data, metadata, integrity})`
 
 Devuelve un objeto con los datos, hacheo de integridad y metadatos identificados
 por la `clave`. La propiedad `data` de este objeto será una instancia de
@@ -206,21 +194,21 @@ won't care.
 So no existe ninguna entrada identificada por `clave`, o se los datos
 almacenados localmente fallan verificación, el `Promise` fallará.
 
-Una sub-función, `saca.porHacheo`, tiene casi el mismo comportamiento, excepto
+Una sub-función, `get.byDigest`, tiene casi el mismo comportamiento, excepto
 que busca entradas usando el hacheo de integridad, sin tocar el índice general.
 Esta versión *sólo* devuelve `data`, sin ningún objeto conteniéndola.
 
 ##### Nota
 
 Esta función lee la entrada completa a la memoria antes de devolverla. Si estás
-almacenando datos Muy Grandes, es posible que [`saca.flujo`](#get-stream) sea
+almacenando datos Muy Grandes, es posible que [`get.stream`](#get-stream) sea
 una mejor solución.
 
 ##### Ejemplo
 
 ```javascript
 // Busca por clave
-cache.saca(rutaCache, 'my-thing').then(console.log)
+cache.get(rutaCache, 'my-thing').then(console.log)
 // Salida:
 {
   metadata: {
@@ -232,12 +220,12 @@ cache.saca(rutaCache, 'my-thing').then(console.log)
 }
 
 // Busca por hacheo
-cache.saca.porHacheo(rutaCache, 'sha512-BaSe64HaSh').then(console.log)
+cache.get.byDigest(rutaCache, 'sha512-BaSe64HaSh').then(console.log)
 // Salida:
 Buffer#<deadbeef>
 ```
 
-#### <a name="get-stream"></a> `> cacache.saca.flujo(cache, clave, [ops]) -> Readable`
+#### <a name="get-stream"></a> `> cacache.get.stream(cache, clave, [ops]) -> Readable`
 
 Devuelve un [Readable
 Stream](https://nodejs.org/api/stream.html#stream_readable_streams) de los datos
@@ -246,10 +234,10 @@ almacenados bajo `clave`.
 So no existe ninguna entrada identificada por `clave`, o se los datos
 almacenados localmente fallan verificación, el `Promise` fallará.
 
-`metadata` y `integrity` serán emitidos como eventos antes de que el flujo
+`metadata` y `integrity` serán emitidos como eventos antes de que el stream
 cierre.
 
-Una sub-función, `saca.flujo.porHacheo`, tiene casi el mismo comportamiento,
+Una sub-función, `get.stream.byDigest`, tiene casi el mismo comportamiento,
 excepto que busca entradas usando el hacheo de integridad, sin tocar el índice
 general. Esta versión no emite eventos de `metadata` o `integrity`.
 
@@ -257,7 +245,7 @@ general. Esta versión no emite eventos de `metadata` o `integrity`.
 
 ```javascript
 // Busca por clave
-cache.saca.flujo(
+cache.get.stream(
   rutaCache, 'my-thing'
 ).on('metadata', metadata => {
   console.log('metadata:', metadata)
@@ -271,14 +259,14 @@ metadata: { ... }
 integrity: 'sha512-SoMeDIGest+64=='
 
 // Busca por hacheo
-cache.saca.flujo.porHacheo(
+cache.get.stream.byDigest(
   rutaCache, 'sha512-SoMeDIGest+64=='
 ).pipe(
   fs.createWriteStream('./x.tgz')
 )
 ```
 
-#### <a name="get-info"></a> `> cacache.saca.info(cache, clave) -> Promise`
+#### <a name="get-info"></a> `> cacache.get.info(cache, clave) -> Promise`
 
 Busca la `clave` en el índice del caché, devolviendo información sobre la
 entrada si existe.
@@ -294,7 +282,7 @@ entrada si existe.
 ##### Ejemplo
 
 ```javascript
-cacache.saca.info(rutaCache, 'my-thing').then(console.log)
+cacache.get.info(rutaCache, 'my-thing').then(console.log)
 
 // Salida
 {
@@ -311,7 +299,7 @@ cacache.saca.info(rutaCache, 'my-thing').then(console.log)
 }
 ```
 
-#### <a name="get-hasContent"></a> `> cacache.saca.tieneDatos(cache, integrity) -> Promise`
+#### <a name="get-hasContent"></a> `> cacache.get.hasContent(cache, integrity) -> Promise`
 
 Busca un [hacheo Subresource Integrity](#integrity) en el caché. Si existe el
 contenido asociado con `integrity`, devuelve un objeto con dos campos: el hacheo
@@ -322,7 +310,7 @@ devuelve `false`.
 ##### Ejemplo
 
 ```javascript
-cacache.saca.tieneDatos(rutaCache, 'sha256-MUSTVERIFY+ALL/THINGS==').then(console.log)
+cacache.get.hasContent(rutaCache, 'sha256-MUSTVERIFY+ALL/THINGS==').then(console.log)
 
 // Salida
 {
@@ -335,13 +323,13 @@ cacache.saca.tieneDatos(rutaCache, 'sha256-MUSTVERIFY+ALL/THINGS==').then(consol
   size: 9001
 }
 
-cacache.saca.tieneDatos(rutaCache, 'sha521-NOT+IN/CACHE==').then(console.log)
+cacache.get.hasContent(rutaCache, 'sha521-NOT+IN/CACHE==').then(console.log)
 
 // Salida
 false
 ```
 
-#### <a name="put-data"></a> `> cacache.mete(cache, clave, datos, [ops]) -> Promise`
+#### <a name="put-data"></a> `> cacache.put(cache, clave, datos, [ops]) -> Promise`
 
 Inserta `datos` en el caché. El `Promise` devuelto se resuelve con un hacheo
 (generado conforme a [`ops.algorithms`](#optsalgorithms)) después que la entrada
@@ -353,13 +341,13 @@ haya sido escrita en completo.
 fetch(
   'https://registry.npmjs.org/cacache/-/cacache-1.0.0.tgz'
 ).then(datos => {
-  return cacache.mete(rutaCache, 'registry.npmjs.org|cacache@1.0.0', datos)
+  return cacache.put(rutaCache, 'registry.npmjs.org|cacache@1.0.0', datos)
 }).then(integridad => {
   console.log('el hacheo de integridad es', integridad)
 })
 ```
 
-#### <a name="put-stream"></a> `> cacache.mete.flujo(cache, clave, [ops]) -> Writable`
+#### <a name="put-stream"></a> `> cacache.put.stream(cache, clave, [ops]) -> Writable`
 
 Devuelve un [Writable
 Stream](https://nodejs.org/api/stream.html#stream_writable_streams) que inserta
@@ -372,15 +360,15 @@ contenido escrito, cuando completa.
 request.get(
   'https://registry.npmjs.org/cacache/-/cacache-1.0.0.tgz'
 ).pipe(
-  cacache.mete.flujo(
+  cacache.put.stream(
     rutaCache, 'registry.npmjs.org|cacache@1.0.0'
   ).on('integrity', d => console.log(`integrity digest is ${d}`))
 )
 ```
 
-#### <a name="put-options"></a> `> opciones para cacache.mete`
+#### <a name="put-options"></a> `> opciones para cacache.put`
 
-La funciones `cacache.mete` tienen un número de opciones en común.
+La funciones `cacache.put` tienen un número de opciones en común.
 
 ##### `ops.metadata`
 
@@ -432,9 +420,9 @@ caché de memoria global. Esto permite tener lógica específica a tu aplicació
 encuanto al almacenaje en memoria de tus datos.
 
 Si quieres asegurarte que los datos se lean del disco en vez de memoria, usa
-`memoize: false` cuando uses funciones de `cacache.saca`.
+`memoize: false` cuando uses funciones de `cacache.get`.
 
-#### <a name="rm-all"></a> `> cacache.rm.todo(cache) -> Promise`
+#### <a name="rm-all"></a> `> cacache.rm.all(cache) -> Promise`
 
 Borra el caché completo, incluyendo ficheros temporeros, ficheros de datos, y el
 índice del caché.
@@ -442,18 +430,18 @@ Borra el caché completo, incluyendo ficheros temporeros, ficheros de datos, y e
 ##### Ejemplo
 
 ```javascript
-cacache.rm.todo(rutaCache).then(() => {
+cacache.rm.all(rutaCache).then(() => {
   console.log('THE APOCALYPSE IS UPON US 😱')
 })
 ```
 
-#### <a name="rm-entry"></a> `> cacache.rm.entrada(cache, clave) -> Promise`
+#### <a name="rm-entry"></a> `> cacache.rm.entry(cache, clave) -> Promise`
 
 Alias: `cacache.rm`
 
 Borra la entrada `clave` del índuce. El contenido asociado con esta entrada
 seguirá siendo accesible por hacheo usando
-[`saca.flujo.porHacheo`](#get-stream).
+[`get.stream.byDigest`](#get-stream).
 
 Para borrar el contenido en sí, usa [`rm.datos`](#rm-content). Si quieres hacer
 esto de manera más segura (pues ficheros de contenido pueden ser usados por
@@ -462,12 +450,12 @@ multiples entradas), usa [`verifica`](#verify) para borrar huérfanos.
 ##### Ejemplo
 
 ```javascript
-cacache.rm.entrada(rutaCache, 'my-thing').then(() => {
+cacache.rm.entry(rutaCache, 'my-thing').then(() => {
   console.log('I did not like it anyway')
 })
 ```
 
-#### <a name="rm-content"></a> `> cacache.rm.datos(cache, integrity) -> Promise`
+#### <a name="rm-content"></a> `> cacache.rm.content(cache, integrity) -> Promise`
 
 Borra el contenido identificado por `integrity`. Cualquier entrada que se
 refiera a este contenido quedarán huérfanas y se invalidarán si se tratan de
@@ -476,26 +464,17 @@ accesar, al menos que contenido idéntico sea añadido bajo `integrity`.
 ##### Ejemplo
 
 ```javascript
-cacache.rm.datos(rutaCache, 'sha512-SoMeDIGest/IN+BaSE64==').then(() => {
+cacache.rm.content(rutaCache, 'sha512-SoMeDIGest/IN+BaSE64==').then(() => {
   console.log('los datos para `mi-cosa` se borraron')
 })
 ```
 
-#### <a name="set-locale"></a> `> cacache.ponLenguaje(locale)`
-
-Configura el lenguaje usado para mensajes y errores de cacache. La lista de
-lenguajes disponibles está en el directorio `./locales` del proyecto.
-
-_Te interesa añadir más lenguajes? [Somete un PR](CONTRIBUTING.md)!_
-
-#### <a name="clear-memoized"></a> `> cacache.limpiaMemoizado()`
+#### <a name="clear-memoized"></a> `> cacache.clearMemoized()`
 
 Completamente reinicializa el caché de memoria interno. Si estás usando tu
 propio objecto con `ops.memoize`, debes hacer esto de manera específica a él.
 
-#### <a name="tmp-mkdir"></a> `> tmp.hazdir(cache, ops) -> Promise<Path>`
-
-Alias: `tmp.mkdir`
+#### <a name="tmp-mkdir"></a> `> tmp.mkdir(cache, ops) -> Promise<Path>`
 
 Devuelve un directorio único dentro del directorio `tmp` del caché.
 
@@ -506,7 +485,7 @@ con el caché. Si no, puedes pedirle a cacache que lo haga llamando a
 directorio tmp.
 
 Si quieres que cacache limpie el directorio automáticamente cuando termines, usa
-[`cacache.tmp.conTmp()`](#with-tpm).
+[`cacache.tmp.withTmp()`](#with-tpm).
 
 ##### Ejemplo
 
@@ -516,7 +495,7 @@ cacache.tmp.mkdir(cache).then(dir => {
 })
 ```
 
-#### <a name="with-tmp"></a> `> tmp.conTmp(cache, ops, cb) -> Promise`
+#### <a name="with-tmp"></a> `> tmp.withTmp(cache, ops, cb) -> Promise`
 
 Crea un directorio temporero con [`tmp.mkdir()`](#tmp-mkdir) y ejecuta `cb` con
 él como primer argumento. El directorio creado será removido automáticamente
@@ -528,7 +507,7 @@ dentro del directorio.
 ##### Ejemplo
 
 ```javascript
-cacache.tmp.conTmp(cache, dir => {
+cacache.tmp.withTmp(cache, dir => {
   return fs.writeFileAsync(path.join(dir, 'blablabla'), Buffer#<1234>, ...)
 }).then(() => {
   // `dir` no longer exists
@@ -576,7 +555,7 @@ librería que garantiza que todo esté correcto, pues maneja probablemente todas
 las operaciones que tendrías que hacer con SRIs, incluyendo convirtiendo entre
 hexadecimal y el formato SRI.
 
-#### <a name="verify"></a> `> cacache.verifica(cache, ops) -> Promise`
+#### <a name="verify"></a> `> cacache.verify(cache, ops) -> Promise`
 
 Examina y arregla tu caché:
 
@@ -604,25 +583,25 @@ echo somegarbage >> $RUTACACHE/content/deadbeef
 ```
 
 ```javascript
-cacache.verifica(rutaCache).then(stats => {
+cacache.verify(rutaCache).then(stats => {
   // deadbeef collected, because of invalid checksum.
   console.log('cache is much nicer now! stats:', stats)
 })
 ```
 
-#### <a name="verify-last-run"></a> `> cacache.verifica.ultimaVez(cache) -> Promise`
+#### <a name="verify-last-run"></a> `> cacache.verify.lastRun(cache) -> Promise`
 
 Alias: `últimaVez`
 
-Devuelve un `Date` que representa la última vez que `cacache.verifica` fue
+Devuelve un `Date` que representa la última vez que `cacache.verify` fue
 ejecutada en `cache`.
 
 ##### Example
 
 ```javascript
-cacache.verifica(rutaCache).then(() => {
-  cacache.verifica.ultimaVez(rutaCache).then(última => {
-    console.log('La última vez que se usó cacache.verifica() fue ' + última)
+cacache.verify(rutaCache).then(() => {
+  cacache.verify.lastRun(rutaCache).then(ultima => {
+    console.log('La última vez que se usó cacache.verify() fue ' + ultima)
   })
 })
 ```
