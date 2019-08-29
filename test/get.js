@@ -11,7 +11,6 @@ const rimraf = util.promisify(require('rimraf'))
 const Tacks = require('tacks')
 const { test } = require('tap')
 const testDir = require('./util/test-dir')(__filename)
-const reset = util.promisify(require('./util/test-dir').reset)
 const ssri = require('ssri')
 
 const readFile = util.promisify(fs.readFile)
@@ -67,6 +66,14 @@ function streamGet (byDigest) {
     size
   }))
 }
+
+test('get.info index entry lookup', (t) => {
+  return index.insert(CACHE, KEY, INTEGRITY, opts()).then((ENTRY) => {
+    return get.info(CACHE, KEY).then((entry) => {
+      t.deepEqual(entry, ENTRY, 'get.info() returned the right entry')
+    })
+  })
+})
 
 test('get.sync will throw ENOENT if not found', (t) => {
   try {
@@ -402,7 +409,21 @@ test('basic stream get', (t) => {
   })
 })
 
-test('get.copy', (t) => {
+test('get.copy will throw ENOENT if not found', (t) => {
+  const DEST = path.join(CACHE, 'not-found')
+  return get.copy(CACHE, 'NOT-FOUND', DEST)
+    .then(() => {
+      throw new Error('lookup should fail')
+    })
+    .catch((err) => {
+      t.ok(err, 'got an error')
+      t.equal(err.code, 'ENOENT', 'error code is ENOENT')
+    })
+})
+
+test('get.copy with fs.copyfile', {
+  skip: !fs.copyFile && 'Not supported on node versions without fs.copyFile'
+}, (t) => {
   const DEST = path.join(CACHE, 'copymehere')
   const fixture = new Tacks(
     CacheContent({
@@ -437,14 +458,41 @@ test('get.copy', (t) => {
     })
 })
 
-test('get.info index entry lookup', (t) => {
-  return reset(CACHE)
-    .then(() => {
-      return index.insert(CACHE, KEY, INTEGRITY, opts()).then((ENTRY) => {
-        return get.info(CACHE, KEY).then((entry) => {
-          t.deepEqual(entry, ENTRY, 'get.info() returned the right entry')
-        })
-      })
+test('get.copy without fs.copyfile', (t) => {
+  const readModuleCache = require.cache[require.resolve('./../lib/content/read')]
+  delete readModuleCache.exports.copy
+
+  const DEST = path.join(CACHE, 'copymehere')
+  const fixture = new Tacks(
+    CacheContent({
+      [INTEGRITY]: CONTENT
+    })
+  )
+  fixture.create(CACHE)
+  return index
+    .insert(CACHE, KEY, INTEGRITY, opts())
+    .then(() => get.copy(CACHE, KEY, DEST))
+    .then((res) => {
+      t.deepEqual(
+        res,
+        {
+          metadata: METADATA,
+          integrity: INTEGRITY,
+          size: SIZE
+        },
+        'copy operation returns basic metadata'
+      )
+      return readFile(DEST)
+    })
+    .then((data) => {
+      t.deepEqual(data, CONTENT, 'data copied by key matches')
+      return rimraf(DEST)
+    })
+    .then(() => get.copy.byDigest(CACHE, INTEGRITY, DEST))
+    .then(() => readFile(DEST))
+    .then((data) => {
+      t.deepEqual(data, CONTENT, 'data copied by digest matches')
+      return rimraf(DEST)
     })
 })
 
