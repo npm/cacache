@@ -8,7 +8,7 @@ const ssri = require('ssri')
 
 const get = require('../../get')
 
-let buf = []
+const buf = []
 for (let i = 0; i < Math.pow(2, 8); i++) {
   buf.push(Buffer.alloc(8, i))
 }

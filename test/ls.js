@@ -100,7 +100,7 @@ test('ignores non-dir files', function (t) {
       size: 234234
     }
   })
-  index.contents['garbage'] = File('hello world')
+  index.contents.garbage = File('hello world')
   const fixture = new Tacks(index)
   fixture.create(CACHE)
   return ls(CACHE).then((listing) => {
