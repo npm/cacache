@@ -65,7 +65,7 @@ chown everything to root.
 The solution is for the user to create a folder, make it user-owned, and
 use that, rather than relying on cacache to create the root cache folder.
 
-If we decide to restore the uid/gid opts, and use ownership inferrence
+If we decide to restore the uid/gid opts, and use ownership inference
 only when uid/gid are unset, then take care to also make rm take an
 option object, and pass it through to entry-index.js.
 
