@@ -1,6 +1,7 @@
 'use strict'
 
 const util = require('util')
+const requireInject = require('require-inject')
 
 const fs = require('graceful-fs')
 const path = require('path')
@@ -8,7 +9,12 @@ const { test } = require('tap')
 
 const CACHE = require('./util/test-dir')(__filename)
 
-const tmp = require('../lib/util/tmp')
+const mockedFixOwner = () => Promise.resolve(1)
+// temporarily points to original mkdirfix implementation
+mockedFixOwner.mkdirfix = require('../lib/util/fix-owner').mkdirfix
+const tmp = requireInject('../lib/util/tmp', {
+  '../lib/util/fix-owner': mockedFixOwner
+})
 
 const stat = util.promisify(fs.stat)
 
@@ -57,5 +63,14 @@ test('provides a utility that does resource disposal on tmp', (t) => {
     })
 })
 
-test('makes sure ownership is correct')
-test('provides a function for fixing ownership in the tmp dir')
+test('withTmp should accept both opts and cb params', t => {
+  return tmp.withTmp(CACHE, { tmpPrefix: {} }, dir => {
+    t.ok(dir, 'dir should contain a valid response')
+  })
+})
+
+test('provides a function for fixing ownership in the tmp dir', t => {
+  return tmp.fix(CACHE).then(res => {
+    t.ok(res, 'fixOwner is successfully called')
+  })
+})
