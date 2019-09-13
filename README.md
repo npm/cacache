@@ -513,8 +513,8 @@ cacache.tmp.mkdir(cache).then(dir => {
 
 Creates a temporary directory with [`tmp.mkdir()`](#tmp-mkdir) and calls `cb`
 with it. The created temporary directory will be removed when the return value
-of `cb()` resolves -- that is, if you return a Promise from `cb()`, the tmp
-directory will be automatically deleted once that promise completes.
+of `cb()` resolves, the tmp directory will be automatically deleted once that 
+promise completes.
 
 The same caveats apply when it comes to managing permissions for the tmp dir's
 contents.
