@@ -5,7 +5,7 @@ install:
 language: node_js
 sudo: false
 node_js:
+  - "12"
   - "10"
   - "9"
   - "8"
-  - "6"
