@@ -64,6 +64,8 @@
     "graceful-fs": "^4.1.15",
     "infer-owner": "^1.0.3",
     "lru-cache": "^5.1.1",
+    "minipass": "^2.5.1",
+    "minipass-pipeline": "^1.0.1",
     "mississippi": "^3.0.0",
     "mkdirp": "^0.5.1",
     "move-concurrently": "^1.0.1",
