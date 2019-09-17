@@ -30,8 +30,6 @@ fs.lstatSync = (path) => {
   return st
 }
 
-const fromString = require('./util/from-string')
-const { pipe } = require('mississippi')
 const requireInject = require('require-inject')
 const ssri = require('ssri')
 const { test } = require('tap')
@@ -61,15 +59,10 @@ test(
       }
     })
     t.plan(7)
-    pipe(
-      fromString(CONTENT),
-      write.stream(CACHE, {
-        hashAlgorithm: 'sha1'
-      }),
-      function (err) {
-        if (err) {
-          throw err
-        }
+    return write.stream(CACHE, { hashAlgorithm: 'sha1' })
+      .end(CONTENT)
+      .promise()
+      .then(() => {
         const cpath = contentPath(CACHE, INTEGRITY)
         const expectedPaths = [
           CACHE,
@@ -81,7 +74,6 @@ test(
           expectedPaths,
           'all paths that needed user stuff set got set'
         )
-      }
-    )
+      })
   }
 )

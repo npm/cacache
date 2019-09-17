@@ -1,9 +1,5 @@
 'use strict'
 
-const util = require('util')
-
-const finished = util.promisify(require('mississippi').finished)
-
 const buf = []
 for (let i = 0; i < Math.pow(2, 8); i++) {
   buf.push(Buffer.alloc(8, i))
@@ -44,12 +40,11 @@ module.exports = (suite, CACHE) => {
     defer: true,
     fn (deferred) {
       const stream = put.stream(CACHE, KEY + this.count)
-      finished(stream).then(
+      stream.promise().then(
         () => deferred.resolve(),
         (err) => deferred.reject(err)
       )
-      stream.write(CONTENT + this.count)
-      stream.end()
+      stream.end(CONTENT + this.count)
     }
   })
 
@@ -59,12 +54,11 @@ module.exports = (suite, CACHE) => {
     maxTime: 30,
     fn (deferred) {
       const stream = put.stream(CACHE, KEY + this.count)
-      finished(stream).then(
+      stream.promise().then(
         () => deferred.resolve(),
         (err) => deferred.reject(err)
       )
-      stream.write(BIGCONTENT + this.count)
-      stream.end()
+      stream.end(BIGCONTENT + this.count)
     }
   })
 }

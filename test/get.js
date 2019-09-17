@@ -2,7 +2,6 @@
 
 const util = require('util')
 
-const finished = util.promisify(require('mississippi').finished)
 const fs = require('fs')
 const index = require('../lib/entry-index')
 const memo = require('../lib/memoization')
@@ -39,17 +38,11 @@ function opts (extra) {
 // Simple wrapper util cause this gets WORDY
 function streamGet (byDigest) {
   const args = [].slice.call(arguments, 1)
-  const data = []
-  let dataLen = 0
   let integrity
   let metadata
   let size
   const stream = (byDigest ? get.stream.byDigest : get.stream).apply(null, args)
-  stream
-    .on('data', (d) => {
-      data.push(d)
-      dataLen += d.length
-    })
+  return stream
     .on('integrity', (int) => {
       integrity = ssri.stringify(int)
     })
@@ -59,12 +52,13 @@ function streamGet (byDigest) {
     .on('size', (s) => {
       size = s
     })
-  return finished(stream).then(() => ({
-    data: Buffer.concat(data, dataLen),
-    integrity,
-    metadata,
-    size
-  }))
+    .concat()
+    .then((data) => ({
+      data,
+      integrity,
+      metadata,
+      size
+    }))
 }
 
 test('get.info index entry lookup', (t) => {

@@ -1,10 +1,7 @@
 'use strict'
 
-const util = require('util')
-
 const CacheIndex = require('./util/cache-index')
 const contentPath = require('../lib/content/path')
-const finished = util.promisify(require('mississippi').finished)
 const index = require('../lib/entry-index.js')
 const path = require('path')
 const Tacks = require('tacks')
@@ -42,12 +39,12 @@ test('basic listing', function (t) {
       t.deepEqual(listing, contents, 'index contents correct')
     })
     .then(() => {
-      const listing = []
+      const listing = {}
       const stream = ls.stream(CACHE)
       stream.on('data', (entry) => {
         listing[entry.key] = entry
       })
-      return finished(stream).then(() => {
+      return stream.promise().then(() => {
         t.deepEqual(listing, contents, 'ls is streamable')
       })
     })
@@ -152,12 +149,12 @@ test('correctly ignores deleted entries', (t) => {
       )
     )
     .then(() => {
-      const listing = []
+      const listing = {}
       const stream = ls.stream(CACHE)
       stream.on('data', (entry) => {
         listing[entry.key] = entry
       })
-      return finished(stream).then(() =>
+      return stream.promise().then(() =>
         t.deepEqual(
           listing,
           {
