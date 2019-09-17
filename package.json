@@ -68,7 +68,7 @@
     "minipass": "^2.6.2",
     "minipass-collect": "^1.0.1",
     "minipass-flush": "^1.0.3",
-    "minipass-pipeline": "^1.1.1",
+    "minipass-pipeline": "^1.1.2",
     "mkdirp": "^0.5.1",
     "move-concurrently": "^1.0.1",
     "p-map": "^3.0.0",
