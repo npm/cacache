@@ -4,10 +4,13 @@ const util = require('util')
 
 const figgyPudding = require('figgy-pudding')
 const fs = require('fs')
-const { pipe, pipeline, through } = require('mississippi')
 const index = require('./lib/entry-index')
 const memo = require('./lib/memoization')
 const read = require('./lib/content/read')
+
+const Minipass = require('minipass')
+const Collect = require('minipass-collect')
+const Pipeline = require('minipass-pipeline')
 
 const writeFile = util.promisify(fs.writeFile)
 
@@ -120,43 +123,30 @@ function getDataSync (byDigest, cache, key, opts) {
 
 module.exports.stream = getStream
 
+const getMemoizedStream = (memoized) => {
+  const stream = new Minipass()
+  stream.on('newListener', function (ev, cb) {
+    ev === 'metadata' && cb(memoized.entry.metadata)
+    ev === 'integrity' && cb(memoized.entry.integrity)
+    ev === 'size' && cb(memoized.entry.size)
+  })
+  stream.end(memoized.data)
+  return stream
+}
+
 function getStream (cache, key, opts) {
   opts = GetOpts(opts)
-  const stream = through()
   const memoized = memo.get(cache, key, opts)
   if (memoized && opts.memoize !== false) {
-    stream.on('newListener', function (ev, cb) {
-      ev === 'metadata' && cb(memoized.entry.metadata)
-      ev === 'integrity' && cb(memoized.entry.integrity)
-      ev === 'size' && cb(memoized.entry.size)
-    })
-    stream.write(memoized.data, () => stream.end())
-    return stream
+    return getMemoizedStream(memoized)
   }
+
+  const stream = new Pipeline()
   index
     .find(cache, key)
     .then((entry) => {
       if (!entry) {
-        return stream.emit('error', new index.NotFoundError(cache, key))
-      }
-      let memoStream
-      if (opts.memoize) {
-        const memoData = []
-        let memoLength = 0
-        memoStream = through(
-          (c, en, cb) => {
-            memoData && memoData.push(c)
-            memoLength += c.length
-            cb(null, c, en)
-          },
-          (cb) => {
-            memoData &&
-              memo.put(cache, entry, Buffer.concat(memoData, memoLength), opts)
-            cb()
-          }
-        )
-      } else {
-        memoStream = through()
+        throw new index.NotFoundError(cache, key)
       }
       stream.emit('metadata', entry.metadata)
       stream.emit('integrity', entry.integrity)
@@ -166,19 +156,24 @@ function getStream (cache, key, opts) {
         ev === 'integrity' && cb(entry.integrity)
         ev === 'size' && cb(entry.size)
       })
-      pipe(
-        read.readStream(
-          cache,
-          entry.integrity,
-          opts.concat({
-            size: opts.size == null ? entry.size : opts.size
-          })
-        ),
-        memoStream,
-        stream
+
+      const src = read.readStream(
+        cache,
+        entry.integrity,
+        opts.concat({
+          size: opts.size == null ? entry.size : opts.size
+        })
       )
+
+      if (opts.memoize) {
+        const memoStream = new Collect.PassThrough()
+        memoStream.on('collect', data => memo.put(cache, entry, data, opts))
+        stream.unshift(memoStream)
+      }
+      stream.unshift(src)
     })
     .catch((err) => stream.emit('error', err))
+
   return stream
 }
 
@@ -188,34 +183,22 @@ function getStreamDigest (cache, integrity, opts) {
   opts = GetOpts(opts)
   const memoized = memo.get.byDigest(cache, integrity, opts)
   if (memoized && opts.memoize !== false) {
-    const stream = through()
-    stream.write(memoized, () => stream.end())
+    const stream = new Minipass()
+    stream.end(memoized)
     return stream
   } else {
-    let stream = read.readStream(cache, integrity, opts)
-    if (opts.memoize) {
-      const memoData = []
-      let memoLength = 0
-      const memoStream = through(
-        (c, en, cb) => {
-          memoData && memoData.push(c)
-          memoLength += c.length
-          cb(null, c, en)
-        },
-        (cb) => {
-          memoData &&
-            memo.put.byDigest(
-              cache,
-              integrity,
-              Buffer.concat(memoData, memoLength),
-              opts
-            )
-          cb()
-        }
-      )
-      stream = pipeline(stream, memoStream)
+    const stream = read.readStream(cache, integrity, opts)
+    if (!opts.memoize) {
+      return stream
     }
-    return stream
+    const memoStream = new Collect.PassThrough()
+    memoStream.on('collect', data => memo.put.byDigest(
+      cache,
+      integrity,
+      data,
+      opts
+    ))
+    return new Pipeline(stream, memoStream)
   }
 }
 

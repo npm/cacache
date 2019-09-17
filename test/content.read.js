@@ -2,7 +2,6 @@
 
 const util = require('util')
 
-const finished = util.promisify(require('mississippi').finished)
 const fs = require('fs')
 const path = require('path')
 const ssri = require('ssri')
@@ -55,15 +54,8 @@ test('read.stream: returns a stream with cache content data', function (t) {
   )
   fixture.create(CACHE)
   const stream = read.stream(CACHE, INTEGRITY)
-  stream.on('error', function (e) {
-    throw e
-  })
-  let buf = ''
-  stream.on('data', function (data) {
-    buf += data
-  })
   return Promise.all([
-    finished(stream).then(() => Buffer.from(buf)),
+    stream.concat(),
     read(CACHE, INTEGRITY, { size: CONTENT.length })
   ]).then(([fromStream, fromBulk]) => {
     t.deepEqual(fromStream, CONTENT, 'stream data checks out')
@@ -82,15 +74,8 @@ test('read: allows hashAlgorithm configuration', function (t) {
   )
   fixture.create(CACHE)
   const stream = read.stream(CACHE, INTEGRITY)
-  stream.on('error', function (e) {
-    throw e
-  })
-  let buf = ''
-  stream.on('data', function (data) {
-    buf += data
-  })
   return Promise.all([
-    finished(stream).then(() => Buffer.from(buf)),
+    stream.concat(),
     read(CACHE, INTEGRITY)
   ]).then(([fromStream, fromBulk]) => {
     t.deepEqual(fromStream, CONTENT, 'stream used algorithm')
@@ -104,10 +89,10 @@ test('read: errors if content missing', function (t) {
     throw new Error('unexpected data: ' + JSON.stringify(data))
   })
   stream.on('end', function () {
-    throw new Error('end was called even though stream errored')
+    throw new Error('end was emitted even though stream errored')
   })
   return Promise.all([
-    finished(stream).catch((err) => {
+    stream.promise().catch((err) => {
       if (err.code === 'ENOENT') {
         return err
       }
@@ -120,8 +105,8 @@ test('read: errors if content missing', function (t) {
       throw err
     })
   ]).then(([streamErr, bulkErr]) => {
-    t.equal(streamErr.code, 'ENOENT', 'stream got the right error')
-    t.equal(bulkErr.code, 'ENOENT', 'bulk got the right error')
+    t.match(streamErr, { code: 'ENOENT' }, 'stream got the right error')
+    t.match(bulkErr, { code: 'ENOENT' }, 'bulk got the right error')
   })
 })
 
@@ -136,10 +121,10 @@ test('read: errors if content fails checksum', function (t) {
   fixture.create(CACHE)
   const stream = read.readStream(CACHE, INTEGRITY)
   stream.on('end', function () {
-    throw new Error('end was called even though stream errored')
+    throw new Error('end was emitted even though stream errored')
   })
   return Promise.all([
-    finished(stream).catch((err) => {
+    stream.promise().catch((err) => {
       if (err.code === 'EINTEGRITY') {
         return err
       }
@@ -152,8 +137,8 @@ test('read: errors if content fails checksum', function (t) {
       throw err
     })
   ]).then(([streamErr, bulkErr]) => {
-    t.equal(streamErr.code, 'EINTEGRITY', 'stream got the right error')
-    t.equal(bulkErr.code, 'EINTEGRITY', 'bulk got the right error')
+    t.match(streamErr, { code: 'EINTEGRITY' }, 'stream got the right error')
+    t.match(bulkErr, { code: 'EINTEGRITY' }, 'bulk got the right error')
   })
 })
 
@@ -171,7 +156,7 @@ test('read: errors if content size does not match size option', function (t) {
     throw new Error('end was called even though stream errored')
   })
   return Promise.all([
-    finished(stream).catch((err) => {
+    stream.promise().catch((err) => {
       if (err.code === 'EBADSIZE') {
         return err
       }
@@ -186,8 +171,8 @@ test('read: errors if content size does not match size option', function (t) {
       throw err
     })
   ]).then(([streamErr, bulkErr]) => {
-    t.equal(streamErr.code, 'EBADSIZE', 'stream got the right error')
-    t.equal(bulkErr.code, 'EBADSIZE', 'bulk got the right error')
+    t.match(streamErr, { code: 'EBADSIZE' }, 'stream got the right error')
+    t.match(bulkErr, { code: 'EBADSIZE' }, 'bulk got the right error')
   })
 })
 

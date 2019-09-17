@@ -2,18 +2,15 @@
 
 const util = require('util')
 
-const fromString = require('./util/from-string')
 const fs = require('fs')
 const index = require('../lib/entry-index')
 const memo = require('../lib/memoization')
 const path = require('path')
-const pipe = util.promisify(require('mississippi').pipe)
 const { test } = require('tap')
 const testDir = require('./util/test-dir')(__filename)
 const ssri = require('ssri')
 
 const readFile = util.promisify(fs.readFile)
-const readdir = util.promisify(fs.readdir)
 
 const CACHE = path.join(testDir, 'cache')
 const CONTENT = Buffer.from('foobarbaz', 'utf8')
@@ -38,14 +35,10 @@ test('basic bulk insertion', (t) => {
 
 test('basic stream insertion', (t) => {
   let int
-  const src = fromString(CONTENT)
   const stream = put.stream(CACHE, KEY).on('integrity', (i) => {
     int = i
   })
-  return pipe(
-    src,
-    stream
-  )
+  return stream.end(CONTENT).promise()
     .then(() => {
       t.equal(int.toString(), INTEGRITY, 'returned integrity matches expected')
       return readFile(contentPath(CACHE, int))
@@ -96,7 +89,6 @@ test('optionally memoizes data on bulk insertion', (t) => {
 
 test('optionally memoizes data on stream insertion', (t) => {
   let int
-  const src = fromString(CONTENT)
   const stream = put
     .stream(CACHE, KEY, {
       metadata: METADATA,
@@ -105,10 +97,7 @@ test('optionally memoizes data on stream insertion', (t) => {
     .on('integrity', (i) => {
       int = i
     })
-  return pipe(
-    src,
-    stream
-  )
+  return stream.end(CONTENT).promise()
     .then(() => {
       t.equal(int.toString(), INTEGRITY, 'integrity emitted as usual')
       return readFile(contentPath(CACHE, int))
@@ -148,49 +137,17 @@ test('signals error if error writing to cache', (t) => {
       size: 2
     })
       .then(() => {
-        throw new Error('expected error')
+        throw new Error('expected to get a bad size error')
       })
       .catch((err) => err),
-    pipe(
-      fromString(CONTENT),
-      put.stream(CACHE, KEY, {
-        size: 2
-      })
-    )
+
+    put.stream(CACHE, KEY, { size: 2 }).end(CONTENT).promise()
       .then(() => {
-        throw new Error('expected error')
+        throw new Error('expected to get a bad size error')
       })
       .catch((err) => err)
   ]).then(([bulkErr, streamErr]) => {
     t.equal(bulkErr.code, 'EBADSIZE', 'got error from bulk write')
     t.equal(streamErr.code, 'EBADSIZE', 'got error from stream write')
   })
-})
-
-test('errors if input stream errors', (t) => {
-  let int
-  const putter = put.stream(CACHE, KEY).on('integrity', (i) => {
-    int = i
-  })
-  const stream = fromString(false)
-  return pipe(
-    stream,
-    putter
-  )
-    .then(() => {
-      throw new Error('expected error')
-    })
-    .catch((err) => {
-      t.ok(err, 'got an error')
-      t.ok(!int, 'no integrity returned')
-      t.match(
-        err.message,
-        /Invalid non-string/,
-        'returns the error from input stream'
-      )
-      return readdir(testDir)
-    })
-    .then((files) => {
-      t.deepEqual(files, [], 'no files created')
-    })
 })

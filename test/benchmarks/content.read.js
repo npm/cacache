@@ -121,11 +121,11 @@ module.exports = (suite, CACHE) => {
     },
     fn (deferred) {
       const stream = read.stream(CACHE, INTEGRITY)
-      stream.on('data', () => {})
-      stream.on('error', (err) => deferred.reject(err))
-      stream.on('end', () => {
-        deferred.resolve()
-      })
+      stream.promise().then(
+        () => deferred.resolve(),
+        er => deferred.reject(er)
+      )
+      stream.resume()
     }
   })
 
@@ -141,11 +141,11 @@ module.exports = (suite, CACHE) => {
     },
     fn (deferred) {
       const stream = read.stream(CACHE, BIGINTEGRITY)
-      stream.on('data', () => {})
-      stream.on('error', (err) => deferred.reject(err))
-      stream.on('end', () => {
-        deferred.resolve()
-      })
+      stream.promise().then(
+        () => deferred.resolve(),
+        er => deferred.reject(er)
+      )
+      stream.resume()
     }
   })
 }
