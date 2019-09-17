@@ -65,7 +65,7 @@
     "graceful-fs": "^4.2.2",
     "infer-owner": "^1.0.4",
     "lru-cache": "^5.1.1",
-    "minipass": "^2.6.2",
+    "minipass": "^2.6.5",
     "minipass-collect": "^1.0.1",
     "minipass-flush": "^1.0.3",
     "minipass-pipeline": "^1.1.2",
@@ -74,7 +74,7 @@
     "p-map": "^3.0.0",
     "promise-inflight": "^1.0.1",
     "rimraf": "^2.7.1",
-    "ssri": "github:npm/ssri",
+    "ssri": "github:npm/ssri#v7",
     "unique-filename": "^1.1.1"
   },
   "devDependencies": {
