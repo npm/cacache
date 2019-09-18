@@ -74,7 +74,7 @@
     "p-map": "^3.0.0",
     "promise-inflight": "^1.0.1",
     "rimraf": "^2.7.1",
-    "ssri": "github:npm/ssri#v7",
+    "ssri": "^7.0.0",
     "unique-filename": "^1.1.1"
   },
   "devDependencies": {
