@@ -4,6 +4,7 @@ const util = require('util')
 
 const fs = require('fs')
 const path = require('path')
+const requireInject = require('require-inject')
 const Tacks = require('tacks')
 const { test } = require('tap')
 const testDir = require('./util/test-dir')(__filename)
@@ -102,6 +103,56 @@ test('does not error if destination file is open', function (t) {
         })
       })
   })
+})
+
+test('fallback to renaming on missing files post-move', function (t) {
+  const fixture = new Tacks(
+    Dir({
+      src: File('foo')
+    })
+  )
+  fixture.create(testDir)
+
+  // Sets up a fs mock that will fail at first unlink/stat call in order
+  // to trigger the fallback scenario then restores the fs methods allowing
+  // for the rename functionality to succeed
+  let shouldMock = true
+  const missingFileError = new Error('ENOENT')
+  missingFileError.code = 'ENOENT'
+  const mockedMoveFile = requireInject.withEmptyCache('../lib/util/move-file', {
+    'graceful-fs': Object.assign({}, fs, {
+      unlink  (path, cb) {
+        if (shouldMock) {
+          cb(missingFileError)
+        } else {
+          fs.unlink(path, cb)
+        }
+      },
+      stat (path, cb) {
+        if (shouldMock && path === 'dest') {
+          cb(missingFileError)
+          shouldMock = false
+        } else {
+          fs.stat(path, cb)
+        }
+      }
+    })
+  })
+
+  // actual tests are the same used in the simple "move a file" test
+  // since the renaming fallback should accomplish the same results
+  t.plan(3)
+  return mockedMoveFile('src', 'dest')
+    .then(() => {
+      return readFile('dest', 'utf8')
+    })
+    .then((data) => {
+      t.equal(data, 'foo', 'file data correct')
+      return stat('src').catch((err) => {
+        t.ok(err, 'src read error')
+        t.equal(err.code, 'ENOENT', 'src does not exist')
+      })
+    })
 })
 
 test(
