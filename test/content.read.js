@@ -4,6 +4,7 @@ const util = require('util')
 
 const fs = require('fs')
 const path = require('path')
+const requireInject = require('require-inject')
 const ssri = require('ssri')
 const Tacks = require('tacks')
 const { test } = require('tap')
@@ -16,7 +17,26 @@ const CacheContent = require('./util/cache-content')
 
 const read = require('../lib/content/read')
 
-test('read: returns a BB with cache content data', function (t) {
+// defines reusable errors
+const genericError = new Error('ERR')
+genericError.code = 'ERR'
+const permissionError = new Error('EPERM')
+permissionError.code = 'EPERM'
+
+// helpers
+const getRead = (opts) => requireInject('../lib/content/read', opts)
+const getReadLstatFailure = (err) => getRead({
+  'graceful-fs': Object.assign({}, require('graceful-fs'), {
+    lstat (path, cb) {
+      cb(err)
+    },
+    lstatSync () {
+      throw err
+    }
+  })
+})
+
+test('read: returns a Promise with cache content data', function (t) {
   const CONTENT = Buffer.from('foobarbaz')
   const INTEGRITY = ssri.fromData(CONTENT)
   const fixture = new Tacks(
@@ -176,6 +196,159 @@ test('read: errors if content size does not match size option', function (t) {
   })
 })
 
+test('read: error while parsing provided integrity data', function (t) {
+  const INTEGRITY = 'sha1-deadbeef'
+  const mockedRead = getRead({
+    ssri: {
+      parse (sri) {
+        throw genericError
+      }
+    }
+  })
+
+  t.plan(1)
+  return t.rejects(
+    mockedRead(CACHE, INTEGRITY),
+    genericError,
+    'should reject promise upon catching internal errors'
+  )
+})
+
+test('read: unknown error parsing nested integrity data', function (t) {
+  const INTEGRITY = 'sha1-deadbeef sha1-13371337'
+
+  // patches method in order to force a last error scenario
+  const mockedRead = getRead({
+    ssri: {
+      parse (sri) {
+        if (sri !== INTEGRITY) {
+          throw genericError
+        }
+        return ssri.parse(sri)
+      }
+    }
+  })
+
+  t.plan(1)
+  return t.rejects(
+    mockedRead(CACHE, INTEGRITY),
+    genericError,
+    'should throw unknown errors'
+  )
+})
+
+test('read: returns only first result if other hashes fails', function (t) {
+  // sets up a cache that has multiple entries under the
+  // same algorithm but then only one has real contents in the fs
+  const CONTENT = {
+    foo: Buffer.from('foo'),
+    bar: Buffer.from('bar')
+  }
+  const INTEGRITY = ssri.fromData(CONTENT.foo).concat(
+    ssri.fromData(CONTENT.bar)
+  )
+  const fixture = new Tacks(
+    CacheContent({
+      [INTEGRITY.sha512[1]]: CONTENT.bar
+    })
+  )
+  fixture.create(CACHE)
+
+  t.plan(1)
+  return t.resolveMatch(
+    read(CACHE, INTEGRITY),
+    CONTENT.bar,
+    'should return only the first valid result'
+  )
+})
+
+test('read: opening large files', function (t) {
+  const mockedRead = getRead({
+    'graceful-fs': Object.assign({}, require('graceful-fs'), {
+      lstat (path, cb) {
+        cb(null, { size: Number.MAX_SAFE_INTEGER })
+      }
+    }),
+    'fs-minipass': {
+      ReadStream: class {
+        constructor (path, opts) {
+          t.matches(
+            opts,
+            {
+              readSize: 64 * 1024 * 1024,
+              size: Number.MAX_SAFE_INTEGER
+            },
+            'should use fs-minipass interface'
+          )
+        }
+      }
+    },
+    'minipass-pipeline': Array
+  })
+
+  t.plan(1)
+  mockedRead(CACHE, 'sha1-deadbeef')
+})
+
+test('read.sync: unknown error parsing nested integrity data', (t) => {
+  const INTEGRITY = 'sha1-deadbeef sha1-13371337'
+
+  // patches method in order to force a last error scenario
+  const mockedRead = getRead({
+    ssri: {
+      parse (sri) {
+        if (sri !== INTEGRITY) {
+          throw genericError
+        }
+        return ssri.parse(sri)
+      }
+    }
+  })
+
+  t.throws(
+    () => mockedRead.sync(CACHE, INTEGRITY),
+    genericError,
+    'should throw last error found when parsing multiple hashes'
+  )
+  t.done()
+})
+
+test('read.sync: cache contains mismatching data', (t) => {
+  const CONTENT = Buffer.from('foobarbaz')
+  const INTEGRITY = ssri.fromData(CONTENT)
+  const fixture = new Tacks(
+    CacheContent({
+      [INTEGRITY]: CONTENT.slice(3)
+    })
+  )
+  fixture.create(CACHE)
+
+  t.throws(
+    () => read.sync(CACHE, INTEGRITY),
+    { code: 'EINTEGRITY' },
+    'should throw integrity error'
+  )
+  t.done()
+})
+
+test('read.sync: content size value does not match option', (t) => {
+  const CONTENT = Buffer.from('foobarbaz')
+  const INTEGRITY = ssri.fromData(CONTENT)
+  const fixture = new Tacks(
+    CacheContent({
+      [INTEGRITY]: CONTENT.slice(3)
+    })
+  )
+  fixture.create(CACHE)
+
+  t.throws(
+    () => read.sync(CACHE, INTEGRITY, { size: CONTENT.length }),
+    { code: 'EBADSIZE' },
+    'should throw size error'
+  )
+  t.done()
+})
+
 test('hasContent: tests content existence', (t) => {
   const fixture = new Tacks(
     CacheContent({
@@ -200,6 +373,37 @@ test('hasContent: tests content existence', (t) => {
   ])
 })
 
+test('hasContent: permission error', (t) => {
+  // setup a syntetic permission error
+  const mockedRead = getReadLstatFailure(permissionError)
+
+  t.plan(1)
+  t.rejects(
+    mockedRead.hasContent(CACHE, 'sha1-deadbeef sha1-13371337'),
+    permissionError,
+    'should reject on permission errors'
+  )
+})
+
+test('hasContent: generic error', (t) => {
+  const mockedRead = getReadLstatFailure(genericError)
+
+  t.plan(1)
+  t.resolves(
+    mockedRead.hasContent(CACHE, 'sha1-deadbeef sha1-13371337'),
+    'should not reject on generic errors'
+  )
+})
+
+test('hasContent: no integrity provided', (t) => {
+  t.resolveMatch(
+    read.hasContent(CACHE, ''),
+    false,
+    'should resolve with a value of false'
+  )
+  t.done()
+})
+
 test('hasContent.sync: checks content existence synchronously', (t) => {
   const fixture = new Tacks(
     CacheContent({
@@ -220,6 +424,36 @@ test('hasContent.sync: checks content existence synchronously', (t) => {
     read.hasContent.sync(CACHE, 'sha1-not-here sha1-also-not-here'),
     false,
     'multi-content hash failures work ok'
+  )
+  t.done()
+})
+
+test('hasContent.sync: permission error', (t) => {
+  const mockedRead = getReadLstatFailure(permissionError)
+
+  t.throws(
+    () => mockedRead.hasContent.sync(CACHE, 'sha1-deadbeef sha1-13371337'),
+    permissionError,
+    'should throw on permission errors'
+  )
+  t.done()
+})
+
+test('hasContent.sync: generic error', (t) => {
+  const mockedRead = getReadLstatFailure(genericError)
+
+  t.notOk(
+    mockedRead.hasContent.sync(CACHE, 'sha1-deadbeef sha1-13371337'),
+    'should not throw on generic errors'
+  )
+  t.done()
+})
+
+test('hasContent.sync: no integrity provided', (t) => {
+  t.equal(
+    read.hasContent.sync(CACHE, ''),
+    false,
+    'should returns false if no integrity provided'
   )
   t.done()
 })
@@ -270,3 +504,14 @@ test(
     t.done()
   }
 )
+
+test('copyFile not supported by file system', (t) => {
+  const mockedRead = getRead({
+    'graceful-fs': Object.assign({}, require('graceful-fs'), {
+      copyFile: undefined
+    })
+  })
+
+  t.notOk(mockedRead.copy, 'should not define copy')
+  t.done()
+})
