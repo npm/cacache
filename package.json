@@ -60,15 +60,15 @@
   "dependencies": {
     "chownr": "^1.1.2",
     "figgy-pudding": "^3.5.1",
-    "fs-minipass": "^1.2.7",
+    "fs-minipass": "^2.0.0",
     "glob": "^7.1.4",
     "graceful-fs": "^4.2.2",
     "infer-owner": "^1.0.4",
     "lru-cache": "^5.1.1",
-    "minipass": "^2.6.5",
-    "minipass-collect": "^1.0.1",
-    "minipass-flush": "^1.0.3",
-    "minipass-pipeline": "^1.1.2",
+    "minipass": "^3.0.0",
+    "minipass-collect": "^1.0.2",
+    "minipass-flush": "^1.0.5",
+    "minipass-pipeline": "^1.2.2",
     "mkdirp": "^0.5.1",
     "move-concurrently": "^1.0.1",
     "p-map": "^3.0.0",
@@ -85,19 +85,11 @@
     "standard": "^14.3.0",
     "standard-version": "^7.0.0",
     "tacks": "^1.3.0",
-    "tap": "^14.6.4",
+    "tap": "^14.6.9",
     "weallbehave": "^1.2.0",
     "weallcontribute": "^1.0.9"
   },
-  "nyc": {
-    "branches": 70,
-    "lines": 80,
-    "functions": 80,
-    "statements": 80,
-    "exclude": [
-      "node_modules/**",
-      "coverage/**",
-      "test/**"
-    ]
+  "engines": {
+    "node": ">= 8"
   }
 }
