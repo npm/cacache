@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [13.0.1](https://github.com/npm/cacache/compare/v13.0.0...v13.0.1) (2019-09-30)
+
+
+### Bug Fixes
+
+* **fix-owner:** chownr.sync quits on non-root uid ([08801be](https://github.com/npm/cacache/commit/08801be))
+
 ## [13.0.0](https://github.com/npm/cacache/compare/v12.0.3...v13.0.0) (2019-09-25)
 
 
