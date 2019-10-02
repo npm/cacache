@@ -155,6 +155,37 @@ test('fallback to renaming on missing files post-move', function (t) {
     })
 })
 
+test('verify weird EPERM on Windows behavior', t => {
+  const gfsLink = fs.link
+  global.__CACACHE_TEST_FAKE_WINDOWS__ = true
+  const gfs = require('graceful-fs')
+  let calledMonkeypatch = false
+  gfs.link = (src, dest, cb) => {
+    calledMonkeypatch = true
+    setImmediate(() => cb(Object.assign(new Error('yolo'), {
+      code: 'EPERM'
+    })))
+    gfs.link = gfsLink
+    global.__CACACHE_TEST_FAKE_WINDOWS__ = false
+  }
+  const fixture = new Tacks(
+    Dir({
+      eperm: Dir({
+        src: File('epermmy')
+      })
+    })
+  )
+  fixture.create(testDir)
+  return moveFile('eperm/src', 'eperm/dest')
+    .then(() => t.ok(calledMonkeypatch, 'called the patched fs.link fn'))
+    .then(() => t.rejects(readFile('eperm/dest'), {
+      code: 'ENOENT'
+    }, 'destination file did not get written'))
+    .then(() => t.rejects(readFile('eperm/src'), {
+      code: 'ENOENT'
+    }, 'src file did get deleted'))
+})
+
 test(
   'errors if dest is not writable',
   {
