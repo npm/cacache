@@ -12,8 +12,6 @@ when running as `root`.
 It was written to be used as [npm](https://npm.im)'s local cache, but can
 just as easily be used on its own.
 
-_Translations: [español](README.es.md)_
-
 ## Install
 
 `$ npm install --save cacache`
