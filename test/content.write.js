@@ -241,3 +241,25 @@ test('checks the size of stream data if opts.size provided', (t) => {
     return w.promise().then(() => t.ok(int3, 'got a digest'))
   })
 })
+
+test('only one algorithm for now', t => {
+  t.throws(() => write(CACHE, 'foo', { algorithms: [1, 2] }), {
+    message: 'opts.algorithms only supports a single algorithm for now'
+  })
+  t.end()
+})
+
+test('writes to cache with default options', t =>
+  t.resolveMatch(write(CACHE, 'foo'), {
+    size: 3,
+    integrity: {
+      sha512: [
+        {
+          source: 'sha512-9/u6bgY2+JDlb7vzKD5STG+jIErimDgtYkdB0NxmODJuKCxBvl5CVNiCB3LFUYosWowMf37aGVlKfrU5RT4e1w==',
+          digest: '9/u6bgY2+JDlb7vzKD5STG+jIErimDgtYkdB0NxmODJuKCxBvl5CVNiCB3LFUYosWowMf37aGVlKfrU5RT4e1w==',
+          algorithm: 'sha512',
+          options: []
+        }
+      ]
+    }
+  }))
