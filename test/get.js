@@ -403,6 +403,38 @@ test('basic stream get', (t) => {
   })
 })
 
+test('get.stream add new listeners post stream creation', (t) => {
+  const fixture = new Tacks(
+    CacheContent({
+      [INTEGRITY]: CONTENT
+    })
+  )
+  fixture.create(CACHE)
+
+  t.plan(3)
+  return index.insert(CACHE, KEY, INTEGRITY, opts()).then(() => {
+    const OPTS = { memoize: false, size: CONTENT.length }
+    const stream = get.stream(CACHE, KEY, OPTS)
+
+    // Awaits index.find in order to synthetically retrieve a point in runtime
+    // in which the stream has already been created and has the entry data
+    // available, allowing for the validation of the newListener event handler
+    return index.find(CACHE, KEY)
+      .then(() => {
+        [
+          'integrity',
+          'metadata',
+          'size'
+        ].forEach(ev => {
+          stream.on(ev, () => {
+            t.ok(`${ev} listener added`)
+          })
+        })
+        return stream.concat()
+      })
+  })
+})
+
 test('get.copy will throw ENOENT if not found', (t) => {
   const DEST = path.join(CACHE, 'not-found')
   return get.copy(CACHE, 'NOT-FOUND', DEST)
