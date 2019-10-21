@@ -7,6 +7,7 @@ const index = require('../lib/entry-index')
 const fs = require('graceful-fs')
 const path = require('path')
 const Tacks = require('tacks')
+const requireInject = require('require-inject')
 const { test } = require('tap')
 const testDir = require('./util/test-dir')(__filename)
 const ssri = require('ssri')
@@ -28,6 +29,13 @@ const truncate = util.promisify(fs.truncate)
 const stat = util.promisify(fs.stat)
 const appendFile = util.promisify(fs.appendFile)
 const writeFile = util.promisify(fs.writeFile)
+
+// defines reusable errors
+const genericError = new Error('ERR')
+genericError.code = 'ERR'
+
+// helpers
+const getVerify = (opts) => requireInject('../lib/verify', opts)
 
 function mockCache () {
   const fixture = new Tacks(
@@ -264,6 +272,93 @@ test('writes a file with last verification time', (t) => {
 
 test('fixes permissions and users on cache contents')
 
+test('missing file error when validating cache content', (t) => {
+  const missingFileError = new Error('ENOENT')
+  missingFileError.code = 'ENOENT'
+  const mockVerify = getVerify({
+    'graceful-fs': Object.assign({}, fs, {
+      stat: (path, cb) => {
+        cb(missingFileError)
+      }
+    })
+  })
+
+  t.plan(1)
+  mockCache().then(() => {
+    t.resolveMatch(
+      mockVerify(CACHE),
+      {
+        verifiedContent: 0,
+        rejectedEntries: 1,
+        totalEntries: 0
+      },
+      'should reject entry'
+    )
+  })
+})
+
+test('unknown error when validating content', (t) => {
+  const mockVerify = getVerify({
+    'graceful-fs': Object.assign({}, fs, {
+      stat: (path, cb) => {
+        cb(genericError)
+      }
+    })
+  })
+
+  t.plan(1)
+  mockCache().then(() => {
+    t.rejects(
+      mockVerify(CACHE),
+      genericError,
+      'should throw any unknown errors'
+    )
+  })
+})
+
+test('unknown error when checking sri stream', (t) => {
+  const mockVerify = getVerify({
+    ssri: Object.assign({}, ssri, {
+      checkStream: () => Promise.reject(genericError)
+    })
+  })
+
+  t.plan(1)
+  mockCache().then(() => {
+    t.rejects(
+      mockVerify(CACHE),
+      genericError,
+      'should throw any unknown errors'
+    )
+  })
+})
+
+test('unknown error when rebuilding bucket', (t) => {
+  // rebuild bucket uses stat after content-validation
+  // shouldFail controls the right time to mock the error
+  let shouldFail = false
+  const mockVerify = getVerify({
+    'graceful-fs': Object.assign({}, fs, {
+      stat: (path, cb) => {
+        if (shouldFail) {
+          return cb(genericError)
+        }
+        fs.stat(path, cb)
+        shouldFail = true
+      }
+    })
+  })
+
+  t.plan(1)
+  mockCache().then(() => {
+    t.rejects(
+      mockVerify(CACHE),
+      genericError,
+      'should throw any unknown errors'
+    )
+  })
+})
+
 test('re-builds the index with the size parameter', (t) => {
   const KEY2 = KEY + 'aaa'
   const KEY3 = KEY + 'bbb'
@@ -310,5 +405,67 @@ test('re-builds the index with the size parameter', (t) => {
             )
           })
       })
+    })
+})
+
+test('hash collisions', (t) => {
+  const mockVerify = getVerify({
+    '../lib/entry-index': Object.assign({}, index, {
+      hashKey: () => 'aaa'
+    })
+  })
+
+  t.plan(1)
+  mockCache()
+    .then(() =>
+      index.insert(CACHE, 'foo', INTEGRITY, {
+        metadata: 'foo'
+      }))
+    .then(() => mockVerify(CACHE))
+    .then((stats) => {
+      t.deepEqual(
+        {
+          verifiedContent: stats.verifiedContent,
+          rejectedEntries: stats.rejectedEntries,
+          totalEntries: stats.totalEntries
+        },
+        {
+          verifiedContent: 1,
+          rejectedEntries: 0,
+          totalEntries: 2
+        },
+        'should resolve with no errors'
+      )
+    })
+})
+
+test('hash collisions excluded', (t) => {
+  const mockVerify = getVerify({
+    '../lib/entry-index': Object.assign({}, index, {
+      hashKey: () => 'aaa'
+    })
+  })
+
+  t.plan(1)
+  mockCache()
+    .then(() =>
+      index.insert(CACHE, 'foo', INTEGRITY, {
+        metadata: 'foo'
+      }))
+    .then(() => mockVerify(CACHE, { filter: () => null }))
+    .then((stats) => {
+      t.deepEqual(
+        {
+          verifiedContent: stats.verifiedContent,
+          rejectedEntries: stats.rejectedEntries,
+          totalEntries: stats.totalEntries
+        },
+        {
+          verifiedContent: 0,
+          rejectedEntries: 2,
+          totalEntries: 0
+        },
+        'should resolve while also excluding filtered out entries'
+      )
     })
 })
