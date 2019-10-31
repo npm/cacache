@@ -89,6 +89,9 @@
     "weallbehave": "^1.2.0",
     "weallcontribute": "^1.0.9"
   },
+  "tap": {
+    "100": true
+  },
   "engines": {
     "node": ">= 8"
   }
