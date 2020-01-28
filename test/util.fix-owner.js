@@ -198,9 +198,7 @@ test('uses infer-owner ids instead of process-retrieved if valid', (t) => {
 
 test('attempt to mkdirfix existing path', (t) => {
   const fixOwner = getFixOwner({
-    mkdirp: function mkdirp (path, cb) {
-      cb(pathExistsError)
-    }
+    mkdirp: () => Promise.reject(pathExistsError)
   })
 
   t.plan(1)
@@ -212,9 +210,7 @@ test('attempt to mkdirfix existing path', (t) => {
 
 test('attempt to mkdirfix unknown error', (t) => {
   const fixOwner = getFixOwner({
-    mkdirp: function mkdirp (path, cb) {
-      cb(genericError)
-    }
+    mkdirp: () => Promise.reject(genericError)
   })
 
   t.plan(1)

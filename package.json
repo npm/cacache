@@ -69,12 +69,13 @@
     "minipass-collect": "^1.0.2",
     "minipass-flush": "^1.0.5",
     "minipass-pipeline": "^1.2.2",
-    "mkdirp": "^0.5.1",
+    "mkdirp": "^1.0.3",
     "move-concurrently": "^1.0.1",
     "p-map": "^3.0.0",
     "promise-inflight": "^1.0.1",
     "rimraf": "^2.7.1",
     "ssri": "^7.0.0",
+    "tar": "^6.0.0",
     "unique-filename": "^1.1.1"
   },
   "devDependencies": {
@@ -93,6 +94,6 @@
     "100": true
   },
   "engines": {
-    "node": ">= 8"
+    "node": ">= 10"
   }
 }

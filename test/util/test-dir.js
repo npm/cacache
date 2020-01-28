@@ -39,12 +39,9 @@ function reset (testDir, cb) {
     if (err) {
       return cb(err)
     }
-    mkdirp(testDir, function (err) {
-      if (err) {
-        return cb(err)
-      }
+    mkdirp(testDir).then(() => {
       process.chdir(testDir)
       cb()
-    })
+    }, cb)
   })
 }
