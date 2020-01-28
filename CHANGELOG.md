@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [14.0.0](https://github.com/npm/cacache/compare/v13.0.1...v14.0.0) (2020-01-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* **deps:** bumps engines to >= 10
+
+* **deps:** tar v6 and mkdirp v1 ([5a66e7a](https://github.com/npm/cacache/commit/5a66e7a))
+
 ### [13.0.1](https://github.com/npm/cacache/compare/v13.0.0...v13.0.1) (2019-09-30)
 
 
