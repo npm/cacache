@@ -58,10 +58,9 @@
   ],
   "license": "ISC",
   "dependencies": {
-    "chownr": "^1.1.4",
-    "figgy-pudding": "^3.5.1",
-    "fs-minipass": "^2.1.0",
-    "glob": "^7.1.6",
+    "chownr": "^1.1.2",
+    "fs-minipass": "^2.0.0",
+    "glob": "^7.1.4",
     "infer-owner": "^1.0.4",
     "lru-cache": "^5.1.1",
     "minipass": "^3.1.1",
