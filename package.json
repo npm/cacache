@@ -59,7 +59,6 @@
   "license": "ISC",
   "dependencies": {
     "chownr": "^1.1.2",
-    "figgy-pudding": "^3.5.1",
     "fs-minipass": "^2.0.0",
     "glob": "^7.1.4",
     "graceful-fs": "^4.2.2",
