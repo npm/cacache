@@ -3,7 +3,7 @@
 const util = require('util')
 const requireInject = require('require-inject')
 
-const fs = require('graceful-fs')
+const fs = require('fs')
 const path = require('path')
 const { test } = require('tap')
 

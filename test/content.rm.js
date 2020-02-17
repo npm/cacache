@@ -1,7 +1,7 @@
 'use strict'
 
 const contentPath = require('../lib/content/path')
-const fs = require('graceful-fs')
+const fs = require('fs')
 const path = require('path')
 const util = require('util')
 const Tacks = require('tacks')

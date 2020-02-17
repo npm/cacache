@@ -31,7 +31,7 @@ fixture.create(CACHE)
 
 const getEntryIndex = (opts) => requireInject('../lib/entry-index', opts)
 const getEntryIndexReadFileFailure = (err) => getEntryIndex({
-  'graceful-fs': Object.assign({}, require('graceful-fs'), {
+  fs: Object.assign({}, require('fs'), {
     readFile: (path, encode, cb) => {
       cb(err)
     },
@@ -74,7 +74,7 @@ test('delete.sync: removes a cache entry', (t) => {
 test('find: error on parsing json data', (t) => {
   // mocks readFile in order to return a borked json payload
   const { find } = getEntryIndex({
-    'graceful-fs': Object.assign({}, require('graceful-fs'), {
+    fs: Object.assign({}, require('fs'), {
       readFile: (path, encode, cb) => {
         cb(null, '\ncec8d2e4685534ed189b563c8ee1cb1cb7c72874\t{"""// foo')
       }
@@ -106,7 +106,7 @@ test('find.sync: retrieve from bucket containing multiple entries', (t) => {
     '\n46b1607f427665a99668c02d3a4cc52061afd83a\t{"key":"bar", "integrity": "bar"}'
   ]
   const { find } = getEntryIndex({
-    'graceful-fs': Object.assign({}, require('graceful-fs'), {
+    fs: Object.assign({}, require('fs'), {
       readFileSync: (path, encode) => entries.join('')
     })
   })
@@ -132,7 +132,7 @@ test('find.sync: unknown error on finding entries', (t) => {
 
 test('find.sync: retrieve entry with invalid content', (t) => {
   const { find } = getEntryIndex({
-    'graceful-fs': Object.assign({}, require('graceful-fs'), {
+    fs: Object.assign({}, require('fs'), {
       readFileSync: (path, encode) =>
         '\nb6589fc6ab0dc82cf12099d1c2d40ab994e8410c\t0'
     })
@@ -218,7 +218,7 @@ test('lsStream: missing files error', (t) => {
 
 test('lsStream: unknown error reading dirs', (t) => {
   const { lsStream } = getEntryIndex({
-    'graceful-fs': Object.assign({}, require('graceful-fs'), {
+    fs: Object.assign({}, require('fs'), {
       readdir: (path, cb) => {
         cb(genericError)
       }

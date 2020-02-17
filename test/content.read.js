@@ -26,7 +26,7 @@ permissionError.code = 'EPERM'
 // helpers
 const getRead = (opts) => requireInject('../lib/content/read', opts)
 const getReadLstatFailure = (err) => getRead({
-  'graceful-fs': Object.assign({}, require('graceful-fs'), {
+  fs: Object.assign({}, require('fs'), {
     lstat (path, cb) {
       cb(err)
     },
@@ -264,7 +264,7 @@ test('read: returns only first result if other hashes fails', function (t) {
 
 test('read: opening large files', function (t) {
   const mockedRead = getRead({
-    'graceful-fs': Object.assign({}, require('graceful-fs'), {
+    fs: Object.assign({}, require('fs'), {
       lstat (path, cb) {
         cb(null, { size: Number.MAX_SAFE_INTEGER })
       }
@@ -507,7 +507,7 @@ test(
 
 test('copyFile not supported by file system', (t) => {
   const mockedRead = getRead({
-    'graceful-fs': Object.assign({}, require('graceful-fs'), {
+    fs: Object.assign({}, require('fs'), {
       copyFile: undefined
     })
   })

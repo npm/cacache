@@ -120,7 +120,7 @@ test('fallback to renaming on missing files post-move', function (t) {
   const missingFileError = new Error('ENOENT')
   missingFileError.code = 'ENOENT'
   const mockedMoveFile = requireInject.withEmptyCache('../lib/util/move-file', {
-    'graceful-fs': Object.assign({}, fs, {
+    fs: Object.assign({}, fs, {
       unlink  (path, cb) {
         if (shouldMock) {
           cb(missingFileError)
@@ -158,7 +158,7 @@ test('fallback to renaming on missing files post-move', function (t) {
 test('verify weird EPERM on Windows behavior', t => {
   const gfsLink = fs.link
   global.__CACACHE_TEST_FAKE_WINDOWS__ = true
-  const gfs = require('graceful-fs')
+  const gfs = require('fs')
   let calledMonkeypatch = false
   gfs.link = (src, dest, cb) => {
     calledMonkeypatch = true

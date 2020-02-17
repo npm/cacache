@@ -4,7 +4,7 @@ const util = require('util')
 
 const contentPath = require('../lib/content/path')
 const index = require('../lib/entry-index')
-const fs = require('graceful-fs')
+const fs = require('fs')
 const path = require('path')
 const Tacks = require('tacks')
 const requireInject = require('require-inject')
@@ -276,7 +276,7 @@ test('missing file error when validating cache content', (t) => {
   const missingFileError = new Error('ENOENT')
   missingFileError.code = 'ENOENT'
   const mockVerify = getVerify({
-    'graceful-fs': Object.assign({}, fs, {
+    fs: Object.assign({}, fs, {
       stat: (path, cb) => {
         cb(missingFileError)
       }
@@ -299,7 +299,7 @@ test('missing file error when validating cache content', (t) => {
 
 test('unknown error when validating content', (t) => {
   const mockVerify = getVerify({
-    'graceful-fs': Object.assign({}, fs, {
+    fs: Object.assign({}, fs, {
       stat: (path, cb) => {
         cb(genericError)
       }
@@ -338,7 +338,7 @@ test('unknown error when rebuilding bucket', (t) => {
   // shouldFail controls the right time to mock the error
   let shouldFail = false
   const mockVerify = getVerify({
-    'graceful-fs': Object.assign({}, fs, {
+    fs: Object.assign({}, fs, {
       stat: (path, cb) => {
         if (shouldFail) {
           return cb(genericError)
