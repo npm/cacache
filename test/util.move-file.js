@@ -5,12 +5,8 @@ const util = require('util')
 const fs = require('fs')
 const path = require('path')
 const requireInject = require('require-inject')
-const Tacks = require('tacks')
 const { test } = require('tap')
-const testDir = require('./util/test-dir')(__filename)
 
-const Dir = Tacks.Dir
-const File = Tacks.File
 const moveFile = require('../lib/util/move-file')
 
 const readFile = util.promisify(fs.readFile)
@@ -21,19 +17,16 @@ const readdir = util.promisify(fs.readdir)
 const chmod = util.promisify(fs.chmod)
 
 test('move a file', function (t) {
-  const fixture = new Tacks(
-    Dir({
-      src: File('foo')
-    })
-  )
-  fixture.create(testDir)
-  return moveFile('src', 'dest')
+  const testDir = t.testdir({
+    src: 'foo'
+  })
+  return moveFile(testDir + '/src', testDir + '/dest')
     .then(() => {
-      return readFile('dest', 'utf8')
+      return readFile(testDir + '/dest', 'utf8')
     })
     .then((data) => {
       t.equal(data, 'foo', 'file data correct')
-      return stat('src').catch((err) => {
+      return stat(testDir + '/src').catch((err) => {
         t.ok(err, 'src read error')
         t.equal(err.code, 'ENOENT', 'src does not exist')
       })
@@ -41,20 +34,17 @@ test('move a file', function (t) {
 })
 
 test('does not clobber existing files', function (t) {
-  const fixture = new Tacks(
-    Dir({
-      src: File('foo'),
-      dest: File('bar')
-    })
-  )
-  fixture.create(testDir)
-  return moveFile('src', 'dest')
+  const testDir = t.testdir({
+    src: 'foo',
+    dest: 'bar'
+  })
+  return moveFile(testDir + '/src', testDir + '/dest')
     .then(() => {
-      return readFile('dest', 'utf8')
+      return readFile(testDir + '/dest', 'utf8')
     })
     .then((data) => {
       t.equal(data, 'bar', 'conflicting file left intact')
-      return stat('src').catch((err) => {
+      return stat(testDir + '/src').catch((err) => {
         t.ok(err, 'src read error')
         t.equal(err.code, 'ENOENT', 'src file still deleted')
       })
@@ -62,16 +52,13 @@ test('does not clobber existing files', function (t) {
 })
 
 test('does not move a file into an existing directory', function (t) {
-  const fixture = new Tacks(
-    Dir({
-      src: File('foo'),
-      dest: Dir({})
-    })
-  )
-  fixture.create(testDir)
-  return moveFile('src', 'dest')
+  const testDir = t.testdir({
+    src: 'foo',
+    dest: {}
+  })
+  return moveFile(testDir + '/src', testDir + '/dest')
     .then(() => {
-      return readdir('dest')
+      return readdir(testDir + '/dest')
     })
     .then((files) => {
       t.equal(files.length, 0, 'directory remains empty')
@@ -79,25 +66,22 @@ test('does not move a file into an existing directory', function (t) {
 })
 
 test('does not error if destination file is open', function (t) {
-  const fixture = new Tacks(
-    Dir({
-      src: File('foo'),
-      dest: File('bar')
-    })
-  )
-  fixture.create(testDir)
+  const testDir = t.testdir({
+    src: 'foo',
+    dest: 'bar'
+  })
 
-  return open('dest', 'r+').then((fd) => {
-    return moveFile('src', 'dest')
+  return open(testDir + '/dest', 'r+').then((fd) => {
+    return moveFile(testDir + '/src', testDir + '/dest')
       .then(() => {
         return close(fd)
       })
       .then(() => {
-        return readFile('dest', 'utf8')
+        return readFile(testDir + '/dest', 'utf8')
       })
       .then((data) => {
         t.equal(data, 'bar', 'destination left intact')
-        return stat('src').catch((err) => {
+        return stat(testDir + '/src').catch((err) => {
           t.ok(err, 'src read error')
           t.equal(err.code, 'ENOENT', 'src does not exist')
         })
@@ -106,12 +90,9 @@ test('does not error if destination file is open', function (t) {
 })
 
 test('fallback to renaming on missing files post-move', function (t) {
-  const fixture = new Tacks(
-    Dir({
-      src: File('foo')
-    })
-  )
-  fixture.create(testDir)
+  const testDir = t.testdir({
+    src: 'foo'
+  })
 
   // Sets up a fs mock that will fail at first unlink/stat call in order
   // to trigger the fallback scenario then restores the fs methods allowing
@@ -119,36 +100,96 @@ test('fallback to renaming on missing files post-move', function (t) {
   let shouldMock = true
   const missingFileError = new Error('ENOENT')
   missingFileError.code = 'ENOENT'
-  const mockedMoveFile = requireInject.withEmptyCache('../lib/util/move-file', {
-    fs: Object.assign({}, fs, {
-      unlink  (path, cb) {
+  const mockFS = {
+    ...fs,
+    promises: {
+      ...fs.promises,
+      rename: async (src, dest) => {
+        throw Object.assign(new Error('EXDEV'), { code: 'EXDEV' })
+      },
+      link: async (src, dest) => {
+        throw new Error('nope')
+      },
+      unlink: async (path) => {
         if (shouldMock) {
-          cb(missingFileError)
+          throw missingFileError
         } else {
-          fs.unlink(path, cb)
+          return fs.promises.unlink(path)
         }
       },
-      stat (path, cb) {
-        if (shouldMock && path === 'dest') {
-          cb(missingFileError)
+      lstat: async (path, cb) => {
+        if (shouldMock) {
           shouldMock = false
+          throw missingFileError
         } else {
-          fs.stat(path, cb)
+          return fs.promises.lstat(path)
+        }
+      },
+      stat: async (path, cb) => {
+        if (shouldMock) {
+          shouldMock = false
+          throw missingFileError
+        } else {
+          return fs.promises.stat(path)
         }
       }
+    },
+    rename: (src, dest, cb) => {
+      if (shouldMock) {
+        cb(Object.assign(new Error('EXDEV'), { code: 'EXDEV' }))
+      } else {
+        fs.rename(src, dest, cb)
+      }
+    },
+    link (src, dest, cb) {
+      cb(new Error('nope'))
+    },
+    unlink (path, cb) {
+      if (shouldMock) {
+        cb(missingFileError)
+      } else {
+        fs.unlink(path, cb)
+      }
+    },
+    lstat (path, cb) {
+      if (shouldMock && path === testDir + '/dest') {
+        cb(missingFileError)
+        shouldMock = false
+      } else {
+        fs.lstat(path, cb)
+      }
+    },
+    stat (path, cb) {
+      if (shouldMock && path === testDir + '/dest') {
+        cb(missingFileError)
+        shouldMock = false
+      } else {
+        fs.stat(path, cb)
+      }
+    }
+  }
+  const mockedMoveFile = requireInject.withEmptyCache('../lib/util/move-file', {
+    fs: mockFS,
+    'move-file': requireInject.withEmptyCache('move-file', {
+      fs: mockFS,
+      'path-exists': requireInject.withEmptyCache('path-exists', {
+        fs: mockFS
+      })
     })
   })
 
   // actual tests are the same used in the simple "move a file" test
   // since the renaming fallback should accomplish the same results
   t.plan(3)
-  return mockedMoveFile('src', 'dest')
+  return mockedMoveFile(testDir + '/src', testDir + '/dest')
     .then(() => {
-      return readFile('dest', 'utf8')
+      return readFile(testDir + '/dest', 'utf8')
     })
     .then((data) => {
       t.equal(data, 'foo', 'file data correct')
-      return stat('src').catch((err) => {
+      return stat(testDir + '/src').then(() => {
+        t.fail('src file should not exist, but it does!')
+      }).catch((err) => {
         t.ok(err, 'src read error')
         t.equal(err.code, 'ENOENT', 'src does not exist')
       })
@@ -168,15 +209,13 @@ test('verify weird EPERM on Windows behavior', t => {
     gfs.link = gfsLink
     global.__CACACHE_TEST_FAKE_WINDOWS__ = false
   }
-  const fixture = new Tacks(
-    Dir({
-      eperm: Dir({
-        src: File('epermmy')
-      })
-    })
-  )
-  fixture.create(testDir)
-  return moveFile('eperm/src', 'eperm/dest')
+  const testDir = t.testdir({
+    eperm: {
+      src: 'epermmy'
+    }
+  })
+
+  return moveFile(testDir + '/eperm/src', testDir + '/eperm/dest')
     .then(() => t.ok(calledMonkeypatch, 'called the patched fs.link fn'))
     .then(() => t.rejects(readFile('eperm/dest'), {
       code: 'ENOENT'
@@ -192,23 +231,21 @@ test(
     skip: process.platform === 'win32'
   },
   function (t) {
-    const fixture = new Tacks(
-      Dir({
-        src: File('foo'),
-        dest: Dir({})
-      })
-    )
-    fixture.create(testDir)
-    return chmod('dest', parseInt('400', 8))
+    const testDir = t.testdir({
+      src: 'foo',
+      dest: {}
+    })
+
+    return chmod(testDir + '/dest', parseInt('400', 8))
       .then(() => {
-        return moveFile('src', path.join('dest', 'file'))
+        return moveFile(testDir + '/src', path.join(testDir + '/dest', 'file'))
           .then(() => {
             throw new Error('move succeeded and should not have')
           })
           .catch((err) => {
             t.ok(err, 'error was returned')
             t.equal(err.code, 'EACCES', 'error is about permissions')
-            return readFile('src', 'utf8')
+            return readFile(testDir + '/src', 'utf8')
           })
       })
       .then((data) => {
