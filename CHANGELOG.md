@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [15.0.3](https://github.com/npm/cacache/compare/v15.0.2...v15.0.3) (2020-04-28)
+
+
+### Bug Fixes
+
+* actually remove move-concurrently dep ([29e6eec](https://github.com/npm/cacache/commit/29e6eec9fee73444ee09daf1c1be06ddd5fe57f6))
+
 ### [15.0.2](https://github.com/npm/cacache/compare/v15.0.1...v15.0.2) (2020-04-28)
 
 
