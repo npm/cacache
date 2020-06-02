@@ -170,11 +170,8 @@ test('fallback to renaming on missing files post-move', function (t) {
   }
   const mockedMoveFile = requireInject.withEmptyCache('../lib/util/move-file', {
     fs: mockFS,
-    'move-file': requireInject.withEmptyCache('move-file', {
-      fs: mockFS,
-      'path-exists': requireInject.withEmptyCache('path-exists', {
-        fs: mockFS
-      })
+    '@npmcli/move-file': requireInject.withEmptyCache('@npmcli/move-file', {
+      fs: mockFS
     })
   })
 
