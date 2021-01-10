@@ -8,7 +8,7 @@ const to = require('mississippi').to
 
 const PutOpts = figgyPudding({
   algorithms: {
-    default: ['sha512']
+    default: ['sha512', 'sha1']
   },
   integrity: {},
   memoize: {},
