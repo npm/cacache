@@ -1,5 +1,6 @@
 'use strict'
 
+const fs = require('fs')
 const path = require('path')
 
 const ssri = require('ssri')
@@ -31,7 +32,7 @@ fixture.create(CACHE)
 
 const getEntryIndex = (opts) => requireInject('../lib/entry-index', opts)
 const getEntryIndexReadFileFailure = (err) => getEntryIndex({
-  fs: Object.assign({}, require('fs'), {
+  fs: Object.assign({}, fs, {
     readFile: (path, encode, cb) => {
       cb(err)
     },
@@ -50,6 +51,83 @@ const getEntryIndexFixOwnerFailure = (err) => {
     }
   })
 }
+
+test('compact', async (t) => {
+  t.teardown(() => {
+    index.delete.sync(CACHE, KEY)
+  })
+  await Promise.all([
+    index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 1 } }),
+    index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 2 } }),
+    index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 2 } }),
+    index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 1 } })
+  ])
+
+  const bucket = index.bucketPath(CACHE, KEY)
+  const entries = await index.bucketEntries(bucket)
+  t.equal(entries.length, 4, 'started with 4 entries')
+
+  const filter = (entryA, entryB) => entryA.metadata.rev === entryB.metadata.rev
+  const compacted = await index.compact(CACHE, KEY, filter)
+  t.equal(compacted.length, 2, 'should return only two entries')
+
+  const newEntries = await index.bucketEntries(bucket)
+  t.equal(newEntries.length, 2, 'bucket was deduplicated')
+})
+
+test('compact: ENOENT in chownr does not cause failure', async (t) => {
+  t.teardown(() => {
+    index.delete.sync(CACHE, KEY)
+  })
+  await Promise.all([
+    index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 1 } }),
+    index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 2 } }),
+    index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 2 } }),
+    index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 1 } })
+  ])
+
+  const { compact } = getEntryIndexFixOwnerFailure(missingFileError)
+  const filter = (entryA, entryB) => entryA.metadata.rev === entryB.metadata.rev
+  const compacted = await compact(CACHE, KEY, filter)
+  t.equal(compacted.length, 2, 'deduplicated')
+})
+
+test('compact: generic error in chownr does cause failure', async (t) => {
+  t.teardown(() => {
+    index.delete.sync(CACHE, KEY)
+  })
+  await Promise.all([
+    index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 1 } }),
+    index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 2 } }),
+    index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 2 } }),
+    index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 1 } })
+  ])
+
+  const { compact } = getEntryIndexFixOwnerFailure(genericError)
+  const filter = (entryA, entryB) => entryA.metadata.rev === entryB.metadata.rev
+  return t.rejects(compact(CACHE, KEY, filter), { code: 'ERR' }, 'promise rejected')
+})
+
+test('compact: error in moveFile removes temp', async (t) => {
+  t.teardown(() => {
+    index.delete.sync(CACHE, KEY)
+  })
+  await Promise.all([
+    index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 1 } }),
+    index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 2 } }),
+    index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 2 } }),
+    index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 1 } })
+  ])
+
+  const { compact } = getEntryIndex({
+    '@npmcli/move-file': () => Promise.reject(new Error('foo'))
+  })
+  const filter = (entryA, entryB) => entryA.metadata.rev === entryB.metadata.rev
+  await t.rejects(compact(CACHE, KEY, filter), { message: 'foo' }, 'promise rejected')
+
+  const tmpFiles = fs.readdirSync(path.join(CACHE, 'tmp'))
+  t.equal(tmpFiles.length, 0, 'temp file is gone')
+})
 
 test('delete.sync: removes a cache entry', (t) => {
   t.plan(3)
