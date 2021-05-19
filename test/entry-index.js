@@ -60,19 +60,21 @@ test('compact', async (t) => {
     index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 1 } }),
     index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 2 } }),
     index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 2 } }),
-    index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 1 } })
+    index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 1 } }),
+    // compact will return entries with a null integrity
+    index.insert(CACHE, KEY, null, { metadata: { rev: 3 } })
   ])
 
   const bucket = index.bucketPath(CACHE, KEY)
   const entries = await index.bucketEntries(bucket)
-  t.equal(entries.length, 4, 'started with 4 entries')
+  t.equal(entries.length, 5, 'started with 5 entries')
 
   const filter = (entryA, entryB) => entryA.metadata.rev === entryB.metadata.rev
   const compacted = await index.compact(CACHE, KEY, filter)
-  t.equal(compacted.length, 2, 'should return only two entries')
+  t.equal(compacted.length, 3, 'should return only three entries')
 
   const newEntries = await index.bucketEntries(bucket)
-  t.equal(newEntries.length, 2, 'bucket was deduplicated')
+  t.equal(newEntries.length, 3, 'bucket was deduplicated')
 })
 
 test('compact: ENOENT in chownr does not cause failure', async (t) => {
