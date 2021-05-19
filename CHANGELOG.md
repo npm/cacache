@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [15.1.0](https://github.com/npm/cacache/compare/v15.0.6...v15.1.0) (2021-05-19)
+
+
+### Features
+
+* allow formatEntry to keep entries with no integrity value ([930f531](https://github.com/npm/cacache/commit/930f5313825a84277c531defe53696b8c9f4ef70)), closes [#53](https://github.com/npm/cacache/issues/53)
+* expose index.insert, implement and expose index.compact ([c4efb74](https://github.com/npm/cacache/commit/c4efb7427cd40694933a46ef3eb59d32ce4d0eed))
+
 ### [15.0.6](https://github.com/npm/cacache/compare/v15.0.5...v15.0.6) (2021-03-22)
 
 ### [15.0.5](https://github.com/npm/cacache/compare/v15.0.4...v15.0.5) (2020-07-11)
