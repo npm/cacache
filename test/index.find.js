@@ -37,7 +37,7 @@ test('index.find cache hit', function (t) {
       'path added to info'
     )
     delete info.path
-    t.deepEqual(info, entry, 'rest of info matches entry on disk')
+    t.same(info, entry, 'rest of info matches entry on disk')
   })
 })
 
@@ -60,7 +60,7 @@ test('index.find no cache', function (t) {
       throw new Error('expected cache directory')
     })
     .catch((err) => {
-      t.assert(err, 'cache directory does not exist')
+      t.match(err, { code: 'ENOENT' }, 'cache directory does not exist')
       return index.find(CACHE, 'whatever')
     })
     .then((info) => {
@@ -118,7 +118,7 @@ test('index.find path-breaking characters', function (t) {
   return index.find(CACHE, entry.key).then((info) => {
     t.ok(info, 'cache hit')
     delete info.path
-    t.deepEqual(
+    t.same(
       info,
       entry,
       'info remains intact even with fs-unfriendly chars'
@@ -147,7 +147,7 @@ test('index.find extremely long keys', function (t) {
   return index.find(CACHE, entry.key).then((info) => {
     t.ok(info, 'cache hit')
     delete info.path
-    t.deepEqual(info, entry, 'info remains intact even with absurdly long key')
+    t.same(info, entry, 'info remains intact even with absurdly long key')
   })
 })
 
@@ -224,7 +224,7 @@ test('index.find hash conflict in same bucket', function (t) {
   return index.find(CACHE, entry.key).then((info) => {
     t.ok(info, 'cache hit')
     delete info.path
-    t.deepEqual(
+    t.same(
       info,
       entry,
       'got the right one even though different keys exist in index'

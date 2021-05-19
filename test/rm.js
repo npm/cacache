@@ -59,7 +59,7 @@ test('rm.entry removes entries, not content', (t) => {
       return readFile(contentPath(CACHE, INTEGRITY))
     })
     .then((data) => {
-      t.deepEqual(data, CONTENT, 'content remains in cache')
+      t.same(data, CONTENT, 'content remains in cache')
     })
 })
 
@@ -129,7 +129,7 @@ test('rm.all deletes content and index dirs', (t) => {
       return readdir(CACHE)
     })
     .then((files) => {
-      t.deepEqual(
+      t.same(
         files.sort(),
         ['other.js', 'tmp'],
         'removes content and index directories without touching other stuff'

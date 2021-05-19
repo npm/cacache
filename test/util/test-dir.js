@@ -2,7 +2,8 @@
 
 const mkdirp = require('mkdirp')
 const path = require('path')
-const rimraf = require('rimraf')
+const { promisify } = require('util')
+const rimraf = promisify(require('rimraf'))
 const tap = require('tap')
 
 const cacheDir = path.resolve(__dirname, '../cache')
@@ -12,20 +13,13 @@ module.exports = testDir
 function testDir (filename) {
   const base = path.basename(filename, '.js')
   const dir = path.join(cacheDir, base)
-  tap.beforeEach((cb) => {
-    reset(dir, (err) => {
-      if (err) {
-        throw err
-      }
-      cb()
-    })
-  })
+  tap.beforeEach(() => reset(dir))
   if (!process.env.KEEPCACHE) {
-    tap.tearDown(() => {
+    tap.teardown(async () => {
       process.chdir(__dirname)
       // This is ok cause this is the last
       // thing to run in the process
-      rimraf(dir, () => {})
+      await rimraf(dir).catch(er => {})
     })
   }
   return dir
@@ -33,15 +27,9 @@ function testDir (filename) {
 
 module.exports.reset = reset
 
-function reset (testDir, cb) {
+async function reset (testDir) {
   process.chdir(__dirname)
-  rimraf(testDir, function (err) {
-    if (err) {
-      return cb(err)
-    }
-    mkdirp(testDir).then(() => {
-      process.chdir(testDir)
-      cb()
-    }, cb)
-  })
+  await rimraf(testDir)
+  await mkdirp(testDir)
+  process.chdir(testDir)
 }

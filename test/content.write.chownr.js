@@ -69,7 +69,7 @@ test(
           path.join(CACHE, path.relative(CACHE, cpath).split(path.sep)[0]),
           cpath
         ]
-        t.deepEqual(
+        t.same(
           updatedPaths.sort(),
           expectedPaths,
           'all paths that needed user stuff set got set'

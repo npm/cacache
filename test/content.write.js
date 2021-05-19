@@ -25,7 +25,7 @@ test('basic put', (t) => {
     .promise()
     .then(() => {
       const cpath = contentPath(CACHE, integrity)
-      t.deepEqual(integrity, INTEGRITY, 'calculated integrity value matches')
+      t.same(integrity, INTEGRITY, 'calculated integrity value matches')
       t.ok(fs.lstatSync(cpath).isFile(), 'content inserted as a single file')
       t.equal(fs.readFileSync(cpath, 'utf8'), CONTENT,
         'contents are identical to inserted content')
@@ -51,7 +51,7 @@ test("checks input digest doesn't match data", (t) => {
       .on('integrity', int => { int2 = int })
       .end(CONTENT)
       .promise())
-    .then(() => t.deepEqual(int2, integrity, 'returns a matching digest'))
+    .then(() => t.same(int2, integrity, 'returns a matching digest'))
 })
 
 test('errors if stream ends with no data', (t) => {
@@ -107,7 +107,7 @@ test('does not overwrite content if already on disk', (t) => {
     .end(CONTENT)
     .promise()
     .then(() => {
-      t.deepEqual(int1, INTEGRITY, 'short-circuit returns a matching digest')
+      t.same(int1, INTEGRITY, 'short-circuit returns a matching digest')
       const d = fs.readFileSync(contentPath(CACHE, INTEGRITY), 'utf8')
       t.equal(d, 'nope', 'process short-circuited. Data not written.')
     })
@@ -117,7 +117,7 @@ test('does not overwrite content if already on disk', (t) => {
       .promise()
     )
     .then(() => {
-      t.deepEqual(int2, INTEGRITY, 'full write returns a matching digest')
+      t.same(int2, INTEGRITY, 'full write returns a matching digest')
       const d = fs.readFileSync(contentPath(CACHE, INTEGRITY), 'utf8')
       t.equal(d, 'nope', 'previously-written data intact - no dupe write')
     })
@@ -160,7 +160,7 @@ test('exits normally if file already open', (t) => {
       .end(CONTENT)
       .promise()
       .then(() => {
-        t.deepEqual(integrity, INTEGRITY, 'returns a matching digest')
+        t.same(integrity, INTEGRITY, 'returns a matching digest')
         fs.closeSync(fd)
         rimraf.sync(contentPath(CACHE, INTEGRITY))
         t.end()
@@ -178,7 +178,7 @@ test('cleans up tmp on successful completion', (t) => {
       fs.readdir(tmp, function (err, files) {
         if (!err || (err && err.code === 'ENOENT')) {
           files = files || []
-          t.deepEqual(files, [], 'nothing in the tmp dir!')
+          t.same(files, [], 'nothing in the tmp dir!')
           resolve()
         } else {
           reject(err)
@@ -201,7 +201,7 @@ test('cleans up tmp on error', (t) => {
       fs.readdir(tmp, function (err, files) {
         if (!err || (err && err.code === 'ENOENT')) {
           files = files || []
-          t.deepEqual(files, [], 'nothing in the tmp dir!')
+          t.same(files, [], 'nothing in the tmp dir!')
           resolve()
         } else {
           reject(err)

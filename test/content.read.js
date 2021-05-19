@@ -46,7 +46,7 @@ test('read: returns a Promise with cache content data', function (t) {
   )
   fixture.create(CACHE)
   return read(CACHE, INTEGRITY).then((data) => {
-    t.deepEqual(data, CONTENT, 'cache contents read correctly')
+    t.same(data, CONTENT, 'cache contents read correctly')
   })
 })
 
@@ -60,8 +60,8 @@ test('read.sync: reads synchronously', (t) => {
   )
   fixture.create(CACHE)
   const data = read.sync(CACHE, INTEGRITY)
-  t.deepEqual(data, CONTENT, 'cache contents read correctly')
-  t.done()
+  t.same(data, CONTENT, 'cache contents read correctly')
+  t.end()
 })
 
 test('read.stream: returns a stream with cache content data', function (t) {
@@ -78,8 +78,8 @@ test('read.stream: returns a stream with cache content data', function (t) {
     stream.concat(),
     read(CACHE, INTEGRITY, { size: CONTENT.length })
   ]).then(([fromStream, fromBulk]) => {
-    t.deepEqual(fromStream, CONTENT, 'stream data checks out')
-    t.deepEqual(fromBulk, CONTENT, 'promise data checks out')
+    t.same(fromStream, CONTENT, 'stream data checks out')
+    t.same(fromBulk, CONTENT, 'promise data checks out')
   })
 })
 
@@ -98,8 +98,8 @@ test('read: allows hashAlgorithm configuration', function (t) {
     stream.concat(),
     read(CACHE, INTEGRITY)
   ]).then(([fromStream, fromBulk]) => {
-    t.deepEqual(fromStream, CONTENT, 'stream used algorithm')
-    t.deepEqual(fromBulk, CONTENT, 'promise used algorithm')
+    t.same(fromStream, CONTENT, 'stream used algorithm')
+    t.same(fromBulk, CONTENT, 'promise used algorithm')
   })
 })
 
@@ -272,7 +272,7 @@ test('read: opening large files', function (t) {
     'fs-minipass': {
       ReadStream: class {
         constructor (path, opts) {
-          t.matches(
+          t.match(
             opts,
             {
               readSize: 64 * 1024 * 1024,
@@ -310,7 +310,7 @@ test('read.sync: unknown error parsing nested integrity data', (t) => {
     genericError,
     'should throw last error found when parsing multiple hashes'
   )
-  t.done()
+  t.end()
 })
 
 test('read.sync: cache contains mismatching data', (t) => {
@@ -328,7 +328,7 @@ test('read.sync: cache contains mismatching data', (t) => {
     { code: 'EINTEGRITY' },
     'should throw integrity error'
   )
-  t.done()
+  t.end()
 })
 
 test('read.sync: content size value does not match option', (t) => {
@@ -346,7 +346,7 @@ test('read.sync: content size value does not match option', (t) => {
     { code: 'EBADSIZE' },
     'should throw size error'
   )
-  t.done()
+  t.end()
 })
 
 test('hasContent: tests content existence', (t) => {
@@ -401,7 +401,7 @@ test('hasContent: no integrity provided', (t) => {
     false,
     'should resolve with a value of false'
   )
-  t.done()
+  t.end()
 })
 
 test('hasContent.sync: checks content existence synchronously', (t) => {
@@ -425,7 +425,7 @@ test('hasContent.sync: checks content existence synchronously', (t) => {
     false,
     'multi-content hash failures work ok'
   )
-  t.done()
+  t.end()
 })
 
 test('hasContent.sync: permission error', (t) => {
@@ -436,7 +436,7 @@ test('hasContent.sync: permission error', (t) => {
     permissionError,
     'should throw on permission errors'
   )
-  t.done()
+  t.end()
 })
 
 test('hasContent.sync: generic error', (t) => {
@@ -446,7 +446,7 @@ test('hasContent.sync: generic error', (t) => {
     mockedRead.hasContent.sync(CACHE, 'sha1-deadbeef sha1-13371337'),
     'should not throw on generic errors'
   )
-  t.done()
+  t.end()
 })
 
 test('hasContent.sync: no integrity provided', (t) => {
@@ -455,7 +455,7 @@ test('hasContent.sync: no integrity provided', (t) => {
     false,
     'should returns false if no integrity provided'
   )
-  t.done()
+  t.end()
 })
 
 test(
@@ -479,7 +479,7 @@ test(
         return readFile(DEST)
       })
       .then((data) => {
-        t.deepEqual(data, CONTENT, 'file successfully copied')
+        t.same(data, CONTENT, 'file successfully copied')
       })
   }
 )
@@ -500,8 +500,8 @@ test(
     )
     fixture.create(CACHE)
     read.copy.sync(CACHE, INTEGRITY, DEST)
-    t.deepEqual(fs.readFileSync(DEST), CONTENT, 'file successfully copied')
-    t.done()
+    t.same(fs.readFileSync(DEST), CONTENT, 'file successfully copied')
+    t.end()
   }
 )
 
@@ -513,5 +513,5 @@ test('copyFile not supported by file system', (t) => {
   })
 
   t.notOk(mockedRead.copy, 'should not define copy')
-  t.done()
+  t.end()
 })

@@ -72,7 +72,7 @@ test('removes corrupted index entries from buckets', (t) => {
           const bucketEntry = JSON.parse(bucketData.split('\t')[1])
           const targetEntry = JSON.parse(BUCKETDATA.split('\t')[1])
           targetEntry.time = bucketEntry.time // different timestamps
-          t.deepEqual(
+          t.same(
             bucketEntry,
             targetEntry,
             'bucket only contains good entry'
@@ -140,7 +140,7 @@ test('accepts function for custom user filtering of index entries', (t) => {
         }
       })
         .then((stats) => {
-          t.deepEqual(
+          t.same(
             {
               verifiedContent: stats.verifiedContent,
               rejectedEntries: stats.rejectedEntries,
@@ -158,7 +158,7 @@ test('accepts function for custom user filtering of index entries', (t) => {
         .then((entries) => {
           entries[KEY2].time = newEntries[KEY2].time
           entries[KEY3].time = newEntries[KEY3].time
-          t.deepEqual(entries, newEntries, 'original entry not included')
+          t.same(entries, newEntries, 'original entry not included')
         })
     })
 })
@@ -176,7 +176,7 @@ test('removes corrupted content', (t) => {
       delete stats.startTime
       delete stats.runTime
       delete stats.endTime
-      t.deepEqual(
+      t.same(
         stats,
         {
           verifiedContent: 0,
@@ -215,7 +215,7 @@ test('removes content not referenced by any entries', (t) => {
     delete stats.startTime
     delete stats.runTime
     delete stats.endTime
-    t.deepEqual(
+    t.same(
       stats,
       {
         verifiedContent: 0,
@@ -379,7 +379,7 @@ test('re-builds the index with the size parameter', (t) => {
       return index.ls(CACHE).then((newEntries) => {
         return verify(CACHE)
           .then((stats) => {
-            t.deepEqual(
+            t.same(
               {
                 verifiedContent: stats.verifiedContent,
                 rejectedEntries: stats.rejectedEntries,
@@ -398,7 +398,7 @@ test('re-builds the index with the size parameter', (t) => {
             entries[KEY].time = newEntries[KEY].time
             entries[KEY2].time = newEntries[KEY2].time
             entries[KEY3].time = newEntries[KEY3].time
-            t.deepEqual(
+            t.same(
               entries,
               newEntries,
               'original index entries not preserved'
@@ -423,7 +423,7 @@ test('hash collisions', (t) => {
       }))
     .then(() => mockVerify(CACHE))
     .then((stats) => {
-      t.deepEqual(
+      t.same(
         {
           verifiedContent: stats.verifiedContent,
           rejectedEntries: stats.rejectedEntries,
@@ -454,7 +454,7 @@ test('hash collisions excluded', (t) => {
       }))
     .then(() => mockVerify(CACHE, { filter: () => null }))
     .then((stats) => {
-      t.deepEqual(
+      t.same(
         {
           verifiedContent: stats.verifiedContent,
           rejectedEntries: stats.rejectedEntries,

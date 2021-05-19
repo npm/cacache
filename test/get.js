@@ -64,7 +64,7 @@ function streamGet (byDigest) {
 test('get.info index entry lookup', (t) => {
   return index.insert(CACHE, KEY, INTEGRITY, opts()).then((ENTRY) => {
     return get.info(CACHE, KEY).then((entry) => {
-      t.deepEqual(entry, ENTRY, 'get.info() returned the right entry')
+      t.same(entry, ENTRY, 'get.info() returned the right entry')
     })
   })
 })
@@ -75,7 +75,7 @@ test('get.sync will throw ENOENT if not found', (t) => {
   } catch (err) {
     t.same(err.message, 'No cache entry for bar found in foo')
     t.same(err.code, 'ENOENT')
-    t.done()
+    t.end()
   }
 })
 
@@ -108,7 +108,7 @@ test('basic bulk get', (t) => {
       return get(CACHE, KEY)
     })
     .then((res) => {
-      t.deepEqual(
+      t.same(
         res,
         {
           metadata: METADATA,
@@ -123,7 +123,7 @@ test('basic bulk get', (t) => {
       return get.byDigest(CACHE, INTEGRITY)
     })
     .then((res) => {
-      t.deepEqual(res, CONTENT, 'byDigest returned proper data')
+      t.same(res, CONTENT, 'byDigest returned proper data')
     })
 })
 
@@ -136,7 +136,7 @@ test('get.sync.byDigest without memoization', (t) => {
   fixture.create(CACHE)
   index.insert.sync(CACHE, KEY, INTEGRITY, opts())
   const res = get.sync(CACHE, KEY)
-  t.deepEqual(
+  t.same(
     res,
     {
       metadata: METADATA,
@@ -147,8 +147,8 @@ test('get.sync.byDigest without memoization', (t) => {
     'bulk key get returned proper data'
   )
   const resByDig = get.sync.byDigest(CACHE, INTEGRITY)
-  t.deepEqual(resByDig, CONTENT, 'byDigest returned proper data')
-  t.done()
+  t.same(resByDig, CONTENT, 'byDigest returned proper data')
+  t.end()
 })
 
 test('get.sync.byDigest with memoization', (t) => {
@@ -160,7 +160,7 @@ test('get.sync.byDigest with memoization', (t) => {
   fixture.create(CACHE)
   index.insert.sync(CACHE, KEY, INTEGRITY, opts())
   const res = get.sync(CACHE, KEY, { memoize: true })
-  t.deepEqual(
+  t.same(
     res,
     {
       metadata: METADATA,
@@ -173,11 +173,11 @@ test('get.sync.byDigest with memoization', (t) => {
   memo.clearMemoized()
   t.same(memo.get.byDigest(CACHE, INTEGRITY), undefined)
   const resByDig = get.sync.byDigest(CACHE, INTEGRITY, { memoize: true })
-  t.deepEqual(resByDig, CONTENT, 'byDigest returned proper data')
+  t.same(resByDig, CONTENT, 'byDigest returned proper data')
   t.notSame(memo.get.byDigest(CACHE, INTEGRITY), undefined)
   const resByDig2 = get.sync.byDigest(CACHE, INTEGRITY, { memoize: true })
-  t.deepEqual(resByDig2, CONTENT, 'byDigest returned proper data')
-  t.done()
+  t.same(resByDig2, CONTENT, 'byDigest returned proper data')
+  t.end()
 })
 
 test('get.sync with memoization', (t) => {
@@ -191,7 +191,7 @@ test('get.sync with memoization', (t) => {
   memo.clearMemoized()
   t.same(memo.get(CACHE, KEY), undefined)
   const res = get.sync(CACHE, KEY, { memoize: true })
-  t.deepEqual(
+  t.same(
     res,
     {
       metadata: METADATA,
@@ -203,13 +203,13 @@ test('get.sync with memoization', (t) => {
   )
   t.notSame(memo.get(CACHE, KEY), undefined)
   const resByDig = get.sync(CACHE, KEY, { memoize: true })
-  t.deepEqual(resByDig, {
+  t.same(resByDig, {
     metadata: METADATA,
     data: CONTENT,
     integrity: INTEGRITY,
     size: SIZE
   }, 'get returned proper data')
-  t.done()
+  t.end()
 })
 
 test('get.byDigest without memoization', (t) => {
@@ -222,7 +222,7 @@ test('get.byDigest without memoization', (t) => {
   index.insert.sync(CACHE, KEY, INTEGRITY, opts())
   get(CACHE, KEY)
     .then((res) => {
-      t.deepEqual(
+      t.same(
         res,
         {
           metadata: METADATA,
@@ -236,14 +236,14 @@ test('get.byDigest without memoization', (t) => {
       t.same(memo.get.byDigest(CACHE, INTEGRITY), undefined)
       return get.byDigest(CACHE, INTEGRITY)
         .then((resByDig) => {
-          t.deepEqual(resByDig, CONTENT, 'byDigest returned proper data')
+          t.same(resByDig, CONTENT, 'byDigest returned proper data')
           t.same(memo.get.byDigest(CACHE, INTEGRITY), undefined)
 
           return get.byDigest(CACHE, INTEGRITY)
         })
         .then((resByDigMemo) => {
-          t.deepEqual(resByDigMemo, CONTENT, 'byDigest returned proper data')
-          t.done()
+          t.same(resByDigMemo, CONTENT, 'byDigest returned proper data')
+          t.end()
         })
     })
 })
@@ -258,7 +258,7 @@ test('get.byDigest with memoization', (t) => {
   index.insert.sync(CACHE, KEY, INTEGRITY, opts())
   get(CACHE, KEY)
     .then((res) => {
-      t.deepEqual(
+      t.same(
         res,
         {
           metadata: METADATA,
@@ -272,14 +272,14 @@ test('get.byDigest with memoization', (t) => {
       t.same(memo.get.byDigest(CACHE, INTEGRITY), undefined)
       return get.byDigest(CACHE, INTEGRITY, { memoize: true })
         .then((resByDig) => {
-          t.deepEqual(resByDig, CONTENT, 'byDigest returned proper data')
+          t.same(resByDig, CONTENT, 'byDigest returned proper data')
           t.notSame(memo.get.byDigest(CACHE, INTEGRITY), undefined)
 
           return get.byDigest(CACHE, INTEGRITY, { memoize: true })
         })
         .then((resByDigMemo) => {
-          t.deepEqual(resByDigMemo, CONTENT, 'byDigest returned proper data')
-          t.done()
+          t.same(resByDigMemo, CONTENT, 'byDigest returned proper data')
+          t.end()
         })
     })
 })
@@ -294,7 +294,7 @@ test('get without memoization', (t) => {
   index.insert.sync(CACHE, KEY, INTEGRITY, opts())
   get(CACHE, KEY)
     .then((res) => {
-      t.deepEqual(
+      t.same(
         res,
         {
           metadata: METADATA,
@@ -308,7 +308,7 @@ test('get without memoization', (t) => {
       t.same(memo.get(CACHE, KEY), undefined)
       return get(CACHE, KEY)
         .then((resByDig) => {
-          t.deepEqual(resByDig, {
+          t.same(resByDig, {
             metadata: METADATA,
             data: CONTENT,
             integrity: INTEGRITY,
@@ -319,13 +319,13 @@ test('get without memoization', (t) => {
           return get(CACHE, KEY)
         })
         .then((resByDigMemo) => {
-          t.deepEqual(resByDigMemo, {
+          t.same(resByDigMemo, {
             metadata: METADATA,
             data: CONTENT,
             integrity: INTEGRITY,
             size: SIZE
           }, 'get returned proper data')
-          t.done()
+          t.end()
         })
     })
 })
@@ -340,7 +340,7 @@ test('get with memoization', (t) => {
   index.insert.sync(CACHE, KEY, INTEGRITY, opts())
   get(CACHE, KEY)
     .then((res) => {
-      t.deepEqual(
+      t.same(
         res,
         {
           metadata: METADATA,
@@ -354,7 +354,7 @@ test('get with memoization', (t) => {
       t.same(memo.get(CACHE, KEY), undefined)
       return get(CACHE, KEY, { memoize: true })
         .then((resByDig) => {
-          t.deepEqual(resByDig, {
+          t.same(resByDig, {
             metadata: METADATA,
             data: CONTENT,
             integrity: INTEGRITY,
@@ -365,13 +365,13 @@ test('get with memoization', (t) => {
           return get(CACHE, KEY, { memoize: true })
         })
         .then((resByDigMemo) => {
-          t.deepEqual(resByDigMemo, {
+          t.same(resByDigMemo, {
             metadata: METADATA,
             data: CONTENT,
             integrity: INTEGRITY,
             size: SIZE
           }, 'get returned proper data')
-          t.done()
+          t.end()
         })
     })
 })
@@ -388,7 +388,7 @@ test('basic stream get', (t) => {
       streamGet(false, CACHE, KEY),
       streamGet(true, CACHE, INTEGRITY)
     ]).then(([byKey, byDigest]) => {
-      t.deepEqual(
+      t.same(
         byKey,
         {
           data: CONTENT,
@@ -398,7 +398,7 @@ test('basic stream get', (t) => {
         },
         'got all expected data and fields from key fetch'
       )
-      t.deepEqual(byDigest.data, CONTENT, 'got correct data from digest fetch')
+      t.same(byDigest.data, CONTENT, 'got correct data from digest fetch')
     })
   })
 })
@@ -461,7 +461,7 @@ test('get.copy with fs.copyfile', {
     .insert(CACHE, KEY, INTEGRITY, opts())
     .then(() => get.copy(CACHE, KEY, DEST))
     .then((res) => {
-      t.deepEqual(
+      t.same(
         res,
         {
           metadata: METADATA,
@@ -473,13 +473,13 @@ test('get.copy with fs.copyfile', {
       return readFile(DEST)
     })
     .then((data) => {
-      t.deepEqual(data, CONTENT, 'data copied by key matches')
+      t.same(data, CONTENT, 'data copied by key matches')
       return rimraf(DEST)
     })
     .then(() => get.copy.byDigest(CACHE, INTEGRITY, DEST))
     .then(() => readFile(DEST))
     .then((data) => {
-      t.deepEqual(data, CONTENT, 'data copied by digest matches')
+      t.same(data, CONTENT, 'data copied by digest matches')
       return rimraf(DEST)
     })
 })
@@ -499,7 +499,7 @@ test('get.copy without fs.copyfile', (t) => {
     .insert(CACHE, KEY, INTEGRITY, opts())
     .then(() => get.copy(CACHE, KEY, DEST))
     .then((res) => {
-      t.deepEqual(
+      t.same(
         res,
         {
           metadata: METADATA,
@@ -511,13 +511,13 @@ test('get.copy without fs.copyfile', (t) => {
       return readFile(DEST)
     })
     .then((data) => {
-      t.deepEqual(data, CONTENT, 'data copied by key matches')
+      t.same(data, CONTENT, 'data copied by key matches')
       return rimraf(DEST)
     })
     .then(() => get.copy.byDigest(CACHE, INTEGRITY, DEST))
     .then(() => readFile(DEST))
     .then((data) => {
-      t.deepEqual(data, CONTENT, 'data copied by digest matches')
+      t.same(data, CONTENT, 'data copied by digest matches')
       return rimraf(DEST)
     })
 })
@@ -533,11 +533,11 @@ test('memoizes data on bulk read', (t) => {
   return index.insert(CACHE, KEY, INTEGRITY, opts()).then((ENTRY) => {
     return get(CACHE, KEY)
       .then(() => {
-        t.deepEqual(memo.get(CACHE, KEY), null, 'no memoization!')
+        t.same(memo.get(CACHE, KEY), null, 'no memoization!')
         return get(CACHE, KEY, { memoize: true })
       })
       .then((res) => {
-        t.deepEqual(
+        t.same(
           res,
           {
             metadata: METADATA,
@@ -547,7 +547,7 @@ test('memoizes data on bulk read', (t) => {
           },
           'usual data returned'
         )
-        t.deepEqual(
+        t.same(
           memo.get(CACHE, KEY),
           {
             entry: ENTRY,
@@ -561,7 +561,7 @@ test('memoizes data on bulk read', (t) => {
         return get(CACHE, KEY)
       })
       .then((res) => {
-        t.deepEqual(
+        t.same(
           res,
           {
             metadata: METADATA,
@@ -578,7 +578,7 @@ test('memoizes data on bulk read', (t) => {
           .catch((err) => {
             t.ok(err, 'got an error from unmemoized get')
             t.equal(err.code, 'ENOENT', 'cached content not found')
-            t.deepEqual(
+            t.same(
               memo.get(CACHE, KEY),
               {
                 entry: ENTRY,
@@ -605,8 +605,8 @@ test('memoizes data on stream read', (t) => {
       streamGet(true, CACHE, INTEGRITY)
     ])
       .then(() => {
-        t.deepEqual(memo.get(CACHE, KEY), null, 'no memoization by key!')
-        t.deepEqual(
+        t.same(memo.get(CACHE, KEY), null, 'no memoization by key!')
+        t.same(
           memo.get.byDigest(CACHE, INTEGRITY),
           null,
           'no memoization by digest!'
@@ -619,14 +619,14 @@ test('memoizes data on stream read', (t) => {
         })
       })
       .then((byDigest) => {
-        t.deepEqual(byDigest.data, CONTENT, 'usual data returned from stream')
-        t.deepEqual(memo.get(CACHE, KEY), null, 'digest fetch = no key entry')
-        t.deepEqual(
+        t.same(byDigest.data, CONTENT, 'usual data returned from stream')
+        t.same(memo.get(CACHE, KEY), null, 'digest fetch = no key entry')
+        t.same(
           memo.get.byDigest(CACHE, INTEGRITY),
           CONTENT,
           'content memoized'
         )
-        t.deepEqual(
+        t.same(
           memo.get.byDigest('whatev', INTEGRITY),
           null,
           'content memoization filtered by cache'
@@ -637,7 +637,7 @@ test('memoizes data on stream read', (t) => {
         return streamGet(false, CACHE, KEY, { memoize: true })
       })
       .then((byKey) => {
-        t.deepEqual(
+        t.same(
           byKey,
           {
             metadata: METADATA,
@@ -647,7 +647,7 @@ test('memoizes data on stream read', (t) => {
           },
           'usual data returned from key fetch'
         )
-        t.deepEqual(
+        t.same(
           memo.get(CACHE, KEY),
           {
             entry: ENTRY,
@@ -655,12 +655,12 @@ test('memoizes data on stream read', (t) => {
           },
           'data inserted into memoization cache'
         )
-        t.deepEqual(
+        t.same(
           memo.get.byDigest(CACHE, INTEGRITY),
           CONTENT,
           'content memoized by digest, too'
         )
-        t.deepEqual(
+        t.same(
           memo.get('whatev', KEY),
           null,
           'entry memoization filtered by cache'
@@ -674,7 +674,7 @@ test('memoizes data on stream read', (t) => {
           streamGet(false, CACHE, KEY),
           streamGet(true, CACHE, INTEGRITY)
         ]).then(([byKey, byDigest]) => {
-          t.deepEqual(
+          t.same(
             byKey,
             {
               metadata: METADATA,
@@ -684,7 +684,7 @@ test('memoizes data on stream read', (t) => {
             },
             'key fetch fulfilled by memoization cache'
           )
-          t.deepEqual(
+          t.same(
             byDigest.data,
             CONTENT,
             'digest fetch fulfilled by memoization cache'
@@ -718,7 +718,7 @@ test('get.info uses memoized data', (t) => {
   }
   memo.put(CACHE, ENTRY, CONTENT)
   return get.info(CACHE, KEY).then((info) => {
-    t.deepEqual(info, ENTRY, 'got the entry from memoization cache')
+    t.same(info, ENTRY, 'got the entry from memoization cache')
   })
 })
 

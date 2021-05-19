@@ -40,7 +40,7 @@ test('basic insertion', function (t) {
       })
     )
     .then((entry) => {
-      t.deepEqual(
+      t.same(
         entry,
         {
           key: KEY,
@@ -64,7 +64,7 @@ test('basic insertion', function (t) {
       )
       const entry = JSON.parse(split[1])
       t.ok(entry.time, 'entry has a timestamp')
-      t.deepEqual(
+      t.same(
         entry,
         {
           key: KEY,
@@ -102,7 +102,7 @@ test('inserts additional entries into existing key', function (t) {
       entries.forEach(function (e) {
         delete e.time
       })
-      t.deepEqual(
+      t.same(
         entries,
         [
           {
@@ -149,7 +149,7 @@ test('separates entries even if one is corrupted', function (t) {
     .then((data) => {
       const entry = JSON.parse(data.split('\n')[4].split('\t')[1])
       delete entry.time
-      t.deepEqual(
+      t.same(
         entry,
         {
           key: KEY,
@@ -171,7 +171,7 @@ test('optional arbitrary metadata', function (t) {
     .then((data) => {
       const entry = JSON.parse(data.split('\t')[1])
       delete entry.time
-      t.deepEqual(
+      t.same(
         entry,
         {
           key: KEY,
@@ -195,7 +195,7 @@ test('key case-sensitivity', function (t) {
     ]).then(([entry, upperEntry]) => {
       delete entry.time
       delete upperEntry.time
-      t.deepEqual(
+      t.same(
         {
           key: entry.key,
           integrity: entry.integrity,
@@ -208,7 +208,7 @@ test('key case-sensitivity', function (t) {
         },
         'regular entry exists'
       )
-      t.deepEqual(
+      t.same(
         {
           key: upperEntry.key,
           integrity: upperEntry.integrity,
@@ -236,7 +236,7 @@ test('path-breaking characters', function (t) {
     .then((data) => {
       const entry = JSON.parse(data.split('\t')[1])
       delete entry.time
-      t.deepEqual(
+      t.same(
         entry,
         {
           key: newKey,
@@ -262,7 +262,7 @@ test('extremely long keys', function (t) {
     .then((data) => {
       const entry = JSON.parse(data.split('\t')[1])
       delete entry.time
-      t.deepEqual(
+      t.same(
         entry,
         {
           key: newKey,

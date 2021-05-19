@@ -29,7 +29,7 @@ test('basic bulk insertion', (t) => {
       return readFile(dataPath)
     })
     .then((data) => {
-      t.deepEqual(data, CONTENT, 'content was correctly inserted')
+      t.same(data, CONTENT, 'content was correctly inserted')
     })
 })
 
@@ -44,7 +44,7 @@ test('basic stream insertion', (t) => {
       return readFile(contentPath(CACHE, int))
     })
     .then((data) => {
-      t.deepEqual(data, CONTENT, 'contents are identical to inserted content')
+      t.same(data, CONTENT, 'contents are identical to inserted content')
     })
 })
 
@@ -57,7 +57,7 @@ test('adds correct entry to index before finishing', (t) => {
       t.ok(entry, 'got an entry')
       t.equal(entry.key, KEY, 'entry has the right key')
       t.equal(entry.integrity, INTEGRITY, 'entry has the right key')
-      t.deepEqual(entry.metadata, METADATA, 'metadata also inserted')
+      t.same(entry.metadata, METADATA, 'metadata also inserted')
     })
 })
 
@@ -71,7 +71,7 @@ test('optionally memoizes data on bulk insertion', (t) => {
       return index.find(CACHE, KEY) // index.find is not memoized
     })
     .then((entry) => {
-      t.deepEqual(
+      t.same(
         memo.get(CACHE, KEY),
         {
           data: CONTENT,
@@ -79,7 +79,7 @@ test('optionally memoizes data on bulk insertion', (t) => {
         },
         'content inserted into memoization cache by key'
       )
-      t.deepEqual(
+      t.same(
         memo.get.byDigest(CACHE, INTEGRITY),
         CONTENT,
         'content inserted into memoization cache by integrity'
@@ -103,11 +103,11 @@ test('optionally memoizes data on stream insertion', (t) => {
       return readFile(contentPath(CACHE, int))
     })
     .then((data) => {
-      t.deepEqual(data, CONTENT, 'contents are identical to inserted content')
+      t.same(data, CONTENT, 'contents are identical to inserted content')
       return index.find(CACHE, KEY) // index.find is not memoized
     })
     .then((entry) => {
-      t.deepEqual(
+      t.same(
         memo.get(CACHE, KEY),
         {
           data: CONTENT,
@@ -115,7 +115,7 @@ test('optionally memoizes data on stream insertion', (t) => {
         },
         'content inserted into memoization cache by key'
       )
-      t.deepEqual(
+      t.same(
         memo.get.byDigest(CACHE, INTEGRITY),
         CONTENT,
         'content inserted into memoization cache by integrity'

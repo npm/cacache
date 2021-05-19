@@ -36,7 +36,7 @@ test('basic listing', function (t) {
   fixture.create(CACHE)
   return ls(CACHE)
     .then((listing) => {
-      t.deepEqual(listing, contents, 'index contents correct')
+      t.same(listing, contents, 'index contents correct')
     })
     .then(() => {
       const listing = {}
@@ -45,7 +45,7 @@ test('basic listing', function (t) {
         listing[entry.key] = entry
       })
       return stream.promise().then(() => {
-        t.deepEqual(listing, contents, 'ls is streamable')
+        t.same(listing, contents, 'ls is streamable')
       })
     })
 })
@@ -77,13 +77,13 @@ test('separate keys in conflicting buckets', function (t) {
   contents.whatev.path = contentPath(CACHE, contents.whatev.integrity)
   fixture.create(CACHE)
   return ls(CACHE).then((listing) => {
-    t.deepEqual(listing, contents, 'index contents correct')
+    t.same(listing, contents, 'index contents correct')
   })
 })
 
 test('works fine on an empty/missing cache', function (t) {
   return ls(CACHE).then((listing) => {
-    t.deepEqual(listing, {}, 'returned an empty listing')
+    t.same(listing, {}, 'returned an empty listing')
   })
 })
 
@@ -139,7 +139,7 @@ test('correctly ignores deleted entries', (t) => {
     .delete(CACHE, 'whatnot')
     .then(() => ls(CACHE))
     .then((listing) =>
-      t.deepEqual(
+      t.same(
         listing,
         {
           whatever: contents.whatever,
@@ -155,7 +155,7 @@ test('correctly ignores deleted entries', (t) => {
         listing[entry.key] = entry
       })
       return stream.promise().then(() =>
-        t.deepEqual(
+        t.same(
           listing,
           {
             whatever: contents.whatever,

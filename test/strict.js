@@ -27,7 +27,7 @@ test('all JavaScript source files use strict mode', function (t) {
         fs.closeSync(fd)
         t.equal(buf.toString('utf8'), line, f + ' is using strict mode.')
       })
-      t.done()
+      t.end()
     }
   )
 })
