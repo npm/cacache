@@ -60,21 +60,94 @@ test('compact', async (t) => {
     index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 1 } }),
     index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 2 } }),
     index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 2 } }),
-    index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 1 } }),
-    // compact will return entries with a null integrity
-    index.insert(CACHE, KEY, null, { metadata: { rev: 3 } })
+    index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 1 } })
   ])
 
   const bucket = index.bucketPath(CACHE, KEY)
   const entries = await index.bucketEntries(bucket)
-  t.equal(entries.length, 5, 'started with 5 entries')
+  t.equal(entries.length, 4, 'started with 4 entries')
 
   const filter = (entryA, entryB) => entryA.metadata.rev === entryB.metadata.rev
   const compacted = await index.compact(CACHE, KEY, filter)
-  t.equal(compacted.length, 3, 'should return only three entries')
+  t.equal(compacted.length, 2, 'should return only two entries')
 
   const newEntries = await index.bucketEntries(bucket)
-  t.equal(newEntries.length, 3, 'bucket was deduplicated')
+  t.equal(newEntries.length, 2, 'bucket was deduplicated')
+})
+
+test('compact: treats null integrity without validateEntry as a delete', async (t) => {
+  t.teardown(() => {
+    index.delete.sync(CACHE, KEY)
+  })
+  // this one does not use Promise.all because we want to be certain
+  // things are written in the right order
+  await index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 1 } })
+  await index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 2 } })
+  // this is a delete, revs 1, 2 and 3 will be omitted
+  await index.insert(CACHE, KEY, null, { metadata: { rev: 3 } })
+  await index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 4 } })
+
+  const bucket = index.bucketPath(CACHE, KEY)
+  const entries = await index.bucketEntries(bucket)
+  t.equal(entries.length, 4, 'started with 4 entries')
+
+  const filter = (entryA, entryB) => entryA.metadata.rev === entryB.metadata.rev
+  const compacted = await index.compact(CACHE, KEY, filter)
+  t.equal(compacted.length, 1, 'should return only one entry')
+  t.equal(compacted[0].metadata.rev, 4, 'kept rev 4')
+
+  const newEntries = await index.bucketEntries(bucket)
+  t.equal(newEntries.length, 1, 'bucket was deduplicated')
+})
+
+test('compact: leverages validateEntry to skip invalid entries', async (t) => {
+  t.teardown(() => {
+    index.delete.sync(CACHE, KEY)
+  })
+  await Promise.all([
+    index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 1 } }),
+    index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 2 } }),
+    index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 2 } }),
+    index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 1 } })
+  ])
+
+  const bucket = index.bucketPath(CACHE, KEY)
+  const entries = await index.bucketEntries(bucket)
+  t.equal(entries.length, 4, 'started with 4 entries')
+
+  const matchFn = (entryA, entryB) => entryA.metadata.rev === entryB.metadata.rev
+  const validateEntry = (entry) => entry.metadata.rev > 1
+  const compacted = await index.compact(CACHE, KEY, matchFn, { validateEntry })
+  t.equal(compacted.length, 1, 'should return only one entries')
+  t.equal(compacted[0].metadata.rev, 2, 'kept the rev 2 entry')
+
+  const newEntries = await index.bucketEntries(bucket)
+  t.equal(newEntries.length, 1, 'bucket was deduplicated')
+})
+
+test('compact: validateEntry allows for keeping null integrity', async (t) => {
+  t.teardown(() => {
+    index.delete.sync(CACHE, KEY)
+  })
+  await Promise.all([
+    index.insert(CACHE, KEY, null, { metadata: { rev: 1 } }),
+    index.insert(CACHE, KEY, null, { metadata: { rev: 2 } }),
+    index.insert(CACHE, KEY, null, { metadata: { rev: 2 } }),
+    index.insert(CACHE, KEY, null, { metadata: { rev: 1 } })
+  ])
+
+  const bucket = index.bucketPath(CACHE, KEY)
+  const entries = await index.bucketEntries(bucket)
+  t.equal(entries.length, 4, 'started with 4 entries')
+
+  const matchFn = (entryA, entryB) => entryA.metadata.rev === entryB.metadata.rev
+  const validateEntry = (entry) => entry.metadata.rev > 1
+  const compacted = await index.compact(CACHE, KEY, matchFn, { validateEntry })
+  t.equal(compacted.length, 1, 'should return only one entry')
+  t.equal(compacted[0].metadata.rev, 2, 'kept the rev 2 entry')
+
+  const newEntries = await index.bucketEntries(bucket)
+  t.equal(newEntries.length, 1, 'bucket was deduplicated')
 })
 
 test('compact: ENOENT in chownr does not cause failure', async (t) => {

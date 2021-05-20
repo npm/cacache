@@ -495,11 +495,20 @@ cacache.rm.content(cachePath, 'sha512-SoMeDIGest/IN+BaSE64==').then(() => {
 })
 ```
 
-#### <a name="index-compact"></a> `> cacache.index.compact(cache, key, matchFn) -> Promise`
+#### <a name="index-compact"></a> `> cacache.index.compact(cache, key, matchFn, [opts]) -> Promise`
 
 Uses `matchFn`, which must be a synchronous function that accepts two entries
 and returns a boolean indicating whether or not the two entries match, to
 deduplicate all entries in the cache for the given `key`.
+
+If `opts.validateEntry` is provided, it will be called as a function with the
+only parameter being a single index entry. The function must return a Boolean,
+if it returns `true` the entry is considered valid and will be kept in the index,
+if it returns `false` the entry will be removed from the index.
+
+If `opts.validateEntry` is not provided, however, every entry in the index will
+be deduplicated and kept until the first `null` integrity is reached, removing
+all entries that were written before the `null`.
 
 The deduplicated list of entries is both written to the index, replacing the
 existing content, and returned in the Promise.
