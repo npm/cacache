@@ -151,6 +151,40 @@ test('delete.sync: removes a cache entry', (t) => {
     })
 })
 
+test('delete.sync: removeFully deletes the index entirely', async (t) => {
+  const bucket = index.bucketPath(CACHE, KEY)
+  await index.insert(CACHE, KEY, INTEGRITY)
+  const entries = await index.bucketEntries(bucket)
+  t.equal(entries.length, 1, 'has an entry')
+
+  // do a normal delete first, this appends a null integrity
+  index.delete.sync(CACHE, KEY)
+  const delEntries = await index.bucketEntries(bucket)
+  t.equal(delEntries.length, 2, 'should now have 2 entries')
+  t.equal(delEntries[1].integrity, null, 'has a null integrity last')
+
+  // then a full delete
+  index.delete.sync(CACHE, KEY, { removeFully: true })
+  await t.rejects(index.bucketEntries(bucket), { code: 'ENOENT' }, 'rejects with ENOENT because file is gone')
+})
+
+test('delete: removeFully deletes the index entirely', async (t) => {
+  const bucket = index.bucketPath(CACHE, KEY)
+  await index.insert(CACHE, KEY, INTEGRITY)
+  const entries = await index.bucketEntries(bucket)
+  t.equal(entries.length, 1, 'has an entry')
+
+  // do a normal delete first, this appends a null integrity
+  await index.delete(CACHE, KEY)
+  const delEntries = await index.bucketEntries(bucket)
+  t.equal(delEntries.length, 2, 'should now have 2 entries')
+  t.equal(delEntries[1].integrity, null, 'has a null integrity last')
+
+  // then a full delete
+  await index.delete(CACHE, KEY, { removeFully: true })
+  await t.rejects(index.bucketEntries(bucket), { code: 'ENOENT' }, 'rejects with ENOENT because file is gone')
+})
+
 test('find: error on parsing json data', (t) => {
   // mocks readFile in order to return a borked json payload
   const { find } = getEntryIndex({

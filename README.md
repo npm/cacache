@@ -458,12 +458,16 @@ cacache.rm.all(cachePath).then(() => {
 })
 ```
 
-#### <a name="rm-entry"></a> `> cacache.rm.entry(cache, key) -> Promise`
+#### <a name="rm-entry"></a> `> cacache.rm.entry(cache, key, [opts]) -> Promise`
 
 Alias: `cacache.rm`
 
 Removes the index entry for `key`. Content will still be accessible if
 requested directly by content address ([`get.stream.byDigest`](#get-stream)).
+
+By default, this appends a new entry to the index with an integrity of `null`.
+If `opts.removeFully` is set to `true` then the index file itself will be
+physically deleted rather than appending a `null`.
 
 To remove the content itself (which might still be used by other entries), use
 [`rm.content`](#rm-content). Or, to safely vacuum any unused content, use
