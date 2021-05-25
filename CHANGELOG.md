@@ -1,6 +1,9 @@
 # Changelog
 
-All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+## [15.2.0](https://github.com/npm/cacache/releases/v15.2.0) (2021-05-25)
+
+* [8892a92](https://github.com/npm/cacache/commit/8892a92) add a validateEntry option to compact
+* [460b951](https://github.com/npm/cacache/commit/460b951) allow fully deleting indexes
 
 ## [15.1.0](https://github.com/npm/cacache/compare/v15.0.6...v15.1.0) (2021-05-19)
 
