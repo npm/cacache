@@ -13,15 +13,19 @@
   ],
   "scripts": {
     "benchmarks": "node test/benchmarks",
-    "lint": "standard",
+    "lint": "npm run npmclilint -- \"*.*js\" \"lib/**/*.*js\" \"test/**/*.*js\"",
     "postrelease": "npm publish",
-    "posttest": "npm run lint",
+    "posttest": "npm run lint --",
     "prepublishOnly": "git push --follow-tags",
     "prerelease": "npm t",
     "release": "standard-version -s",
     "test": "tap",
+    "snap": "tap",
     "coverage": "tap",
-    "test-docker": "docker run -it --rm --name pacotest -v \"$PWD\":/tmp -w /tmp node:latest npm test"
+    "test-docker": "docker run -it --rm --name pacotest -v \"$PWD\":/tmp -w /tmp node:latest npm test",
+    "npmclilint": "npmcli-lint",
+    "lintfix": "npm run lint -- --fix",
+    "postsnap": "npm run lintfix --"
   },
   "repository": "https://github.com/npm/cacache",
   "keywords": [
@@ -77,10 +81,10 @@
     "unique-filename": "^1.1.1"
   },
   "devDependencies": {
+    "@npmcli/lint": "^1.0.1",
     "benchmark": "^2.1.4",
     "chalk": "^4.0.0",
     "require-inject": "^1.4.4",
-    "standard": "^14.3.1",
     "standard-version": "^7.1.0",
     "tacks": "^1.3.0",
     "tap": "^15.0.9"

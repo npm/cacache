@@ -13,7 +13,7 @@ const mockedFixOwner = () => Promise.resolve(1)
 // temporarily points to original mkdirfix implementation
 mockedFixOwner.mkdirfix = require('../lib/util/fix-owner').mkdirfix
 const tmp = requireInject('../lib/util/tmp', {
-  '../lib/util/fix-owner': mockedFixOwner
+  '../lib/util/fix-owner': mockedFixOwner,
 })
 
 const stat = util.promisify(fs.stat)
@@ -50,12 +50,12 @@ test('provides a utility that does resource disposal on tmp', (t) => {
             throw new Error('expected fail')
           })
           .catch((err) => {
-            if (err.code === 'ENOENT') {
+            if (err.code === 'ENOENT')
               return undefined
-            }
+
             throw err
           }),
-        stat(path.join(CACHE, 'tmp'))
+        stat(path.join(CACHE, 'tmp')),
       ]).then(([nope, yes]) => {
         t.notOk(nope, 'tmp subdir removed')
         t.ok(yes.isDirectory(), 'tmp parent dir left intact')

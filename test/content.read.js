@@ -32,8 +32,8 @@ const getReadLstatFailure = (err) => getRead({
     },
     lstatSync () {
       throw err
-    }
-  })
+    },
+  }),
 })
 
 test('read: returns a Promise with cache content data', function (t) {
@@ -41,7 +41,7 @@ test('read: returns a Promise with cache content data', function (t) {
   const INTEGRITY = ssri.fromData(CONTENT)
   const fixture = new Tacks(
     CacheContent({
-      [INTEGRITY]: CONTENT
+      [INTEGRITY]: CONTENT,
     })
   )
   fixture.create(CACHE)
@@ -55,7 +55,7 @@ test('read.sync: reads synchronously', (t) => {
   const INTEGRITY = ssri.fromData(CONTENT)
   const fixture = new Tacks(
     CacheContent({
-      [INTEGRITY]: CONTENT
+      [INTEGRITY]: CONTENT,
     })
   )
   fixture.create(CACHE)
@@ -69,14 +69,14 @@ test('read.stream: returns a stream with cache content data', function (t) {
   const INTEGRITY = ssri.fromData(CONTENT)
   const fixture = new Tacks(
     CacheContent({
-      [INTEGRITY]: CONTENT
+      [INTEGRITY]: CONTENT,
     })
   )
   fixture.create(CACHE)
   const stream = read.stream(CACHE, INTEGRITY)
   return Promise.all([
     stream.concat(),
-    read(CACHE, INTEGRITY, { size: CONTENT.length })
+    read(CACHE, INTEGRITY, { size: CONTENT.length }),
   ]).then(([fromStream, fromBulk]) => {
     t.same(fromStream, CONTENT, 'stream data checks out')
     t.same(fromBulk, CONTENT, 'promise data checks out')
@@ -89,14 +89,14 @@ test('read: allows hashAlgorithm configuration', function (t) {
   const INTEGRITY = ssri.fromData(CONTENT, { algorithms: [HASH] })
   const fixture = new Tacks(
     CacheContent({
-      [INTEGRITY]: CONTENT
+      [INTEGRITY]: CONTENT,
     })
   )
   fixture.create(CACHE)
   const stream = read.stream(CACHE, INTEGRITY)
   return Promise.all([
     stream.concat(),
-    read(CACHE, INTEGRITY)
+    read(CACHE, INTEGRITY),
   ]).then(([fromStream, fromBulk]) => {
     t.same(fromStream, CONTENT, 'stream used algorithm')
     t.same(fromBulk, CONTENT, 'promise used algorithm')
@@ -113,17 +113,17 @@ test('read: errors if content missing', function (t) {
   })
   return Promise.all([
     stream.promise().catch((err) => {
-      if (err.code === 'ENOENT') {
+      if (err.code === 'ENOENT')
         return err
-      }
+
       throw err
     }),
     read(CACHE, 'sha512-whatnot').catch((err) => {
-      if (err.code === 'ENOENT') {
+      if (err.code === 'ENOENT')
         return err
-      }
+
       throw err
-    })
+    }),
   ]).then(([streamErr, bulkErr]) => {
     t.match(streamErr, { code: 'ENOENT' }, 'stream got the right error')
     t.match(bulkErr, { code: 'ENOENT' }, 'bulk got the right error')
@@ -135,7 +135,7 @@ test('read: errors if content fails checksum', function (t) {
   const INTEGRITY = ssri.fromData(CONTENT)
   const fixture = new Tacks(
     CacheContent({
-      [INTEGRITY]: CONTENT.slice(3) // invalid contents!
+      [INTEGRITY]: CONTENT.slice(3), // invalid contents!
     })
   )
   fixture.create(CACHE)
@@ -145,17 +145,17 @@ test('read: errors if content fails checksum', function (t) {
   })
   return Promise.all([
     stream.promise().catch((err) => {
-      if (err.code === 'EINTEGRITY') {
+      if (err.code === 'EINTEGRITY')
         return err
-      }
+
       throw err
     }),
     read(CACHE, INTEGRITY).catch((err) => {
-      if (err.code === 'EINTEGRITY') {
+      if (err.code === 'EINTEGRITY')
         return err
-      }
+
       throw err
-    })
+    }),
   ]).then(([streamErr, bulkErr]) => {
     t.match(streamErr, { code: 'EINTEGRITY' }, 'stream got the right error')
     t.match(bulkErr, { code: 'EINTEGRITY' }, 'bulk got the right error')
@@ -167,7 +167,7 @@ test('read: errors if content size does not match size option', function (t) {
   const INTEGRITY = ssri.fromData(CONTENT)
   const fixture = new Tacks(
     CacheContent({
-      [INTEGRITY]: CONTENT.slice(3) // invalid contents!
+      [INTEGRITY]: CONTENT.slice(3), // invalid contents!
     })
   )
   fixture.create(CACHE)
@@ -177,19 +177,19 @@ test('read: errors if content size does not match size option', function (t) {
   })
   return Promise.all([
     stream.promise().catch((err) => {
-      if (err.code === 'EBADSIZE') {
+      if (err.code === 'EBADSIZE')
         return err
-      }
+
       throw err
     }),
     read(CACHE, INTEGRITY, {
-      size: CONTENT.length
+      size: CONTENT.length,
     }).catch((err) => {
-      if (err.code === 'EBADSIZE') {
+      if (err.code === 'EBADSIZE')
         return err
-      }
+
       throw err
-    })
+    }),
   ]).then(([streamErr, bulkErr]) => {
     t.match(streamErr, { code: 'EBADSIZE' }, 'stream got the right error')
     t.match(bulkErr, { code: 'EBADSIZE' }, 'bulk got the right error')
@@ -202,8 +202,8 @@ test('read: error while parsing provided integrity data', function (t) {
     ssri: {
       parse (sri) {
         throw genericError
-      }
-    }
+      },
+    },
   })
 
   t.plan(1)
@@ -221,12 +221,12 @@ test('read: unknown error parsing nested integrity data', function (t) {
   const mockedRead = getRead({
     ssri: {
       parse (sri) {
-        if (sri !== INTEGRITY) {
+        if (sri !== INTEGRITY)
           throw genericError
-        }
+
         return ssri.parse(sri)
-      }
-    }
+      },
+    },
   })
 
   t.plan(1)
@@ -242,14 +242,14 @@ test('read: returns only first result if other hashes fails', function (t) {
   // same algorithm but then only one has real contents in the fs
   const CONTENT = {
     foo: Buffer.from('foo'),
-    bar: Buffer.from('bar')
+    bar: Buffer.from('bar'),
   }
   const INTEGRITY = ssri.fromData(CONTENT.foo).concat(
     ssri.fromData(CONTENT.bar)
   )
   const fixture = new Tacks(
     CacheContent({
-      [INTEGRITY.sha512[1]]: CONTENT.bar
+      [INTEGRITY.sha512[1]]: CONTENT.bar,
     })
   )
   fixture.create(CACHE)
@@ -267,7 +267,7 @@ test('read: opening large files', function (t) {
     fs: Object.assign({}, require('fs'), {
       lstat (path, cb) {
         cb(null, { size: Number.MAX_SAFE_INTEGER })
-      }
+      },
     }),
     'fs-minipass': {
       ReadStream: class {
@@ -276,14 +276,14 @@ test('read: opening large files', function (t) {
             opts,
             {
               readSize: 64 * 1024 * 1024,
-              size: Number.MAX_SAFE_INTEGER
+              size: Number.MAX_SAFE_INTEGER,
             },
             'should use fs-minipass interface'
           )
         }
-      }
+      },
     },
-    'minipass-pipeline': Array
+    'minipass-pipeline': Array,
   })
 
   t.plan(1)
@@ -297,12 +297,12 @@ test('read.sync: unknown error parsing nested integrity data', (t) => {
   const mockedRead = getRead({
     ssri: {
       parse (sri) {
-        if (sri !== INTEGRITY) {
+        if (sri !== INTEGRITY)
           throw genericError
-        }
+
         return ssri.parse(sri)
-      }
-    }
+      },
+    },
   })
 
   t.throws(
@@ -318,7 +318,7 @@ test('read.sync: cache contains mismatching data', (t) => {
   const INTEGRITY = ssri.fromData(CONTENT)
   const fixture = new Tacks(
     CacheContent({
-      [INTEGRITY]: CONTENT.slice(3)
+      [INTEGRITY]: CONTENT.slice(3),
     })
   )
   fixture.create(CACHE)
@@ -336,7 +336,7 @@ test('read.sync: content size value does not match option', (t) => {
   const INTEGRITY = ssri.fromData(CONTENT)
   const fixture = new Tacks(
     CacheContent({
-      [INTEGRITY]: CONTENT.slice(3)
+      [INTEGRITY]: CONTENT.slice(3),
     })
   )
   fixture.create(CACHE)
@@ -352,7 +352,7 @@ test('read.sync: content size value does not match option', (t) => {
 test('hasContent: tests content existence', (t) => {
   const fixture = new Tacks(
     CacheContent({
-      'sha1-deadbeef': ''
+      'sha1-deadbeef': '',
     })
   )
   fixture.create(CACHE)
@@ -369,7 +369,7 @@ test('hasContent: tests content existence', (t) => {
       .hasContent(CACHE, 'sha1-not-here sha1-also-not-here')
       .then((content) => {
         t.equal(content, false, 'multi-content hash failures work ok')
-      })
+      }),
   ])
 })
 
@@ -407,7 +407,7 @@ test('hasContent: no integrity provided', (t) => {
 test('hasContent.sync: checks content existence synchronously', (t) => {
   const fixture = new Tacks(
     CacheContent({
-      'sha1-deadbeef': ''
+      'sha1-deadbeef': '',
     })
   )
   fixture.create(CACHE)
@@ -461,7 +461,7 @@ test('hasContent.sync: no integrity provided', (t) => {
 test(
   'copy: copies content to a destination path',
   {
-    skip: !fs.copyFile && 'Not supported on node versions without fs.copyFile'
+    skip: !fs.copyFile && 'Not supported on node versions without fs.copyFile',
   },
   (t) => {
     const CONTENT = Buffer.from('foobarbaz')
@@ -469,7 +469,7 @@ test(
     const DEST = path.join(CACHE, 'foobar-file')
     const fixture = new Tacks(
       CacheContent({
-        [INTEGRITY]: CONTENT
+        [INTEGRITY]: CONTENT,
       })
     )
     fixture.create(CACHE)
@@ -487,7 +487,7 @@ test(
 test(
   'copy.sync: copies content to a destination path synchronously',
   {
-    skip: !fs.copyFile && 'Not supported on node versions without fs.copyFile'
+    skip: !fs.copyFile && 'Not supported on node versions without fs.copyFile',
   },
   (t) => {
     const CONTENT = Buffer.from('foobarbaz')
@@ -495,7 +495,7 @@ test(
     const DEST = path.join(CACHE, 'foobar-file')
     const fixture = new Tacks(
       CacheContent({
-        [INTEGRITY]: CONTENT
+        [INTEGRITY]: CONTENT,
       })
     )
     fixture.create(CACHE)
@@ -508,8 +508,8 @@ test(
 test('copyFile not supported by file system', (t) => {
   const mockedRead = getRead({
     fs: Object.assign({}, require('fs'), {
-      copyFile: undefined
-    })
+      copyFile: undefined,
+    }),
   })
 
   t.notOk(mockedRead.copy, 'should not define copy')

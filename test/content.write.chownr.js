@@ -41,7 +41,7 @@ test(
   {
     skip: process.getuid
       ? false
-      : 'test only works on platforms that can set uid/gid'
+      : 'test only works on platforms that can set uid/gid',
   },
   (t) => {
     const CONTENT = 'foobarbaz'
@@ -56,7 +56,7 @@ test(
           updatedPaths.push(p)
           cb(null)
         })
-      }
+      },
     })
     t.plan(7)
     return write.stream(CACHE, { hashAlgorithm: 'sha1' })
@@ -67,7 +67,7 @@ test(
         const expectedPaths = [
           CACHE,
           path.join(CACHE, path.relative(CACHE, cpath).split(path.sep)[0]),
-          cpath
+          cpath,
         ]
         t.same(
           updatedPaths.sort(),

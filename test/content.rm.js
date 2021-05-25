@@ -17,7 +17,7 @@ const rm = require('../lib/content/rm')
 test('removes a content entry', function (t) {
   const fixture = new Tacks(
     CacheContent({
-      'sha1-deadbeef': ''
+      'sha1-deadbeef': '',
     })
   )
   fixture.create(CACHE)

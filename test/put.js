@@ -64,7 +64,7 @@ test('adds correct entry to index before finishing', (t) => {
 test('optionally memoizes data on bulk insertion', (t) => {
   return put(CACHE, KEY, CONTENT, {
     metadata: METADATA,
-    memoize: true
+    memoize: true,
   })
     .then((integrity) => {
       t.equal(integrity.toString(), INTEGRITY, 'integrity returned as usual')
@@ -75,7 +75,7 @@ test('optionally memoizes data on bulk insertion', (t) => {
         memo.get(CACHE, KEY),
         {
           data: CONTENT,
-          entry: entry
+          entry: entry,
         },
         'content inserted into memoization cache by key'
       )
@@ -92,7 +92,7 @@ test('optionally memoizes data on stream insertion', (t) => {
   const stream = put
     .stream(CACHE, KEY, {
       metadata: METADATA,
-      memoize: true
+      memoize: true,
     })
     .on('integrity', (i) => {
       int = i
@@ -111,7 +111,7 @@ test('optionally memoizes data on stream insertion', (t) => {
         memo.get(CACHE, KEY),
         {
           data: CONTENT,
-          entry: entry
+          entry: entry,
         },
         'content inserted into memoization cache by key'
       )
@@ -125,7 +125,7 @@ test('optionally memoizes data on stream insertion', (t) => {
 
 test('errors if integrity errors', (t) => {
   return put(CACHE, KEY, CONTENT, {
-    integrity: 'sha1-BaDDigEST'
+    integrity: 'sha1-BaDDigEST',
   }).catch((err) => {
     t.equal(err.code, 'EINTEGRITY', 'got error from bad integrity')
   })
@@ -134,7 +134,7 @@ test('errors if integrity errors', (t) => {
 test('signals error if error writing to cache', (t) => {
   return Promise.all([
     put(CACHE, KEY, CONTENT, {
-      size: 2
+      size: 2,
     })
       .then(() => {
         throw new Error('expected to get a bad size error')
@@ -145,7 +145,7 @@ test('signals error if error writing to cache', (t) => {
       .then(() => {
         throw new Error('expected to get a bad size error')
       })
-      .catch((err) => err)
+      .catch((err) => err),
   ]).then(([bulkErr, streamErr]) => {
     t.equal(bulkErr.code, 'EBADSIZE', 'got error from bulk write')
     t.equal(streamErr.code, 'EBADSIZE', 'got error from stream write')

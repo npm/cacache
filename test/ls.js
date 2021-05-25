@@ -20,15 +20,15 @@ test('basic listing', function (t) {
       integrity: 'sha512-deadbeef',
       time: 12345,
       metadata: 'omgsometa',
-      size: 234234
+      size: 234234,
     },
     whatnot: {
       key: 'whatnot',
       integrity: 'sha512-bada55',
       time: 54321,
       metadata: null,
-      size: 425345345
-    }
+      size: 425345345,
+    },
   }
   const fixture = new Tacks(CacheIndex(contents))
   contents.whatever.path = contentPath(CACHE, contents.whatever.integrity)
@@ -57,20 +57,20 @@ test('separate keys in conflicting buckets', function (t) {
       integrity: 'sha512-deadbeef',
       time: 12345,
       metadata: 'omgsometa',
-      size: 5
+      size: 5,
     },
     whatev: {
       key: 'whatev',
       integrity: 'sha512-bada55',
       time: 54321,
       metadata: null,
-      size: 99234234
-    }
+      size: 99234234,
+    },
   }
   const fixture = new Tacks(
     CacheIndex({
       // put both in the same bucket
-      whatever: [contents.whatever, contents.whatev]
+      whatever: [contents.whatever, contents.whatev],
     })
   )
   contents.whatever.path = contentPath(CACHE, contents.whatever.integrity)
@@ -94,8 +94,8 @@ test('ignores non-dir files', function (t) {
       integrity: 'sha512-deadbeef',
       time: 12345,
       metadata: 'omgsometa',
-      size: 234234
-    }
+      size: 234234,
+    },
   })
   index.contents.garbage = File('hello world')
   const fixture = new Tacks(index)
@@ -113,22 +113,22 @@ test('correctly ignores deleted entries', (t) => {
       integrity: 'sha512-deadbeef',
       time: 12345,
       metadata: 'omgsometa',
-      size: 234234
+      size: 234234,
     },
     whatnot: {
       key: 'whatnot',
       integrity: 'sha512-bada55',
       time: 54321,
       metadata: null,
-      size: 425345345
+      size: 425345345,
     },
     whatwhere: {
       key: 'whatwhere',
       integrity: 'sha512-bada55e5',
       time: 54321,
       metadata: null,
-      size: 425345345
-    }
+      size: 425345345,
+    },
   }
   const fixture = new Tacks(CacheIndex(contents))
   contents.whatever.path = contentPath(CACHE, contents.whatever.integrity)
@@ -143,7 +143,7 @@ test('correctly ignores deleted entries', (t) => {
         listing,
         {
           whatever: contents.whatever,
-          whatwhere: contents.whatwhere
+          whatwhere: contents.whatwhere,
         },
         'index contents correct'
       )
@@ -159,7 +159,7 @@ test('correctly ignores deleted entries', (t) => {
           listing,
           {
             whatever: contents.whatever,
-            whatwhere: contents.whatwhere
+            whatwhere: contents.whatwhere,
           },
           'ls is streamable'
         )

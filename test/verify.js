@@ -40,13 +40,13 @@ const getVerify = (opts) => requireInject('../lib/verify', opts)
 function mockCache () {
   const fixture = new Tacks(
     CacheContent({
-      [INTEGRITY]: CONTENT
+      [INTEGRITY]: CONTENT,
     })
   )
   fixture.create(CACHE)
   return mkdir(path.join(CACHE, 'tmp')).then(() => {
     return index.insert(CACHE, KEY, INTEGRITY, {
-      metadata: METADATA
+      metadata: METADATA,
     })
   })
 }
@@ -86,7 +86,7 @@ test('removes shadowed index entries from buckets', (t) => {
   return mockCache().then(() => {
     return index
       .insert(CACHE, KEY, INTEGRITY, {
-        metadata: 'meh'
+        metadata: 'meh',
       })
       .then((newEntry) => {
         return verify(CACHE)
@@ -104,7 +104,7 @@ test('removes shadowed index entries from buckets', (t) => {
               key: newEntry.key,
               integrity: newEntry.integrity.toString(),
               time: +bucketData.match(/"time":([0-9]+)/)[1],
-              metadata: newEntry.metadata
+              metadata: newEntry.metadata,
             })
             t.equal(
               bucketData,
@@ -123,33 +123,33 @@ test('accepts function for custom user filtering of index entries', (t) => {
     .then(() => {
       return Promise.all([
         index.insert(CACHE, KEY2, INTEGRITY, {
-          metadata: 'haayyyy'
+          metadata: 'haayyyy',
         }),
         index.insert(CACHE, KEY3, INTEGRITY, {
-          metadata: 'haayyyy again'
-        })
+          metadata: 'haayyyy again',
+        }),
       ]).then(([entryA, entryB]) => ({
         [entryA.key]: entryA,
-        [entryB.key]: entryB
+        [entryB.key]: entryB,
       }))
     })
     .then((newEntries) => {
       return verify(CACHE, {
         filter (entry) {
           return entry.key.length === KEY2.length
-        }
+        },
       })
         .then((stats) => {
           t.same(
             {
               verifiedContent: stats.verifiedContent,
               rejectedEntries: stats.rejectedEntries,
-              totalEntries: stats.totalEntries
+              totalEntries: stats.totalEntries,
             },
             {
               verifiedContent: 1,
               rejectedEntries: 1,
-              totalEntries: 2
+              totalEntries: 2,
             },
             'reported relevant changes'
           )
@@ -186,7 +186,7 @@ test('removes corrupted content', (t) => {
           keptSize: 0,
           missingContent: 1,
           rejectedEntries: 1,
-          totalEntries: 0
+          totalEntries: 0,
         },
         'reported correct collection counts'
       )
@@ -207,7 +207,7 @@ test('removes corrupted content', (t) => {
 test('removes content not referenced by any entries', (t) => {
   const fixture = new Tacks(
     CacheContent({
-      [INTEGRITY]: CONTENT
+      [INTEGRITY]: CONTENT,
     })
   )
   fixture.create(CACHE)
@@ -225,7 +225,7 @@ test('removes content not referenced by any entries', (t) => {
         keptSize: 0,
         missingContent: 0,
         rejectedEntries: 0,
-        totalEntries: 0
+        totalEntries: 0,
       },
       'reported correct collection counts'
     )
@@ -244,12 +244,12 @@ test('cleans up contents of tmp dir', (t) => {
     .then(() => {
       return Promise.all([
         stat(tmpFile).catch((err) => {
-          if (err.code === 'ENOENT') {
+          if (err.code === 'ENOENT')
             return err
-          }
+
           throw err
         }),
-        stat(misc)
+        stat(misc),
       ]).then(([err, stat]) => {
         t.equal(err.code, 'ENOENT', 'tmp file was blown away')
         t.ok(stat, 'misc file was not touched')
@@ -263,7 +263,7 @@ test('writes a file with last verification time', (t) => {
       verify.lastRun(CACHE),
       readFile(path.join(CACHE, '_lastverified'), 'utf8').then((data) => {
         return new Date(parseInt(data))
-      })
+      }),
     ]).then(([fromLastRun, fromFile]) => {
       t.equal(+fromLastRun, +fromFile, 'last verified was writen')
     })
@@ -279,8 +279,8 @@ test('missing file error when validating cache content', (t) => {
     fs: Object.assign({}, fs, {
       stat: (path, cb) => {
         cb(missingFileError)
-      }
-    })
+      },
+    }),
   })
 
   t.plan(1)
@@ -290,7 +290,7 @@ test('missing file error when validating cache content', (t) => {
       {
         verifiedContent: 0,
         rejectedEntries: 1,
-        totalEntries: 0
+        totalEntries: 0,
       },
       'should reject entry'
     )
@@ -302,8 +302,8 @@ test('unknown error when validating content', (t) => {
     fs: Object.assign({}, fs, {
       stat: (path, cb) => {
         cb(genericError)
-      }
-    })
+      },
+    }),
   })
 
   t.plan(1)
@@ -319,8 +319,8 @@ test('unknown error when validating content', (t) => {
 test('unknown error when checking sri stream', (t) => {
   const mockVerify = getVerify({
     ssri: Object.assign({}, ssri, {
-      checkStream: () => Promise.reject(genericError)
-    })
+      checkStream: () => Promise.reject(genericError),
+    }),
   })
 
   t.plan(1)
@@ -340,13 +340,13 @@ test('unknown error when rebuilding bucket', (t) => {
   const mockVerify = getVerify({
     fs: Object.assign({}, fs, {
       stat: (path, cb) => {
-        if (shouldFail) {
+        if (shouldFail)
           return cb(genericError)
-        }
+
         fs.stat(path, cb)
         shouldFail = true
-      }
-    })
+      },
+    }),
   })
 
   t.plan(1)
@@ -367,12 +367,12 @@ test('re-builds the index with the size parameter', (t) => {
       return Promise.all([
         index.insert(CACHE, KEY2, INTEGRITY, {
           metadata: 'haayyyy',
-          size: 20
+          size: 20,
         }),
         index.insert(CACHE, KEY3, INTEGRITY, {
           metadata: 'haayyyy again',
-          size: 30
-        })
+          size: 30,
+        }),
       ])
     })
     .then(() => {
@@ -383,12 +383,12 @@ test('re-builds the index with the size parameter', (t) => {
               {
                 verifiedContent: stats.verifiedContent,
                 rejectedEntries: stats.rejectedEntries,
-                totalEntries: stats.totalEntries
+                totalEntries: stats.totalEntries,
               },
               {
                 verifiedContent: 1,
                 rejectedEntries: 0,
-                totalEntries: 3
+                totalEntries: 3,
               },
               'reported relevant changes'
             )
@@ -411,15 +411,15 @@ test('re-builds the index with the size parameter', (t) => {
 test('hash collisions', (t) => {
   const mockVerify = getVerify({
     '../lib/entry-index': Object.assign({}, index, {
-      hashKey: () => 'aaa'
-    })
+      hashKey: () => 'aaa',
+    }),
   })
 
   t.plan(1)
   mockCache()
     .then(() =>
       index.insert(CACHE, 'foo', INTEGRITY, {
-        metadata: 'foo'
+        metadata: 'foo',
       }))
     .then(() => mockVerify(CACHE))
     .then((stats) => {
@@ -427,12 +427,12 @@ test('hash collisions', (t) => {
         {
           verifiedContent: stats.verifiedContent,
           rejectedEntries: stats.rejectedEntries,
-          totalEntries: stats.totalEntries
+          totalEntries: stats.totalEntries,
         },
         {
           verifiedContent: 1,
           rejectedEntries: 0,
-          totalEntries: 2
+          totalEntries: 2,
         },
         'should resolve with no errors'
       )
@@ -442,15 +442,15 @@ test('hash collisions', (t) => {
 test('hash collisions excluded', (t) => {
   const mockVerify = getVerify({
     '../lib/entry-index': Object.assign({}, index, {
-      hashKey: () => 'aaa'
-    })
+      hashKey: () => 'aaa',
+    }),
   })
 
   t.plan(1)
   mockCache()
     .then(() =>
       index.insert(CACHE, 'foo', INTEGRITY, {
-        metadata: 'foo'
+        metadata: 'foo',
       }))
     .then(() => mockVerify(CACHE, { filter: () => null }))
     .then((stats) => {
@@ -458,12 +458,12 @@ test('hash collisions excluded', (t) => {
         {
           verifiedContent: stats.verifiedContent,
           rejectedEntries: stats.rejectedEntries,
-          totalEntries: stats.totalEntries
+          totalEntries: stats.totalEntries,
         },
         {
           verifiedContent: 0,
           rejectedEntries: 2,
-          totalEntries: 0
+          totalEntries: 0,
         },
         'should resolve while also excluding filtered out entries'
       )

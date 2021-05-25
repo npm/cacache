@@ -23,7 +23,7 @@ const SIZE = 999
 function opts (extra) {
   return Object.assign(
     {
-      size: SIZE
+      size: SIZE,
     },
     extra
   )
@@ -36,7 +36,7 @@ test('basic insertion', function (t) {
       KEY,
       INTEGRITY,
       opts({
-        metadata: 'foo'
+        metadata: 'foo',
       })
     )
     .then((entry) => {
@@ -48,7 +48,7 @@ test('basic insertion', function (t) {
           path: contentPath(CACHE, INTEGRITY),
           time: entry.time,
           metadata: 'foo',
-          size: SIZE
+          size: SIZE,
         },
         'formatted entry returned'
       )
@@ -71,7 +71,7 @@ test('basic insertion', function (t) {
           integrity: INTEGRITY,
           time: entry.time,
           metadata: 'foo',
-          size: SIZE
+          size: SIZE,
         },
         'entry matches what was inserted'
       )
@@ -85,7 +85,7 @@ test('inserts additional entries into existing key', function (t) {
       KEY,
       INTEGRITY,
       opts({
-        metadata: 1
+        metadata: 1,
       })
     )
     .then(() => index.insert(CACHE, KEY, INTEGRITY, opts({ metadata: 2 })))
@@ -109,14 +109,14 @@ test('inserts additional entries into existing key', function (t) {
             key: KEY,
             integrity: INTEGRITY,
             metadata: 1,
-            size: SIZE
+            size: SIZE,
           },
           {
             key: KEY,
             integrity: INTEGRITY,
             metadata: 2,
-            size: SIZE
-          }
+            size: SIZE,
+          },
         ],
         'all entries present'
       )
@@ -133,11 +133,11 @@ test('separates entries even if one is corrupted', function (t) {
           key: KEY,
           integrity: 'meh',
           time: 54321,
-          size: SIZE
+          size: SIZE,
         }) +
         '\n{"key": "' +
         KEY +
-        '"\noway'
+        '"\noway',
     })
   )
   fixture.create(CACHE)
@@ -154,7 +154,7 @@ test('separates entries even if one is corrupted', function (t) {
         {
           key: KEY,
           integrity: INTEGRITY,
-          size: SIZE
+          size: SIZE,
         },
         'new entry unaffected by corruption'
       )
@@ -177,7 +177,7 @@ test('optional arbitrary metadata', function (t) {
           key: KEY,
           integrity: INTEGRITY,
           metadata: metadata,
-          size: SIZE
+          size: SIZE,
         },
         'entry includes inserted metadata'
       )
@@ -187,11 +187,11 @@ test('optional arbitrary metadata', function (t) {
 test('key case-sensitivity', function (t) {
   return Promise.all([
     index.insert(CACHE, KEY, INTEGRITY, opts()),
-    index.insert(CACHE, KEY.toUpperCase(), INTEGRITY + 'upper', opts())
+    index.insert(CACHE, KEY.toUpperCase(), INTEGRITY + 'upper', opts()),
   ]).then(() => {
     return Promise.all([
       index.find(CACHE, KEY),
-      index.find(CACHE, KEY.toUpperCase())
+      index.find(CACHE, KEY.toUpperCase()),
     ]).then(([entry, upperEntry]) => {
       delete entry.time
       delete upperEntry.time
@@ -199,12 +199,12 @@ test('key case-sensitivity', function (t) {
         {
           key: entry.key,
           integrity: entry.integrity,
-          size: SIZE
+          size: SIZE,
         },
         {
           key: KEY,
           integrity: INTEGRITY,
-          size: SIZE
+          size: SIZE,
         },
         'regular entry exists'
       )
@@ -212,12 +212,12 @@ test('key case-sensitivity', function (t) {
         {
           key: upperEntry.key,
           integrity: upperEntry.integrity,
-          size: SIZE
+          size: SIZE,
         },
         {
           key: KEY.toUpperCase(),
           integrity: INTEGRITY + 'upper',
-          size: SIZE
+          size: SIZE,
         },
         'case-variant entry intact'
       )
@@ -241,7 +241,7 @@ test('path-breaking characters', function (t) {
         {
           key: newKey,
           integrity: INTEGRITY,
-          size: SIZE
+          size: SIZE,
         },
         'entry exists and matches original key with invalid chars'
       )
@@ -250,9 +250,9 @@ test('path-breaking characters', function (t) {
 
 test('extremely long keys', function (t) {
   let newKey = ''
-  for (let i = 0; i < 10000; i++) {
+  for (let i = 0; i < 10000; i++)
     newKey += i
-  }
+
   return index
     .insert(CACHE, newKey, INTEGRITY, opts())
     .then(() => {
@@ -267,7 +267,7 @@ test('extremely long keys', function (t) {
         {
           key: newKey,
           integrity: INTEGRITY,
-          size: SIZE
+          size: SIZE,
         },
         'entry exists in spite of INCREDIBLY LONG key'
       )

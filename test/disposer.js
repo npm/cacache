@@ -88,21 +88,6 @@ test('disposer should reject on creatorFn reject', (t) => {
     })
 })
 
-/**
- * Technically this is breaking the bluebird spec on disposer rejection
- *
- *
- * If a disposer method throws or returns a rejected promise, it's highly likely that it failed to dispose of
- * the resource. In that case, Bluebird has two options - it can either ignore the error and continue with
- * program execution or throw an exception (crashing the process in node.js).
- *
- * In bluebird we've chosen to do the latter because resources are typically scarce. For example, if a database
- * connection cannot be disposed of and Bluebird ignores that, the connection pool will be quickly depleted and
- * the process will become unusable (all requests that query the database will wait forever). Since Bluebird
- * doesn't know how to handle that, the only sensible default is to crash the process. That way, rather than
- * getting a useless process that cannot fulfill more requests, we can swap the faulty worker with a new one
- * letting the OS clean up the resources for us.
- */
 test('disposer should reject on disposerFn reject', (t) => {
   let disposerRan = false
 

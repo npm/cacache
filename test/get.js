@@ -29,7 +29,7 @@ function opts (extra) {
   return Object.assign(
     {
       size: SIZE,
-      metadata: METADATA
+      metadata: METADATA,
     },
     extra
   )
@@ -57,7 +57,7 @@ function streamGet (byDigest) {
       data,
       integrity,
       metadata,
-      size
+      size,
     }))
 }
 
@@ -98,7 +98,7 @@ test('get will throw ENOENT if not found', (t) => {
 test('basic bulk get', (t) => {
   const fixture = new Tacks(
     CacheContent({
-      [INTEGRITY]: CONTENT
+      [INTEGRITY]: CONTENT,
     })
   )
   fixture.create(CACHE)
@@ -114,7 +114,7 @@ test('basic bulk get', (t) => {
           metadata: METADATA,
           data: CONTENT,
           integrity: INTEGRITY,
-          size: SIZE
+          size: SIZE,
         },
         'bulk key get returned proper data'
       )
@@ -130,7 +130,7 @@ test('basic bulk get', (t) => {
 test('get.sync.byDigest without memoization', (t) => {
   const fixture = new Tacks(
     CacheContent({
-      [INTEGRITY]: CONTENT
+      [INTEGRITY]: CONTENT,
     })
   )
   fixture.create(CACHE)
@@ -142,7 +142,7 @@ test('get.sync.byDigest without memoization', (t) => {
       metadata: METADATA,
       data: CONTENT,
       integrity: INTEGRITY,
-      size: SIZE
+      size: SIZE,
     },
     'bulk key get returned proper data'
   )
@@ -154,7 +154,7 @@ test('get.sync.byDigest without memoization', (t) => {
 test('get.sync.byDigest with memoization', (t) => {
   const fixture = new Tacks(
     CacheContent({
-      [INTEGRITY]: CONTENT
+      [INTEGRITY]: CONTENT,
     })
   )
   fixture.create(CACHE)
@@ -166,7 +166,7 @@ test('get.sync.byDigest with memoization', (t) => {
       metadata: METADATA,
       data: CONTENT,
       integrity: INTEGRITY,
-      size: SIZE
+      size: SIZE,
     },
     'bulk key get returned proper data'
   )
@@ -183,7 +183,7 @@ test('get.sync.byDigest with memoization', (t) => {
 test('get.sync with memoization', (t) => {
   const fixture = new Tacks(
     CacheContent({
-      [INTEGRITY]: CONTENT
+      [INTEGRITY]: CONTENT,
     })
   )
   fixture.create(CACHE)
@@ -197,7 +197,7 @@ test('get.sync with memoization', (t) => {
       metadata: METADATA,
       data: CONTENT,
       integrity: INTEGRITY,
-      size: SIZE
+      size: SIZE,
     },
     'bulk key get returned proper data'
   )
@@ -207,7 +207,7 @@ test('get.sync with memoization', (t) => {
     metadata: METADATA,
     data: CONTENT,
     integrity: INTEGRITY,
-    size: SIZE
+    size: SIZE,
   }, 'get returned proper data')
   t.end()
 })
@@ -215,7 +215,7 @@ test('get.sync with memoization', (t) => {
 test('get.byDigest without memoization', (t) => {
   const fixture = new Tacks(
     CacheContent({
-      [INTEGRITY]: CONTENT
+      [INTEGRITY]: CONTENT,
     })
   )
   fixture.create(CACHE)
@@ -228,7 +228,7 @@ test('get.byDigest without memoization', (t) => {
           metadata: METADATA,
           data: CONTENT,
           integrity: INTEGRITY,
-          size: SIZE
+          size: SIZE,
         },
         'bulk key get returned proper data')
 
@@ -251,7 +251,7 @@ test('get.byDigest without memoization', (t) => {
 test('get.byDigest with memoization', (t) => {
   const fixture = new Tacks(
     CacheContent({
-      [INTEGRITY]: CONTENT
+      [INTEGRITY]: CONTENT,
     })
   )
   fixture.create(CACHE)
@@ -264,7 +264,7 @@ test('get.byDigest with memoization', (t) => {
           metadata: METADATA,
           data: CONTENT,
           integrity: INTEGRITY,
-          size: SIZE
+          size: SIZE,
         },
         'bulk key get returned proper data')
 
@@ -287,7 +287,7 @@ test('get.byDigest with memoization', (t) => {
 test('get without memoization', (t) => {
   const fixture = new Tacks(
     CacheContent({
-      [INTEGRITY]: CONTENT
+      [INTEGRITY]: CONTENT,
     })
   )
   fixture.create(CACHE)
@@ -300,7 +300,7 @@ test('get without memoization', (t) => {
           metadata: METADATA,
           data: CONTENT,
           integrity: INTEGRITY,
-          size: SIZE
+          size: SIZE,
         },
         'bulk key get returned proper data')
 
@@ -312,7 +312,7 @@ test('get without memoization', (t) => {
             metadata: METADATA,
             data: CONTENT,
             integrity: INTEGRITY,
-            size: SIZE
+            size: SIZE,
           }, 'get returned proper data')
           t.same(memo.get(CACHE, KEY), undefined)
 
@@ -323,7 +323,7 @@ test('get without memoization', (t) => {
             metadata: METADATA,
             data: CONTENT,
             integrity: INTEGRITY,
-            size: SIZE
+            size: SIZE,
           }, 'get returned proper data')
           t.end()
         })
@@ -333,7 +333,7 @@ test('get without memoization', (t) => {
 test('get with memoization', (t) => {
   const fixture = new Tacks(
     CacheContent({
-      [INTEGRITY]: CONTENT
+      [INTEGRITY]: CONTENT,
     })
   )
   fixture.create(CACHE)
@@ -346,7 +346,7 @@ test('get with memoization', (t) => {
           metadata: METADATA,
           data: CONTENT,
           integrity: INTEGRITY,
-          size: SIZE
+          size: SIZE,
         },
         'bulk key get returned proper data')
 
@@ -358,7 +358,7 @@ test('get with memoization', (t) => {
             metadata: METADATA,
             data: CONTENT,
             integrity: INTEGRITY,
-            size: SIZE
+            size: SIZE,
           }, 'get returned proper data')
           t.notSame(memo.get(CACHE, KEY), undefined)
 
@@ -369,7 +369,7 @@ test('get with memoization', (t) => {
             metadata: METADATA,
             data: CONTENT,
             integrity: INTEGRITY,
-            size: SIZE
+            size: SIZE,
           }, 'get returned proper data')
           t.end()
         })
@@ -379,14 +379,14 @@ test('get with memoization', (t) => {
 test('basic stream get', (t) => {
   const fixture = new Tacks(
     CacheContent({
-      [INTEGRITY]: CONTENT
+      [INTEGRITY]: CONTENT,
     })
   )
   fixture.create(CACHE)
   return index.insert(CACHE, KEY, INTEGRITY, opts()).then(() => {
     return Promise.all([
       streamGet(false, CACHE, KEY),
-      streamGet(true, CACHE, INTEGRITY)
+      streamGet(true, CACHE, INTEGRITY),
     ]).then(([byKey, byDigest]) => {
       t.same(
         byKey,
@@ -394,7 +394,7 @@ test('basic stream get', (t) => {
           data: CONTENT,
           integrity: INTEGRITY,
           metadata: METADATA,
-          size: SIZE
+          size: SIZE,
         },
         'got all expected data and fields from key fetch'
       )
@@ -406,7 +406,7 @@ test('basic stream get', (t) => {
 test('get.stream add new listeners post stream creation', (t) => {
   const fixture = new Tacks(
     CacheContent({
-      [INTEGRITY]: CONTENT
+      [INTEGRITY]: CONTENT,
     })
   )
   fixture.create(CACHE)
@@ -424,7 +424,7 @@ test('get.stream add new listeners post stream creation', (t) => {
         [
           'integrity',
           'metadata',
-          'size'
+          'size',
         ].forEach(ev => {
           stream.on(ev, () => {
             t.ok(`${ev} listener added`)
@@ -448,12 +448,12 @@ test('get.copy will throw ENOENT if not found', (t) => {
 })
 
 test('get.copy with fs.copyfile', {
-  skip: !fs.copyFile && 'Not supported on node versions without fs.copyFile'
+  skip: !fs.copyFile && 'Not supported on node versions without fs.copyFile',
 }, (t) => {
   const DEST = path.join(CACHE, 'copymehere')
   const fixture = new Tacks(
     CacheContent({
-      [INTEGRITY]: CONTENT
+      [INTEGRITY]: CONTENT,
     })
   )
   fixture.create(CACHE)
@@ -466,7 +466,7 @@ test('get.copy with fs.copyfile', {
         {
           metadata: METADATA,
           integrity: INTEGRITY,
-          size: SIZE
+          size: SIZE,
         },
         'copy operation returns basic metadata'
       )
@@ -491,7 +491,7 @@ test('get.copy without fs.copyfile', (t) => {
   const DEST = path.join(CACHE, 'copymehere')
   const fixture = new Tacks(
     CacheContent({
-      [INTEGRITY]: CONTENT
+      [INTEGRITY]: CONTENT,
     })
   )
   fixture.create(CACHE)
@@ -504,7 +504,7 @@ test('get.copy without fs.copyfile', (t) => {
         {
           metadata: METADATA,
           integrity: INTEGRITY,
-          size: SIZE
+          size: SIZE,
         },
         'copy operation returns basic metadata'
       )
@@ -526,7 +526,7 @@ test('memoizes data on bulk read', (t) => {
   memo.clearMemoized()
   const fixture = new Tacks(
     CacheContent({
-      [INTEGRITY]: CONTENT
+      [INTEGRITY]: CONTENT,
     })
   )
   fixture.create(CACHE)
@@ -543,7 +543,7 @@ test('memoizes data on bulk read', (t) => {
             metadata: METADATA,
             data: CONTENT,
             integrity: INTEGRITY,
-            size: SIZE
+            size: SIZE,
           },
           'usual data returned'
         )
@@ -551,7 +551,7 @@ test('memoizes data on bulk read', (t) => {
           memo.get(CACHE, KEY),
           {
             entry: ENTRY,
-            data: CONTENT
+            data: CONTENT,
           },
           'data inserted into memoization cache'
         )
@@ -567,7 +567,7 @@ test('memoizes data on bulk read', (t) => {
             metadata: METADATA,
             data: CONTENT,
             integrity: INTEGRITY,
-            size: SIZE
+            size: SIZE,
           },
           'memoized data fetched by default'
         )
@@ -582,7 +582,7 @@ test('memoizes data on bulk read', (t) => {
               memo.get(CACHE, KEY),
               {
                 entry: ENTRY,
-                data: CONTENT
+                data: CONTENT,
               },
               'data still in memoization cache'
             )
@@ -595,14 +595,14 @@ test('memoizes data on stream read', (t) => {
   memo.clearMemoized()
   const fixture = new Tacks(
     CacheContent({
-      [INTEGRITY]: CONTENT
+      [INTEGRITY]: CONTENT,
     })
   )
   fixture.create(CACHE)
   return index.insert(CACHE, KEY, INTEGRITY, opts()).then((ENTRY) => {
     return Promise.all([
       streamGet(false, CACHE, KEY),
-      streamGet(true, CACHE, INTEGRITY)
+      streamGet(true, CACHE, INTEGRITY),
     ])
       .then(() => {
         t.same(memo.get(CACHE, KEY), null, 'no memoization by key!')
@@ -615,7 +615,7 @@ test('memoizes data on stream read', (t) => {
       .then(() => {
         memo.clearMemoized()
         return streamGet(true, CACHE, INTEGRITY, {
-          memoize: true
+          memoize: true,
         })
       })
       .then((byDigest) => {
@@ -643,7 +643,7 @@ test('memoizes data on stream read', (t) => {
             metadata: METADATA,
             data: CONTENT,
             integrity: INTEGRITY,
-            size: SIZE
+            size: SIZE,
           },
           'usual data returned from key fetch'
         )
@@ -651,7 +651,7 @@ test('memoizes data on stream read', (t) => {
           memo.get(CACHE, KEY),
           {
             entry: ENTRY,
-            data: CONTENT
+            data: CONTENT,
           },
           'data inserted into memoization cache'
         )
@@ -672,7 +672,7 @@ test('memoizes data on stream read', (t) => {
       .then(() => {
         return Promise.all([
           streamGet(false, CACHE, KEY),
-          streamGet(true, CACHE, INTEGRITY)
+          streamGet(true, CACHE, INTEGRITY),
         ]).then(([byKey, byDigest]) => {
           t.same(
             byKey,
@@ -680,7 +680,7 @@ test('memoizes data on stream read', (t) => {
               metadata: METADATA,
               data: CONTENT,
               integrity: INTEGRITY,
-              size: SIZE
+              size: SIZE,
             },
             'key fetch fulfilled by memoization cache'
           )
@@ -694,11 +694,11 @@ test('memoizes data on stream read', (t) => {
       .then(() => {
         return Promise.all([
           streamGet(false, CACHE, KEY, {
-            memoize: false
+            memoize: false,
           }).catch((err) => err),
           streamGet(true, CACHE, INTEGRITY, {
-            memoize: false
-          }).catch((err) => err)
+            memoize: false,
+          }).catch((err) => err),
         ]).then(([keyErr, digestErr]) => {
           t.equal(keyErr.code, 'ENOENT', 'key get memoization bypassed')
           t.equal(keyErr.code, 'ENOENT', 'digest get memoization bypassed')
@@ -714,7 +714,7 @@ test('get.info uses memoized data', (t) => {
     integrity: INTEGRITY,
     time: +new Date(),
     size: SIZE,
-    metadata: null
+    metadata: null,
   }
   memo.put(CACHE, ENTRY, CONTENT)
   return get.info(CACHE, KEY).then((info) => {

@@ -18,17 +18,17 @@ module.exports = (suite, CACHE) => {
         key: 'whatever',
         integrity: 'sha512-deadbeef',
         time: 12345,
-        metadata: 'omgsometa'
+        metadata: 'omgsometa',
       }
       const fixture = new Tacks(
         CacheIndex({
-          whatever: entry
+          whatever: entry,
         })
       )
       fixture.create(CACHE)
       this.fixture = fixture
       this.entry = entry
-    }
+    },
   })
 
   suite.add('index.find cache miss', {
@@ -42,11 +42,11 @@ module.exports = (suite, CACHE) => {
       const fixture = new Tacks(
         CacheIndex({
           foo: { key: 'foo' },
-          'w/e': { key: 'w/e' }
+          'w/e': { key: 'w/e' },
         })
       )
       fixture.create(CACHE)
       this.fixture = fixture
-    }
+    },
   })
 }

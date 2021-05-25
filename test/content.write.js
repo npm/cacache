@@ -20,7 +20,9 @@ test('basic put', (t) => {
   const INTEGRITY = ssri.fromData(CONTENT)
   let integrity
   return write.stream(CACHE)
-    .on('integrity', (i) => { integrity = i })
+    .on('integrity', (i) => {
+      integrity = i
+    })
     .end(CONTENT)
     .promise()
     .then(() => {
@@ -40,7 +42,9 @@ test("checks input digest doesn't match data", (t) => {
 
   return t.rejects(
     write.stream(CACHE, { integrity })
-      .on('integrity', (int) => { int1 = int })
+      .on('integrity', (int) => {
+        int1 = int
+      })
       .end('bazbarfoo')
       .promise(),
     { code: 'EINTEGRITY' },
@@ -48,7 +52,9 @@ test("checks input digest doesn't match data", (t) => {
   )
     .then(() => t.equal(int1, null, 'no digest emitted'))
     .then(() => write.stream(CACHE, { integrity })
-      .on('integrity', int => { int2 = int })
+      .on('integrity', int => {
+        int2 = int
+      })
       .end(CONTENT)
       .promise())
     .then(() => t.same(int2, integrity, 'returns a matching digest'))
@@ -58,7 +64,9 @@ test('errors if stream ends with no data', (t) => {
   let integrity = null
   return t.rejects(
     write.stream(CACHE).end('')
-      .on('integrity', int => { integrity = int })
+      .on('integrity', int => {
+        integrity = int
+      })
       .promise(),
     { code: 'ENODATA' },
     'get an error with a useful code'
@@ -71,7 +79,9 @@ test('errors if input size does not match expected', (t) => {
 
   return t.rejects(
     write.stream(CACHE, { size: 5 })
-      .on('integrity', int => { int1 = int })
+      .on('integrity', int => {
+        int1 = int
+      })
       .end('abc')
       .promise(),
     { code: 'EBADSIZE', expected: 5, found: 3 },
@@ -80,7 +90,9 @@ test('errors if input size does not match expected', (t) => {
     .then(() => t.equal(int1, null, 'no digest returned'))
     .then(() => t.rejects(
       write.stream(CACHE, { size: 5 })
-        .on('integrity', int => { int2 = int })
+        .on('integrity', int => {
+          int2 = int
+        })
         .end('abcdefghi')
         .promise(),
       { code: 'EBADSIZE', expected: 5, found: 9 },
@@ -94,7 +106,7 @@ test('does not overwrite content if already on disk', (t) => {
   const INTEGRITY = ssri.fromData(CONTENT)
   const fixture = new Tacks(
     CacheContent({
-      [INTEGRITY]: 'nope'
+      [INTEGRITY]: 'nope',
     })
   )
   fixture.create(CACHE)
@@ -103,7 +115,9 @@ test('does not overwrite content if already on disk', (t) => {
   let int2
   // With a digest -- early short-circuiting
   return write.stream(CACHE, { integrity: INTEGRITY })
-    .on('integrity', int => { int1 = int })
+    .on('integrity', int => {
+      int1 = int
+    })
     .end(CONTENT)
     .promise()
     .then(() => {
@@ -112,7 +126,9 @@ test('does not overwrite content if already on disk', (t) => {
       t.equal(d, 'nope', 'process short-circuited. Data not written.')
     })
     .then(() => write.stream(CACHE)
-      .on('integrity', int => { int2 = int })
+      .on('integrity', int => {
+        int2 = int
+      })
       .end(CONTENT)
       .promise()
     )
@@ -126,7 +142,9 @@ test('does not overwrite content if already on disk', (t) => {
 test('errors if input stream errors', (t) => {
   let integrity = null
   const putter = write.stream(CACHE)
-    .on('integrity', (int) => { integrity = int })
+    .on('integrity', (int) => {
+      integrity = int
+    })
   setTimeout(() => putter.inputStream.emit('error', new Error('bleh')))
   return t.rejects(putter.promise(), { message: 'bleh' })
     .then(() => {
@@ -134,7 +152,7 @@ test('errors if input stream errors', (t) => {
       t.throws(() => {
         fs.statSync(contentPath(CACHE, ssri.fromData('foobarbaz')))
       }, {
-        code: 'ENOENT'
+        code: 'ENOENT',
       }, 'target file missing. No files created')
     })
 })
@@ -144,7 +162,7 @@ test('exits normally if file already open', (t) => {
   const INTEGRITY = ssri.fromData(CONTENT)
   const fixture = new Tacks(
     CacheContent({
-      [INTEGRITY]: CONTENT
+      [INTEGRITY]: CONTENT,
     })
   )
   let integrity
@@ -152,11 +170,13 @@ test('exits normally if file already open', (t) => {
   // This case would only fail on Windows, when an entry is being read.
   // Generally, you'd get an EBUSY back.
   fs.open(contentPath(CACHE, INTEGRITY), 'r+', function (err, fd) {
-    if (err) {
+    if (err)
       throw err
-    }
+
     write.stream(CACHE)
-      .on('integrity', int => { integrity = int })
+      .on('integrity', int => {
+        integrity = int
+      })
       .end(CONTENT)
       .promise()
       .then(() => {
@@ -180,9 +200,8 @@ test('cleans up tmp on successful completion', (t) => {
           files = files || []
           t.same(files, [], 'nothing in the tmp dir!')
           resolve()
-        } else {
+        } else
           reject(err)
-        }
       })
     }))
 })
@@ -203,9 +222,8 @@ test('cleans up tmp on error', (t) => {
           files = files || []
           t.same(files, [], 'nothing in the tmp dir!')
           resolve()
-        } else {
+        } else
           reject(err)
-        }
       })
     }))
 })
@@ -219,7 +237,9 @@ test('checks the size of stream data if opts.size provided', (t) => {
   t.test('chair too small', t => {
     const w = write.stream(CACHE, { size: CONTENT.length })
     w.write(CONTENT.slice(3))
-    w.on('integrity', int => { int1 = int })
+    w.on('integrity', int => {
+      int1 = int
+    })
     setTimeout(() => w.end())
     return t.rejects(w.promise(), { code: 'EBADSIZE' }, 'bad size error code')
       .then(() => t.equal(int1, null, 'no digest returned by first stream'))
@@ -236,7 +256,9 @@ test('checks the size of stream data if opts.size provided', (t) => {
   return t.test('chair is juuuuust right', t => {
     const w = write.stream(CACHE, { size: CONTENT.length })
     w.write(CONTENT)
-    w.on('integrity', int => { int3 = int })
+    w.on('integrity', int => {
+      int3 = int
+    })
     setTimeout(() => w.end())
     return w.promise().then(() => t.ok(int3, 'got a digest'))
   })
@@ -244,7 +266,7 @@ test('checks the size of stream data if opts.size provided', (t) => {
 
 test('only one algorithm for now', t => {
   t.throws(() => write(CACHE, 'foo', { algorithms: [1, 2] }), {
-    message: 'opts.algorithms only supports a single algorithm for now'
+    message: 'opts.algorithms only supports a single algorithm for now',
   })
   t.end()
 })
@@ -258,8 +280,8 @@ test('writes to cache with default options', t =>
           source: 'sha512-9/u6bgY2+JDlb7vzKD5STG+jIErimDgtYkdB0NxmODJuKCxBvl5CVNiCB3LFUYosWowMf37aGVlKfrU5RT4e1w==',
           digest: '9/u6bgY2+JDlb7vzKD5STG+jIErimDgtYkdB0NxmODJuKCxBvl5CVNiCB3LFUYosWowMf37aGVlKfrU5RT4e1w==',
           algorithm: 'sha512',
-          options: []
-        }
-      ]
-    }
+          options: [],
+        },
+      ],
+    },
   }))

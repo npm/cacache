@@ -18,7 +18,7 @@ const chmod = util.promisify(fs.chmod)
 
 test('move a file', function (t) {
   const testDir = t.testdir({
-    src: 'foo'
+    src: 'foo',
   })
   return moveFile(testDir + '/src', testDir + '/dest')
     .then(() => {
@@ -36,7 +36,7 @@ test('move a file', function (t) {
 test('does not clobber existing files', function (t) {
   const testDir = t.testdir({
     src: 'foo',
-    dest: 'bar'
+    dest: 'bar',
   })
   return moveFile(testDir + '/src', testDir + '/dest')
     .then(() => {
@@ -54,7 +54,7 @@ test('does not clobber existing files', function (t) {
 test('does not move a file into an existing directory', function (t) {
   const testDir = t.testdir({
     src: 'foo',
-    dest: {}
+    dest: {},
   })
   return moveFile(testDir + '/src', testDir + '/dest')
     .then(() => {
@@ -68,7 +68,7 @@ test('does not move a file into an existing directory', function (t) {
 test('does not error if destination file is open', function (t) {
   const testDir = t.testdir({
     src: 'foo',
-    dest: 'bar'
+    dest: 'bar',
   })
 
   return open(testDir + '/dest', 'r+').then((fd) => {
@@ -91,7 +91,7 @@ test('does not error if destination file is open', function (t) {
 
 test('fallback to renaming on missing files post-move', function (t) {
   const testDir = t.testdir({
-    src: 'foo'
+    src: 'foo',
   })
 
   // Sets up a fs mock that will fail at first unlink/stat call in order
@@ -111,68 +111,61 @@ test('fallback to renaming on missing files post-move', function (t) {
         throw new Error('nope')
       },
       unlink: async (path) => {
-        if (shouldMock) {
+        if (shouldMock)
           throw missingFileError
-        } else {
+        else
           return fs.promises.unlink(path)
-        }
       },
       lstat: async (path, cb) => {
         if (shouldMock) {
           shouldMock = false
           throw missingFileError
-        } else {
+        } else
           return fs.promises.lstat(path)
-        }
       },
       stat: async (path, cb) => {
         if (shouldMock) {
           shouldMock = false
           throw missingFileError
-        } else {
+        } else
           return fs.promises.stat(path)
-        }
-      }
+      },
     },
     rename: (src, dest, cb) => {
-      if (shouldMock) {
+      if (shouldMock)
         cb(Object.assign(new Error('EXDEV'), { code: 'EXDEV' }))
-      } else {
+      else
         fs.rename(src, dest, cb)
-      }
     },
     link (src, dest, cb) {
       cb(new Error('nope'))
     },
     unlink (path, cb) {
-      if (shouldMock) {
+      if (shouldMock)
         cb(missingFileError)
-      } else {
+      else
         fs.unlink(path, cb)
-      }
     },
     lstat (path, cb) {
       if (shouldMock && path === testDir + '/dest') {
         cb(missingFileError)
         shouldMock = false
-      } else {
+      } else
         fs.lstat(path, cb)
-      }
     },
     stat (path, cb) {
       if (shouldMock && path === testDir + '/dest') {
         cb(missingFileError)
         shouldMock = false
-      } else {
+      } else
         fs.stat(path, cb)
-      }
-    }
+    },
   }
   const mockedMoveFile = requireInject.withEmptyCache('../lib/util/move-file', {
     fs: mockFS,
     '@npmcli/move-file': requireInject.withEmptyCache('@npmcli/move-file', {
-      fs: mockFS
-    })
+      fs: mockFS,
+    }),
   })
 
   // actual tests are the same used in the simple "move a file" test
@@ -201,36 +194,36 @@ test('verify weird EPERM on Windows behavior', t => {
   gfs.link = (src, dest, cb) => {
     calledMonkeypatch = true
     setImmediate(() => cb(Object.assign(new Error('yolo'), {
-      code: 'EPERM'
+      code: 'EPERM',
     })))
     gfs.link = gfsLink
     global.__CACACHE_TEST_FAKE_WINDOWS__ = false
   }
   const testDir = t.testdir({
     eperm: {
-      src: 'epermmy'
-    }
+      src: 'epermmy',
+    },
   })
 
   return moveFile(testDir + '/eperm/src', testDir + '/eperm/dest')
     .then(() => t.ok(calledMonkeypatch, 'called the patched fs.link fn'))
     .then(() => t.rejects(readFile('eperm/dest'), {
-      code: 'ENOENT'
+      code: 'ENOENT',
     }, 'destination file did not get written'))
     .then(() => t.rejects(readFile('eperm/src'), {
-      code: 'ENOENT'
+      code: 'ENOENT',
     }, 'src file did get deleted'))
 })
 
 test(
   'errors if dest is not writable',
   {
-    skip: process.platform === 'win32'
+    skip: process.platform === 'win32',
   },
   function (t) {
     const testDir = t.testdir({
       src: 'foo',
-      dest: {}
+      dest: {},
     })
 
     return chmod(testDir + '/dest', parseInt('400', 8))

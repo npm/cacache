@@ -30,13 +30,13 @@ const readdir = util.promisify(fs.readdir)
 test('rm.entry removes entries, not content', (t) => {
   const fixture = new Tacks(
     CacheContent({
-      [INTEGRITY]: CONTENT
+      [INTEGRITY]: CONTENT,
     })
   )
   fixture.create(CACHE)
   return index
     .insert(CACHE, KEY, INTEGRITY, {
-      metadata: METADATA
+      metadata: METADATA,
     })
     .then(() => {
       t.equal(rm, rm.entry, 'rm is an alias for rm.entry')
@@ -66,13 +66,13 @@ test('rm.entry removes entries, not content', (t) => {
 test('rm.content removes content, not entries', (t) => {
   const fixture = new Tacks(
     CacheContent({
-      [INTEGRITY]: CONTENT
+      [INTEGRITY]: CONTENT,
     })
   )
   fixture.create(CACHE)
   return index
     .insert(CACHE, KEY, INTEGRITY, {
-      metadata: METADATA
+      metadata: METADATA,
     })
     .then(() => {
       return rm.content(CACHE, INTEGRITY)
@@ -108,13 +108,13 @@ test('rm.content removes content, not entries', (t) => {
 test('rm.all deletes content and index dirs', (t) => {
   const fixture = new Tacks(
     CacheContent({
-      [INTEGRITY]: CONTENT
+      [INTEGRITY]: CONTENT,
     })
   )
   fixture.create(CACHE)
   return index
     .insert(CACHE, KEY, INTEGRITY, {
-      metadata: METADATA
+      metadata: METADATA,
     })
     .then(() => {
       return mkdir(path.join(CACHE, 'tmp'))

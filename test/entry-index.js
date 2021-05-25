@@ -25,7 +25,7 @@ const INTEGRITY = ssri.fromData(CONTENT).toString()
 const KEY = 'my-test-key'
 const fixture = new Tacks(
   CacheContent({
-    [INTEGRITY]: CONTENT
+    [INTEGRITY]: CONTENT,
   })
 )
 fixture.create(CACHE)
@@ -38,17 +38,19 @@ const getEntryIndexReadFileFailure = (err) => getEntryIndex({
     },
     readFileSync: () => {
       throw genericError
-    }
-  })
+    },
+  }),
 })
 const getEntryIndexFixOwnerFailure = (err) => {
   const chownr = () => Promise.reject(err)
-  chownr.sync = () => { throw err }
+  chownr.sync = () => {
+    throw err
+  }
   return getEntryIndex({
     '../lib/util/fix-owner': {
       mkdirfix: require('../lib/util/fix-owner').mkdirfix,
-      chownr
-    }
+      chownr,
+    },
   })
 }
 
@@ -60,7 +62,7 @@ test('compact', async (t) => {
     index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 1 } }),
     index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 2 } }),
     index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 2 } }),
-    index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 1 } })
+    index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 1 } }),
   ])
 
   const bucket = index.bucketPath(CACHE, KEY)
@@ -108,14 +110,15 @@ test('compact: leverages validateEntry to skip invalid entries', async (t) => {
     index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 1 } }),
     index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 2 } }),
     index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 2 } }),
-    index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 1 } })
+    index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 1 } }),
   ])
 
   const bucket = index.bucketPath(CACHE, KEY)
   const entries = await index.bucketEntries(bucket)
   t.equal(entries.length, 4, 'started with 4 entries')
 
-  const matchFn = (entryA, entryB) => entryA.metadata.rev === entryB.metadata.rev
+  const matchFn = (entryA, entryB) =>
+    entryA.metadata.rev === entryB.metadata.rev
   const validateEntry = (entry) => entry.metadata.rev > 1
   const compacted = await index.compact(CACHE, KEY, matchFn, { validateEntry })
   t.equal(compacted.length, 1, 'should return only one entries')
@@ -133,14 +136,15 @@ test('compact: validateEntry allows for keeping null integrity', async (t) => {
     index.insert(CACHE, KEY, null, { metadata: { rev: 1 } }),
     index.insert(CACHE, KEY, null, { metadata: { rev: 2 } }),
     index.insert(CACHE, KEY, null, { metadata: { rev: 2 } }),
-    index.insert(CACHE, KEY, null, { metadata: { rev: 1 } })
+    index.insert(CACHE, KEY, null, { metadata: { rev: 1 } }),
   ])
 
   const bucket = index.bucketPath(CACHE, KEY)
   const entries = await index.bucketEntries(bucket)
   t.equal(entries.length, 4, 'started with 4 entries')
 
-  const matchFn = (entryA, entryB) => entryA.metadata.rev === entryB.metadata.rev
+  const matchFn = (entryA, entryB) =>
+    entryA.metadata.rev === entryB.metadata.rev
   const validateEntry = (entry) => entry.metadata.rev > 1
   const compacted = await index.compact(CACHE, KEY, matchFn, { validateEntry })
   t.equal(compacted.length, 1, 'should return only one entry')
@@ -158,7 +162,7 @@ test('compact: ENOENT in chownr does not cause failure', async (t) => {
     index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 1 } }),
     index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 2 } }),
     index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 2 } }),
-    index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 1 } })
+    index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 1 } }),
   ])
 
   const { compact } = getEntryIndexFixOwnerFailure(missingFileError)
@@ -175,7 +179,7 @@ test('compact: generic error in chownr does cause failure', async (t) => {
     index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 1 } }),
     index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 2 } }),
     index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 2 } }),
-    index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 1 } })
+    index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 1 } }),
   ])
 
   const { compact } = getEntryIndexFixOwnerFailure(genericError)
@@ -191,11 +195,11 @@ test('compact: error in moveFile removes temp', async (t) => {
     index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 1 } }),
     index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 2 } }),
     index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 2 } }),
-    index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 1 } })
+    index.insert(CACHE, KEY, INTEGRITY, { metadata: { rev: 1 } }),
   ])
 
   const { compact } = getEntryIndex({
-    '@npmcli/move-file': () => Promise.reject(new Error('foo'))
+    '@npmcli/move-file': () => Promise.reject(new Error('foo')),
   })
   const filter = (entryA, entryB) => entryA.metadata.rev === entryB.metadata.rev
   await t.rejects(compact(CACHE, KEY, filter), { message: 'foo' }, 'promise rejected')
@@ -264,8 +268,8 @@ test('find: error on parsing json data', (t) => {
     fs: Object.assign({}, require('fs'), {
       readFile: (path, encode, cb) => {
         cb(null, '\ncec8d2e4685534ed189b563c8ee1cb1cb7c72874\t{"""// foo')
-      }
-    })
+      },
+    }),
   })
 
   t.plan(1)
@@ -290,12 +294,12 @@ test('find: unknown error on finding entries', (t) => {
 test('find.sync: retrieve from bucket containing multiple entries', (t) => {
   const entries = [
     '\na7eb00332fe51ff62b1bdb1564855f2624f16f34\t{"key":"foo", "integrity": "foo"}',
-    '\n46b1607f427665a99668c02d3a4cc52061afd83a\t{"key":"bar", "integrity": "bar"}'
+    '\n46b1607f427665a99668c02d3a4cc52061afd83a\t{"key":"bar", "integrity": "bar"}',
   ]
   const { find } = getEntryIndex({
     fs: Object.assign({}, require('fs'), {
-      readFileSync: (path, encode) => entries.join('')
-    })
+      readFileSync: (path, encode) => entries.join(''),
+    }),
   })
 
   t.match(
@@ -321,8 +325,8 @@ test('find.sync: retrieve entry with invalid content', (t) => {
   const { find } = getEntryIndex({
     fs: Object.assign({}, require('fs'), {
       readFileSync: (path, encode) =>
-        '\nb6589fc6ab0dc82cf12099d1c2d40ab994e8410c\t0'
-    })
+        '\nb6589fc6ab0dc82cf12099d1c2d40ab994e8410c\t0',
+    }),
   })
 
   t.match(
@@ -408,8 +412,8 @@ test('lsStream: unknown error reading dirs', (t) => {
     fs: Object.assign({}, require('fs'), {
       readdir: (path, cb) => {
         cb(genericError)
-      }
-    })
+      },
+    }),
   })
 
   lsStream(CACHE)

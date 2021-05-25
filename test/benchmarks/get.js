@@ -9,17 +9,16 @@ const ssri = require('ssri')
 const get = require('../../get')
 
 const buf = []
-for (let i = 0; i < Math.pow(2, 8); i++) {
+for (let i = 0; i < Math.pow(2, 8); i++)
   buf.push(Buffer.alloc(8, i))
-}
 
 const CONTENT = Buffer.concat(buf, buf.length * 8)
 const INTEGRITY = ssri.fromData(CONTENT)
 
 const arr = []
-for (let i = 0; i < 100; i++) {
+for (let i = 0; i < 100; i++)
   arr.push(CONTENT)
-}
+
 const BIGCONTENT = Buffer.concat(arr, CONTENT.length * 1000)
 const BIGINTEGRITY = ssri.fromData(BIGCONTENT)
 
@@ -29,7 +28,7 @@ module.exports = (suite, CACHE) => {
     setup () {
       const fixture = new Tacks(
         CacheContent({
-          [INTEGRITY]: CONTENT
+          [INTEGRITY]: CONTENT,
         })
       )
       fixture.create(CACHE)
@@ -38,7 +37,7 @@ module.exports = (suite, CACHE) => {
       get
         .byDigest(CACHE, INTEGRITY)
         .then(() => deferred.resolve(), (err) => deferred.reject(err))
-    }
+    },
   })
 
   suite.add('get.byDigest() memoized', {
@@ -53,7 +52,7 @@ module.exports = (suite, CACHE) => {
     },
     tearDown () {
       memo.clearMemoized()
-    }
+    },
   })
 
   suite.add('get.stream.byDigest() small data', {
@@ -61,7 +60,7 @@ module.exports = (suite, CACHE) => {
     setup () {
       const fixture = new Tacks(
         CacheContent({
-          [INTEGRITY]: CONTENT
+          [INTEGRITY]: CONTENT,
         })
       )
       fixture.create(CACHE)
@@ -73,7 +72,7 @@ module.exports = (suite, CACHE) => {
         er => deferred.reject(er)
       )
       stream.resume()
-    }
+    },
   })
 
   suite.add('get.stream.byDigest() big data', {
@@ -81,7 +80,7 @@ module.exports = (suite, CACHE) => {
     setup () {
       const fixture = new Tacks(
         CacheContent({
-          [BIGINTEGRITY]: BIGCONTENT
+          [BIGINTEGRITY]: BIGCONTENT,
         })
       )
       fixture.create(CACHE)
@@ -93,7 +92,7 @@ module.exports = (suite, CACHE) => {
         er => deferred.reject(er)
       )
       stream.resume()
-    }
+    },
   })
 
   suite.add('get.copy.byDigest() small data', {
@@ -101,7 +100,7 @@ module.exports = (suite, CACHE) => {
     setup () {
       const fixture = new Tacks(
         CacheContent({
-          [INTEGRITY]: CONTENT
+          [INTEGRITY]: CONTENT,
         })
       )
       fixture.create(CACHE)
@@ -110,7 +109,7 @@ module.exports = (suite, CACHE) => {
       get.copy
         .byDigest(CACHE, INTEGRITY, path.join(CACHE, 'data'))
         .then(() => deferred.resolve(), (err) => deferred.reject(err))
-    }
+    },
   })
 
   suite.add('get.copy.byDigest() big data', {
@@ -118,7 +117,7 @@ module.exports = (suite, CACHE) => {
     setup () {
       const fixture = new Tacks(
         CacheContent({
-          [BIGINTEGRITY]: BIGCONTENT
+          [BIGINTEGRITY]: BIGCONTENT,
         })
       )
       fixture.create(CACHE)
@@ -127,6 +126,6 @@ module.exports = (suite, CACHE) => {
       get.copy
         .byDigest(CACHE, BIGINTEGRITY, path.join(CACHE, 'data'))
         .then(() => deferred.resolve(), (err) => deferred.reject(err))
-    }
+    },
   })
 }

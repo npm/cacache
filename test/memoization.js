@@ -9,7 +9,7 @@ const ENTRY = {
   key: 'foo',
   integrity: 'sha512-deadbeef',
   time: new Date(),
-  metadata: null
+  metadata: null,
 }
 const DATA = 'foobarbaz'
 
@@ -20,9 +20,9 @@ test('memoizes entry and data by key', (t) => {
     {
       [`key:${CACHE}:${ENTRY.key}`]: {
         entry: ENTRY,
-        data: DATA
+        data: DATA,
       },
-      [`digest:${CACHE}:${ENTRY.integrity}`]: DATA
+      [`digest:${CACHE}:${ENTRY.integrity}`]: DATA,
     },
     'cache has both key and digest entries'
   )
@@ -35,7 +35,7 @@ test('can fetch data by key', (t) => {
     memo.get(CACHE, ENTRY.key),
     {
       entry: ENTRY,
-      data: DATA
+      data: DATA,
     },
     'fetched data correctly'
   )

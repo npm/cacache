@@ -21,11 +21,11 @@ test('index.find cache hit', function (t) {
     integrity: 'whatnot-deadbeef',
     time: 12345,
     metadata: 'omgsometa',
-    size: 5
+    size: 5,
   }
   const fixture = new Tacks(
     CacheIndex({
-      whatever: entry
+      whatever: entry,
     })
   )
   fixture.create(CACHE)
@@ -45,7 +45,7 @@ test('index.find cache miss', function (t) {
   const fixture = new Tacks(
     CacheIndex({
       foo: { key: 'foo' },
-      'w/e': { key: 'w/e' }
+      'w/e': { key: 'w/e' },
     })
   )
   fixture.create(CACHE)
@@ -75,14 +75,14 @@ test('index.find key case-sensitivity', function (t) {
         key: 'jsonstream',
         integrity: 'sha1-lowercase',
         time: 54321,
-        size: SIZE
+        size: SIZE,
       },
       JSONStream: {
         key: 'JSONStream',
         integrity: 'sha1-capitalised',
         time: 12345,
-        size: SIZE
-      }
+        size: SIZE,
+      },
     })
   )
   fixture.create(CACHE)
@@ -97,7 +97,7 @@ test('index.find key case-sensitivity', function (t) {
     }),
     index.find(CACHE, 'jsonStream').then((info) => {
       t.ok(!info, 'no entry for jsonStream')
-    })
+    }),
   ])
 })
 
@@ -107,11 +107,11 @@ test('index.find path-breaking characters', function (t) {
     integrity: 'sha1-deadbeef',
     time: 12345,
     metadata: 'omgsometa',
-    size: 9
+    size: 9,
   }
   const fixture = new Tacks(
     CacheIndex({
-      [entry.key]: entry
+      [entry.key]: entry,
     })
   )
   fixture.create(CACHE)
@@ -128,19 +128,19 @@ test('index.find path-breaking characters', function (t) {
 
 test('index.find extremely long keys', function (t) {
   let key = ''
-  for (let i = 0; i < 10000; i++) {
+  for (let i = 0; i < 10000; i++)
     key += i
-  }
+
   const entry = {
     key: key,
     integrity: 'sha1-deadbeef',
     time: 12345,
     metadata: 'woo',
-    size: 10
+    size: 10,
   }
   const fixture = new Tacks(
     CacheIndex({
-      [entry.key]: entry
+      [entry.key]: entry,
     })
   )
   fixture.create(CACHE)
@@ -157,8 +157,8 @@ test('index.find multiple index entries for key', function (t) {
     CacheIndex({
       whatever: [
         { key: key, integrity: 'sha1-deadbeef', time: 54321 },
-        { key: key, integrity: 'sha1-bada55', time: 12345 }
-      ]
+        { key: key, integrity: 'sha1-bada55', time: 12345 },
+      ],
     })
   )
   fixture.create(CACHE)
@@ -183,7 +183,7 @@ test('index.find garbled data in index file', function (t) {
   const stringified = JSON.stringify({
     key: key,
     integrity: 'sha1-deadbeef',
-    time: 54321
+    time: 54321,
   })
   const fixture = new Tacks(
     CacheIndex({
@@ -192,7 +192,7 @@ test('index.find garbled data in index file', function (t) {
         `${index.hashEntry(stringified)}\t${stringified}` +
         '\n{"key": "' +
         key +
-        '"\noway'
+        '"\noway',
     })
   )
   fixture.create(CACHE)
@@ -209,15 +209,15 @@ test('index.find hash conflict in same bucket', function (t) {
     integrity: 'sha1-deadbeef',
     time: 12345,
     metadata: 'yay',
-    size: 8
+    size: 8,
   }
   const fixture = new Tacks(
     CacheIndex({
       whatever: [
         { key: 'ohnoes', integrity: 'sha1-welp!' },
         entry,
-        { key: 'nope', integrity: 'sha1-bada55' }
-      ]
+        { key: 'nope', integrity: 'sha1-bada55' },
+      ],
     })
   )
   fixture.create(CACHE)

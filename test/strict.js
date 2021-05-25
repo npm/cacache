@@ -12,12 +12,12 @@ test('all JavaScript source files use strict mode', function (t) {
     globStr,
     {
       cwd: root,
-      ignore: ['node_modules/**/*.js', 'coverage/**/*.js']
+      ignore: ['node_modules/**/*.js', 'coverage/**/*.js'],
     },
     function (err, files) {
-      if (err) {
+      if (err)
         throw err
-      }
+
       const line = '\'use strict\'\n'
       const bytecount = line.length
       const buf = Buffer.alloc(bytecount)
