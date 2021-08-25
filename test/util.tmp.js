@@ -64,7 +64,7 @@ test('provides a utility that does resource disposal on tmp', (t) => {
 })
 
 test('withTmp should accept both opts and cb params', t => {
-  return tmp.withTmp(CACHE, { tmpPrefix: {} }, dir => {
+  return tmp.withTmp(CACHE, { tmpPrefix: 'foo' }, dir => {
     t.ok(dir, 'dir should contain a valid response')
   })
 })
