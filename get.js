@@ -23,13 +23,12 @@ function getData (cache, key, opts = {}) {
       size: memoized.entry.size,
     })
   }
-  return index.find(cache, key, opts).then((entry) => {
 
+  return index.find(cache, key, opts).then((entry) => {
     if (!entry)
       throw new index.NotFoundError(cache, key)
 
-    return read(cache, entry.integrity, { integrity, size, }).then((data) => {
-
+    return read(cache, entry.integrity, { integrity, size }).then((data) => {
       if (memoize)
         memo.put(cache, entry, data, opts)
 
@@ -46,11 +45,11 @@ module.exports = getData
 
 function getDataByDigest (cache, key, opts = {}) {
   const { integrity, memoize, size } = opts
-  const memoized =  memo.get.byDigest(cache, key, opts)
+  const memoized = memo.get.byDigest(cache, key, opts)
   if (memoized && memoize !== false)
     return Promise.resolve(memoized)
 
-  return read(cache, key, { integrity, size, }).then((res) => {
+  return read(cache, key, { integrity, size }).then((res) => {
     if (memoize)
       memo.put.byDigest(cache, key, res, opts)
     return res
@@ -95,9 +94,9 @@ function getDataByDigestSync (cache, digest, opts = {}) {
   const { integrity, memoize, size } = opts
   const memoized = memo.get.byDigest(cache, digest, opts)
 
-  if (memoized && memoize !== false) {
+  if (memoized && memoize !== false)
     return memoized
-  }
+
   const res = read.sync(cache, digest, {
     integrity: integrity,
     size: size,
@@ -198,7 +197,6 @@ function info (cache, key, opts = {}) {
 module.exports.info = info
 
 function copy (cache, key, dest, opts = {}) {
-
   if (read.copy) {
     return index.find(cache, key, opts).then((entry) => {
       if (!entry)
@@ -213,6 +211,7 @@ function copy (cache, key, dest, opts = {}) {
         })
     })
   }
+
   return getData(cache, key, opts).then((res) => {
     return writeFile(dest, res.data).then(() => {
       return {
@@ -226,9 +225,9 @@ function copy (cache, key, dest, opts = {}) {
 module.exports.copy = copy
 
 function copyByDigest (cache, key, dest, opts = {}) {
-  if (read.copy) {
+  if (read.copy)
     return read.copy(cache, key, dest, opts).then(() => key)
-  }
+
   return getDataByDigest(cache, key, opts).then((res) => {
     return writeFile(dest, res).then(() => key)
   })
