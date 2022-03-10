@@ -6,9 +6,8 @@
     "index": "5"
   },
   "description": "Fast, fault-tolerant, cross-platform, disk-based, data-agnostic, content-addressable cache.",
-  "main": "index.js",
+  "main": "lib/index.js",
   "files": [
-    "*.js",
     "lib"
   ],
   "scripts": {
