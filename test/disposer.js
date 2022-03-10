@@ -22,12 +22,20 @@ test('disposerFn should run in resolve', (t) => {
     disposerFn,
     (data) => {
       t.equal(disposerRan, false, 'disposerFn should not have been called')
-      t.equal(data, mockCreatorResource, 'Disposer not returning the created resource to running function')
+      t.equal(
+        data,
+        mockCreatorResource,
+        'Disposer not returning the created resource to running function'
+      )
       return Promise.resolve(mockFunctionResult)
     })
     .then((data) => {
       t.equal(disposerRan, true, 'disposerFn should  have been called')
-      t.equal(data, mockFunctionResult, 'Disposer not returning the returned result of the function')
+      t.equal(
+        data,
+        mockFunctionResult,
+        'Disposer not returning the returned result of the function'
+      )
     })
 })
 
@@ -50,7 +58,11 @@ test('disposerFn should run in reject', (t) => {
     disposerFn,
     (data) => {
       t.equal(disposerRan, false, 'disposerFn should not have been called')
-      t.equal(data, mockCreatorResource, 'Disposer not returning the created resource to running function')
+      t.equal(
+        data,
+        mockCreatorResource,
+        'Disposer not returning the created resource to running function'
+      )
       return Promise.reject(mockFunctionResult)
     })
     .then(
@@ -59,7 +71,11 @@ test('disposerFn should run in reject', (t) => {
       },
       (data) => {
         t.equal(disposerRan, true, 'disposerFn should  have been called')
-        t.equal(data, mockFunctionResult, 'Disposer not returning the returned result of the function')
+        t.equal(
+          data,
+          mockFunctionResult,
+          'Disposer not returning the returned result of the function'
+        )
       })
 })
 
@@ -84,7 +100,11 @@ test('disposer should reject on creatorFn reject', (t) => {
     })
     .catch((data) => {
       t.equal(disposerRan, false, 'disposerFn should have not have been called')
-      t.equal(data, mockCreatorFailure, 'Disposer not passing along the failure from creator function')
+      t.equal(
+        data,
+        mockCreatorFailure,
+        'Disposer not passing along the failure from creator function'
+      )
     })
 })
 
@@ -113,6 +133,10 @@ test('disposer should reject on disposerFn reject', (t) => {
     })
     .catch((data) => {
       t.equal(disposerRan, true, 'disposerFn should have been called')
-      t.equal(data, mockDisposerReject, 'Disposer not passing along the failure from disposer function')
+      t.equal(
+        data,
+        mockDisposerReject,
+        'Disposer not passing along the failure from disposer function'
+      )
     })
 })

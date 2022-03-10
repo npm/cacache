@@ -113,14 +113,16 @@ test('read: errors if content missing', function (t) {
   })
   return Promise.all([
     stream.promise().catch((err) => {
-      if (err.code === 'ENOENT')
+      if (err.code === 'ENOENT') {
         return err
+      }
 
       throw err
     }),
     read(CACHE, 'sha512-whatnot').catch((err) => {
-      if (err.code === 'ENOENT')
+      if (err.code === 'ENOENT') {
         return err
+      }
 
       throw err
     }),
@@ -145,14 +147,16 @@ test('read: errors if content fails checksum', function (t) {
   })
   return Promise.all([
     stream.promise().catch((err) => {
-      if (err.code === 'EINTEGRITY')
+      if (err.code === 'EINTEGRITY') {
         return err
+      }
 
       throw err
     }),
     read(CACHE, INTEGRITY).catch((err) => {
-      if (err.code === 'EINTEGRITY')
+      if (err.code === 'EINTEGRITY') {
         return err
+      }
 
       throw err
     }),
@@ -177,16 +181,18 @@ test('read: errors if content size does not match size option', function (t) {
   })
   return Promise.all([
     stream.promise().catch((err) => {
-      if (err.code === 'EBADSIZE')
+      if (err.code === 'EBADSIZE') {
         return err
+      }
 
       throw err
     }),
     read(CACHE, INTEGRITY, {
       size: CONTENT.length,
     }).catch((err) => {
-      if (err.code === 'EBADSIZE')
+      if (err.code === 'EBADSIZE') {
         return err
+      }
 
       throw err
     }),
@@ -221,8 +227,9 @@ test('read: unknown error parsing nested integrity data', function (t) {
   const mockedRead = getRead({
     ssri: {
       parse (sri) {
-        if (sri !== INTEGRITY)
+        if (sri !== INTEGRITY) {
           throw genericError
+        }
 
         return ssri.parse(sri)
       },
@@ -297,8 +304,9 @@ test('read.sync: unknown error parsing nested integrity data', (t) => {
   const mockedRead = getRead({
     ssri: {
       parse (sri) {
-        if (sri !== INTEGRITY)
+        if (sri !== INTEGRITY) {
           throw genericError
+        }
 
         return ssri.parse(sri)
       },

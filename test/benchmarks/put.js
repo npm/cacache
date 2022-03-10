@@ -1,13 +1,15 @@
 'use strict'
 
 const buf = []
-for (let i = 0; i < Math.pow(2, 8); i++)
+for (let i = 0; i < Math.pow(2, 8); i++) {
   buf.push(Buffer.alloc(8, i))
+}
 
 const CONTENT = Buffer.concat(buf, buf.length * 8)
 const arr = []
-for (let i = 0; i < 100; i++)
+for (let i = 0; i < 100; i++) {
   arr.push(CONTENT)
+}
 
 const BIGCONTENT = Buffer.concat(arr, CONTENT.length * 1000)
 const KEY = 'my-test-key'

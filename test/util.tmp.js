@@ -50,8 +50,9 @@ test('provides a utility that does resource disposal on tmp', (t) => {
             throw new Error('expected fail')
           })
           .catch((err) => {
-            if (err.code === 'ENOENT')
+            if (err.code === 'ENOENT') {
               return undefined
+            }
 
             throw err
           }),

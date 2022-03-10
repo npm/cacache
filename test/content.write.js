@@ -170,8 +170,9 @@ test('exits normally if file already open', (t) => {
   // This case would only fail on Windows, when an entry is being read.
   // Generally, you'd get an EBUSY back.
   fs.open(contentPath(CACHE, INTEGRITY), 'r+', function (err, fd) {
-    if (err)
+    if (err) {
       throw err
+    }
 
     write.stream(CACHE)
       .on('integrity', int => {
@@ -200,8 +201,9 @@ test('cleans up tmp on successful completion', (t) => {
           files = files || []
           t.same(files, [], 'nothing in the tmp dir!')
           resolve()
-        } else
+        } else {
           reject(err)
+        }
       })
     }))
 })
@@ -222,8 +224,9 @@ test('cleans up tmp on error', (t) => {
           files = files || []
           t.same(files, [], 'nothing in the tmp dir!')
           resolve()
-        } else
+        } else {
           reject(err)
+        }
       })
     }))
 })
@@ -277,7 +280,9 @@ test('writes to cache with default options', t =>
     integrity: {
       sha512: [
         {
+          /* eslint-disable-next-line max-len */
           source: 'sha512-9/u6bgY2+JDlb7vzKD5STG+jIErimDgtYkdB0NxmODJuKCxBvl5CVNiCB3LFUYosWowMf37aGVlKfrU5RT4e1w==',
+          /* eslint-disable-next-line max-len */
           digest: '9/u6bgY2+JDlb7vzKD5STG+jIErimDgtYkdB0NxmODJuKCxBvl5CVNiCB3LFUYosWowMf37aGVlKfrU5RT4e1w==',
           algorithm: 'sha512',
           options: [],
