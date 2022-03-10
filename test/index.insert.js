@@ -250,8 +250,9 @@ test('path-breaking characters', function (t) {
 
 test('extremely long keys', function (t) {
   let newKey = ''
-  for (let i = 0; i < 10000; i++)
+  for (let i = 0; i < 10000; i++) {
     newKey += i
+  }
 
   return index
     .insert(CACHE, newKey, INTEGRITY, opts())

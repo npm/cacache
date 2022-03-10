@@ -242,7 +242,11 @@ test('delete.sync: removeFully deletes the index entirely', async (t) => {
 
   // then a full delete
   index.delete.sync(CACHE, KEY, { removeFully: true })
-  await t.rejects(index.bucketEntries(bucket), { code: 'ENOENT' }, 'rejects with ENOENT because file is gone')
+  await t.rejects(
+    index.bucketEntries(bucket),
+    { code: 'ENOENT' },
+    'rejects with ENOENT because file is gone'
+  )
 })
 
 test('delete: removeFully deletes the index entirely', async (t) => {
@@ -259,7 +263,11 @@ test('delete: removeFully deletes the index entirely', async (t) => {
 
   // then a full delete
   await index.delete(CACHE, KEY, { removeFully: true })
-  await t.rejects(index.bucketEntries(bucket), { code: 'ENOENT' }, 'rejects with ENOENT because file is gone')
+  await t.rejects(
+    index.bucketEntries(bucket),
+    { code: 'ENOENT' },
+    'rejects with ENOENT because file is gone'
+  )
 })
 
 test('find: error on parsing json data', (t) => {

@@ -23,11 +23,12 @@ function CacheIndex (entries) {
     const parts = bpath.split(path.sep)
     let lines = entries[k]
     let serialised
-    if (typeof lines === 'string')
+    if (typeof lines === 'string') {
       serialised = lines
-    else {
-      if (typeof lines.length !== 'number')
+    } else {
+      if (typeof lines.length !== 'number') {
         lines = [lines]
+      }
 
       serialised =
         '\n' +
@@ -50,8 +51,9 @@ function insertContent (tree, pathTo, content) {
       tree.contents[key] = File(
         [tree.contents[key].contents, content].join('\n')
       )
-    } else
+    } else {
       tree.contents[key] = File(content)
+    }
   } else {
     tree.contents[key] = tree.contents[key] || Dir({})
     insertContent(tree.contents[key], pathTo.slice(1), content)

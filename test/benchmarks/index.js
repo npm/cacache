@@ -41,9 +41,9 @@ const suite = new Benchmark.Suite({
     }±${bench.stats.rme.toFixed(2)}%)`
     console.log(`     ${bench.name}`)
     console.log('------------------------------------------------')
-    if (bench.error)
+    if (bench.error) {
       console.log('Error:', bench.error.message || bench.error)
-    else {
+    } else {
       console.log(
         `  ${bench.hz.toFixed(bench.hz < 100 ? 2 : 0)} ops/s @ ~${(
           bench.stats.mean * 1000
@@ -73,12 +73,14 @@ const suite = new Benchmark.Suite({
 })
 
 fs.readdir(__dirname, (err, files) => {
-  if (err)
+  if (err) {
     throw err
+  }
 
   files.forEach((f) => {
-    if (path.extname(f) === '.js' && f !== 'index.js')
+    if (path.extname(f) === '.js' && f !== 'index.js') {
       require('./' + f)(suite, path.join(CACHE, path.basename(f, '.js')))
+    }
   })
   suite.run({ async: true })
 })

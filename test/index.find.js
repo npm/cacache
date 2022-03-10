@@ -128,8 +128,9 @@ test('index.find path-breaking characters', function (t) {
 
 test('index.find extremely long keys', function (t) {
   let key = ''
-  for (let i = 0; i < 10000; i++)
+  for (let i = 0; i < 10000; i++) {
     key += i
+  }
 
   const entry = {
     key: key,

@@ -244,8 +244,9 @@ test('cleans up contents of tmp dir', (t) => {
     .then(() => {
       return Promise.all([
         stat(tmpFile).catch((err) => {
-          if (err.code === 'ENOENT')
+          if (err.code === 'ENOENT') {
             return err
+          }
 
           throw err
         }),
@@ -340,8 +341,9 @@ test('unknown error when rebuilding bucket', (t) => {
   const mockVerify = getVerify({
     fs: Object.assign({}, fs, {
       stat: (path, cb) => {
-        if (shouldFail)
+        if (shouldFail) {
           return cb(genericError)
+        }
 
         fs.stat(path, cb)
         shouldFail = true

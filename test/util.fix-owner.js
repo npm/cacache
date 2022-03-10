@@ -241,7 +241,11 @@ test('attempt to mkdirfix.sync unknown error', (t) => {
   }
   const fixOwner = getFixOwner({ mkdirp })
 
-  t.throws(() => fixOwner.mkdirfix.sync(CACHE, filename), genericError, 'should throw unknown errors')
+  t.throws(
+    () => fixOwner.mkdirfix.sync(CACHE, filename),
+    genericError,
+    'should throw unknown errors'
+  )
   t.end()
 })
 

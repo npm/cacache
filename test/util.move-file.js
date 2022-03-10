@@ -111,54 +111,61 @@ test('fallback to renaming on missing files post-move', function (t) {
         throw new Error('nope')
       },
       unlink: async (path) => {
-        if (shouldMock)
+        if (shouldMock) {
           throw missingFileError
-        else
+        } else {
           return fs.promises.unlink(path)
+        }
       },
       lstat: async (path, cb) => {
         if (shouldMock) {
           shouldMock = false
           throw missingFileError
-        } else
+        } else {
           return fs.promises.lstat(path)
+        }
       },
       stat: async (path, cb) => {
         if (shouldMock) {
           shouldMock = false
           throw missingFileError
-        } else
+        } else {
           return fs.promises.stat(path)
+        }
       },
     },
     rename: (src, dest, cb) => {
-      if (shouldMock)
+      if (shouldMock) {
         cb(Object.assign(new Error('EXDEV'), { code: 'EXDEV' }))
-      else
+      } else {
         fs.rename(src, dest, cb)
+      }
     },
     link (src, dest, cb) {
       cb(new Error('nope'))
     },
     unlink (path, cb) {
-      if (shouldMock)
+      if (shouldMock) {
         cb(missingFileError)
-      else
+      } else {
         fs.unlink(path, cb)
+      }
     },
     lstat (path, cb) {
       if (shouldMock && path === testDir + '/dest') {
         cb(missingFileError)
         shouldMock = false
-      } else
+      } else {
         fs.lstat(path, cb)
+      }
     },
     stat (path, cb) {
       if (shouldMock && path === testDir + '/dest') {
         cb(missingFileError)
         shouldMock = false
-      } else
+      } else {
         fs.stat(path, cb)
+      }
     },
   }
   const mockedMoveFile = requireInject.withEmptyCache('../lib/util/move-file', {
