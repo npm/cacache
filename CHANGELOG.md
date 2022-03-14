@@ -1,5 +1,26 @@
 # Changelog
 
+## [16.0.0](https://www.github.com/npm/cacache/compare/v15.3.0...v16.0.0) (2022-03-14)
+
+
+### ⚠ BREAKING CHANGES
+
+* this drops support for node10 and non-LTS versions of node12 and node14.
+
+### Bug Fixes
+
+* move files to lib ([cfa4a79](https://www.github.com/npm/cacache/commit/cfa4a7974e1a2b4c4d00613afe20b1925fbe639a))
+
+
+### Dependencies
+
+* @npmcli/template-oss@2.9.2 ([6e051a7](https://www.github.com/npm/cacache/commit/6e051a782e18288c51914562ae93b4ce52a81ad1))
+* update @npmcli/move-file requirement from ^1.0.1 to ^1.1.2 ([#70](https://www.github.com/npm/cacache/issues/70)) ([ddf797a](https://www.github.com/npm/cacache/commit/ddf797a1906e2b285165e544d5ae29a4bb1514ef))
+* update fs-minipass requirement from ^2.0.0 to ^2.1.0 ([#72](https://www.github.com/npm/cacache/issues/72)) ([07a5aa1](https://www.github.com/npm/cacache/commit/07a5aa17a8d2245d69f613f9351d4cf84865ade8))
+* update minipass-pipeline requirement from ^1.2.2 to ^1.2.4 ([#69](https://www.github.com/npm/cacache/issues/69)) ([372d1a1](https://www.github.com/npm/cacache/commit/372d1a1533aaa8ea37c4cb98f99f40461c9bddac))
+* update mkdirp requirement from ^1.0.3 to ^1.0.4 ([#73](https://www.github.com/npm/cacache/issues/73)) ([5fbd50f](https://www.github.com/npm/cacache/commit/5fbd50f1000e8065d754a7c8c89c1c9747532618))
+* update tar requirement from ^6.0.2 to ^6.1.11 ([#71](https://www.github.com/npm/cacache/issues/71)) ([4d35625](https://www.github.com/npm/cacache/commit/4d3562565dc52fe51cc5de2fbffceddb63f65118))
+
 ## [15.2.0](https://github.com/npm/cacache/releases/v15.2.0) (2021-05-25)
 
 * [8892a92](https://github.com/npm/cacache/commit/8892a92) add a validateEntry option to compact
