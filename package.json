@@ -56,7 +56,7 @@
     "minipass": "^3.1.1",
     "minipass-collect": "^1.0.2",
     "minipass-flush": "^1.0.5",
-    "minipass-pipeline": "^1.2.2",
+    "minipass-pipeline": "^1.2.4",
     "mkdirp": "^1.0.3",
     "p-map": "^4.0.0",
     "promise-inflight": "^1.0.1",
