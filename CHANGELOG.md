@@ -1,5 +1,14 @@
 # Changelog
 
+### [16.0.1](https://www.github.com/npm/cacache/compare/v16.0.0...v16.0.1) (2022-03-15)
+
+
+### Dependencies
+
+* bump lru-cache from 6.0.0 to 7.5.1 ([#77](https://www.github.com/npm/cacache/issues/77)) ([6a3a886](https://www.github.com/npm/cacache/commit/6a3a8863f079aaccb623c4f8d933c485b82e0671))
+* update glob requirement from ^7.1.4 to ^7.2.0 ([#74](https://www.github.com/npm/cacache/issues/74)) ([27f1a63](https://www.github.com/npm/cacache/commit/27f1a63cc14de34585330c7ad50f5ae00b3b5b54))
+* update minipass requirement from ^3.1.1 to ^3.1.6 ([#76](https://www.github.com/npm/cacache/issues/76)) ([954a430](https://www.github.com/npm/cacache/commit/954a43056fd01ca3a359581dfe32cdfd0ada5f8d))
+
 ## [16.0.0](https://www.github.com/npm/cacache/compare/v15.3.0...v16.0.0) (2022-03-14)
 
 
