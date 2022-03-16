@@ -58,7 +58,7 @@
     "minipass-flush": "^1.0.5",
     "minipass-pipeline": "^1.2.4",
     "mkdirp": "^1.0.4",
-    "p-map": "^4.0.0",
+    "p-map": "^5.3.0",
     "promise-inflight": "^1.0.1",
     "rimraf": "^3.0.2",
     "ssri": "^8.0.1",
