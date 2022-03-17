@@ -1,5 +1,12 @@
 # Changelog
 
+### [16.0.2](https://www.github.com/npm/cacache/compare/v16.0.1...v16.0.2) (2022-03-16)
+
+
+### Bug Fixes
+
+* use lru-cache.clear ([#80](https://www.github.com/npm/cacache/issues/80)) ([a48e020](https://www.github.com/npm/cacache/commit/a48e020ca86d28a569578617cc4c7efb76aa8194))
+
 ### [16.0.1](https://www.github.com/npm/cacache/compare/v16.0.0...v16.0.1) (2022-03-15)
 
 
