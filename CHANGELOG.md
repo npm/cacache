@@ -1,5 +1,13 @@
 # Changelog
 
+### [16.0.3](https://github.com/npm/cacache/compare/v16.0.2...v16.0.3) (2022-03-22)
+
+
+### Dependencies
+
+* bump @npmcli/fs from 1.1.1 to 2.1.0 ([#88](https://github.com/npm/cacache/issues/88)) ([9c9c91c](https://github.com/npm/cacache/commit/9c9c91ce13b941a12c73b95940c5d0b4f4dbf3d0))
+* update lru-cache requirement from ^7.5.1 to ^7.7.1 ([#87](https://github.com/npm/cacache/issues/87)) ([800079f](https://github.com/npm/cacache/commit/800079fc5fd18e624bcc53dae3b5f432033e1096))
+
 ### [16.0.2](https://www.github.com/npm/cacache/compare/v16.0.1...v16.0.2) (2022-03-16)
 
 
