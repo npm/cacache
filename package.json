@@ -55,7 +55,7 @@
     "fs-minipass": "^2.1.0",
     "glob": "^7.2.0",
     "infer-owner": "^1.0.4",
-    "lru-cache": "^7.5.1",
+    "lru-cache": "^7.7.1",
     "minipass": "^3.1.6",
     "minipass-collect": "^1.0.2",
     "minipass-flush": "^1.0.5",
