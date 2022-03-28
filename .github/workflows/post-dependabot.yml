@@ -36,7 +36,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh pr checkout ${{ github.event.pull_request.number }}
-          npm install --no-scripts
+          npm install --ignore-scripts
           npm run template-oss-apply
           git add .
           git commit -am "chore: postinstall for dependabot template-oss PR"
