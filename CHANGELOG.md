@@ -1,5 +1,13 @@
 # Changelog
 
+### [16.0.4](https://github.com/npm/cacache/compare/v16.0.3...v16.0.4) (2022-04-05)
+
+
+### Dependencies
+
+* bump @npmcli/move-file from 1.1.2 to 2.0.0 ([#94](https://github.com/npm/cacache/issues/94)) ([f3d64f6](https://github.com/npm/cacache/commit/f3d64f6c238f99433df260fe52081177bdedee86))
+* bump ssri from 8.0.1 to 9.0.0 ([#95](https://github.com/npm/cacache/issues/95)) ([fb44f5f](https://github.com/npm/cacache/commit/fb44f5f6bf85f9ee45ba52eb63088b108eca076d))
+
 ### [16.0.3](https://github.com/npm/cacache/compare/v16.0.2...v16.0.3) (2022-03-22)
 
 
