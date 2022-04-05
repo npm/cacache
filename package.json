@@ -64,7 +64,7 @@
     "p-map": "^4.0.0",
     "promise-inflight": "^1.0.1",
     "rimraf": "^3.0.2",
-    "ssri": "^8.0.1",
+    "ssri": "^9.0.0",
     "tar": "^6.1.11",
     "unique-filename": "^1.1.1"
   },
