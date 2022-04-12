@@ -53,7 +53,7 @@
     "@npmcli/move-file": "^2.0.0",
     "chownr": "^2.0.0",
     "fs-minipass": "^2.1.0",
-    "glob": "^7.2.0",
+    "glob": "^8.0.1",
     "infer-owner": "^1.0.4",
     "lru-cache": "^7.7.1",
     "minipass": "^3.1.6",
