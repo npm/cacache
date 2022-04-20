@@ -1,5 +1,12 @@
 # Changelog
 
+### [16.0.5](https://github.com/npm/cacache/compare/v16.0.4...v16.0.5) (2022-04-20)
+
+
+### Dependencies
+
+* bump glob from 7.2.0 to 8.0.1 ([#98](https://github.com/npm/cacache/issues/98)) ([74a11f9](https://github.com/npm/cacache/commit/74a11f9f5a1543d593217078a5357707680e2bb1))
+
 ### [16.0.4](https://github.com/npm/cacache/compare/v16.0.3...v16.0.4) (2022-04-05)
 
 
