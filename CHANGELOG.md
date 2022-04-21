@@ -1,5 +1,12 @@
 # Changelog
 
+### [16.0.6](https://github.com/npm/cacache/compare/v16.0.5...v16.0.6) (2022-04-21)
+
+
+### Bug Fixes
+
+* normalize win32 paths before globbing ([4bdd5d5](https://github.com/npm/cacache/commit/4bdd5d5ce21147d67a46b6d2e1ec65007b31705c))
+
 ### [16.0.5](https://github.com/npm/cacache/compare/v16.0.4...v16.0.5) (2022-04-20)
 
 
