@@ -1,7 +1,6 @@
 'use strict'
 
 const util = require('util')
-const requireInject = require('require-inject')
 
 const fs = require('fs')
 const path = require('path')
@@ -12,7 +11,7 @@ const CACHE = t.testdir()
 const mockedFixOwner = () => Promise.resolve(1)
 // temporarily points to original mkdirfix implementation
 mockedFixOwner.mkdirfix = require('../lib/util/fix-owner').mkdirfix
-const tmp = requireInject('../lib/util/tmp', {
+const tmp = t.mock('../lib/util/tmp', {
   '../lib/util/fix-owner': mockedFixOwner,
 })
 
