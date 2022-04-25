@@ -2,15 +2,11 @@
 
 const contentPath = require('../../lib/content/path')
 const path = require('path')
-const Tacks = require('tacks')
-
-const Dir = Tacks.Dir
-const File = Tacks.File
 
 module.exports = CacheContent
 
 function CacheContent (entries) {
-  const tree = Dir({})
+  const tree = {}
   Object.keys(entries).forEach(function (k) {
     const cpath = contentPath('', k)
     const content = entries[k]
@@ -23,9 +19,9 @@ function CacheContent (entries) {
 function insertContent (tree, pathTo, content) {
   const key = pathTo[0]
   if (pathTo.length <= 1) {
-    tree.contents[key] = File(content)
+    tree[key] = content
   } else {
-    tree.contents[key] = tree.contents[key] || Dir({})
-    insertContent(tree.contents[key], pathTo.slice(1), content)
+    tree[key] = tree[key] || {}
+    insertContent(tree[key], pathTo.slice(1), content)
   }
 }

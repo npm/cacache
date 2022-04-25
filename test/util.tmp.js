@@ -5,9 +5,9 @@ const requireInject = require('require-inject')
 
 const fs = require('fs')
 const path = require('path')
-const { test } = require('tap')
+const t = require('tap')
 
-const CACHE = require('./util/test-dir')(__filename)
+const CACHE = t.testdir()
 
 const mockedFixOwner = () => Promise.resolve(1)
 // temporarily points to original mkdirfix implementation
@@ -18,7 +18,7 @@ const tmp = requireInject('../lib/util/tmp', {
 
 const stat = util.promisify(fs.stat)
 
-test('creates a unique tmpdir inside the cache', (t) => {
+t.test('creates a unique tmpdir inside the cache', (t) => {
   return tmp
     .mkdir(CACHE)
     .then((dir) => {
@@ -34,7 +34,7 @@ test('creates a unique tmpdir inside the cache', (t) => {
     })
 })
 
-test('provides a utility that does resource disposal on tmp', (t) => {
+t.test('provides a utility that does resource disposal on tmp', (t) => {
   return tmp
     .withTmp(CACHE, (dir) => {
       return stat(dir)
@@ -64,13 +64,13 @@ test('provides a utility that does resource disposal on tmp', (t) => {
     })
 })
 
-test('withTmp should accept both opts and cb params', t => {
+t.test('withTmp should accept both opts and cb params', t => {
   return tmp.withTmp(CACHE, { tmpPrefix: 'foo' }, dir => {
     t.ok(dir, 'dir should contain a valid response')
   })
 })
 
-test('provides a function for fixing ownership in the tmp dir', t => {
+t.test('provides a function for fixing ownership in the tmp dir', t => {
   return tmp.fix(CACHE).then(res => {
     t.ok(res, 'fixOwner is successfully called')
   })

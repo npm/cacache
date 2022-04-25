@@ -5,14 +5,11 @@ const util = require('util')
 const fs = require('fs')
 const index = require('../lib/entry-index')
 const memo = require('../lib/memoization')
-const path = require('path')
-const { test } = require('tap')
-const testDir = require('./util/test-dir')(__filename)
+const t = require('tap')
 const ssri = require('ssri')
 
 const readFile = util.promisify(fs.readFile)
 
-const CACHE = path.join(testDir, 'cache')
 const CONTENT = Buffer.from('foobarbaz', 'utf8')
 const KEY = 'my-test-key'
 const INTEGRITY = ssri.fromData(CONTENT).toString()
@@ -21,7 +18,8 @@ const contentPath = require('../lib/content/path')
 
 const put = require('..').put
 
-test('basic bulk insertion', (t) => {
+t.test('basic bulk insertion', (t) => {
+  const CACHE = t.testdir()
   return put(CACHE, KEY, CONTENT)
     .then((integrity) => {
       t.equal(integrity.toString(), INTEGRITY, 'returned content integrity')
@@ -33,7 +31,8 @@ test('basic bulk insertion', (t) => {
     })
 })
 
-test('basic stream insertion', (t) => {
+t.test('basic stream insertion', (t) => {
+  const CACHE = t.testdir()
   let int
   const stream = put.stream(CACHE, KEY).on('integrity', (i) => {
     int = i
@@ -48,7 +47,8 @@ test('basic stream insertion', (t) => {
     })
 })
 
-test('adds correct entry to index before finishing', (t) => {
+t.test('adds correct entry to index before finishing', (t) => {
+  const CACHE = t.testdir()
   return put(CACHE, KEY, CONTENT, { metadata: METADATA })
     .then(() => {
       return index.find(CACHE, KEY)
@@ -61,7 +61,8 @@ test('adds correct entry to index before finishing', (t) => {
     })
 })
 
-test('optionally memoizes data on bulk insertion', (t) => {
+t.test('optionally memoizes data on bulk insertion', (t) => {
+  const CACHE = t.testdir()
   return put(CACHE, KEY, CONTENT, {
     metadata: METADATA,
     memoize: true,
@@ -87,7 +88,8 @@ test('optionally memoizes data on bulk insertion', (t) => {
     })
 })
 
-test('optionally memoizes data on stream insertion', (t) => {
+t.test('optionally memoizes data on stream insertion', (t) => {
+  const CACHE = t.testdir()
   let int
   const stream = put
     .stream(CACHE, KEY, {
@@ -123,7 +125,8 @@ test('optionally memoizes data on stream insertion', (t) => {
     })
 })
 
-test('errors if integrity errors', (t) => {
+t.test('errors if integrity errors', (t) => {
+  const CACHE = t.testdir()
   return put(CACHE, KEY, CONTENT, {
     integrity: 'sha1-BaDDigEST',
   }).catch((err) => {
@@ -131,7 +134,8 @@ test('errors if integrity errors', (t) => {
   })
 })
 
-test('signals error if error writing to cache', (t) => {
+t.test('signals error if error writing to cache', { saveFixture: true }, (t) => {
+  const CACHE = t.testdir()
   return Promise.all([
     put(CACHE, KEY, CONTENT, {
       size: 2,
