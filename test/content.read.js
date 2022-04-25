@@ -4,7 +4,6 @@ const util = require('util')
 
 const fs = require('fs')
 const path = require('path')
-const requireInject = require('require-inject')
 const ssri = require('ssri')
 const t = require('tap')
 const readFile = util.promisify(fs.readFile)
@@ -20,8 +19,8 @@ const permissionError = new Error('EPERM')
 permissionError.code = 'EPERM'
 
 // helpers
-const getRead = (opts) => requireInject('../lib/content/read', opts)
-const getReadLstatFailure = (err) => getRead({
+const getRead = (t, opts) => t.mock('../lib/content/read', opts)
+const getReadLstatFailure = (t, err) => getRead(t, {
   fs: Object.assign({}, require('fs'), {
     lstat (path, cb) {
       cb(err)
@@ -196,7 +195,7 @@ t.test('read: errors if content size does not match size option', function (t) {
 t.test('read: error while parsing provided integrity data', function (t) {
   const CACHE = t.testdir()
   const INTEGRITY = 'sha1-deadbeef'
-  const mockedRead = getRead({
+  const mockedRead = getRead(t, {
     ssri: {
       parse (sri) {
         throw genericError
@@ -217,7 +216,7 @@ t.test('read: unknown error parsing nested integrity data', function (t) {
   const INTEGRITY = 'sha1-deadbeef sha1-13371337'
 
   // patches method in order to force a last error scenario
-  const mockedRead = getRead({
+  const mockedRead = getRead(t, {
     ssri: {
       parse (sri) {
         if (sri !== INTEGRITY) {
@@ -263,7 +262,7 @@ t.test('read: returns only first result if other hashes fails', function (t) {
 
 t.test('read: opening large files', function (t) {
   const CACHE = t.testdir()
-  const mockedRead = getRead({
+  const mockedRead = getRead(t, {
     fs: Object.assign({}, require('fs'), {
       lstat (path, cb) {
         cb(null, { size: Number.MAX_SAFE_INTEGER })
@@ -295,7 +294,7 @@ t.test('read.sync: unknown error parsing nested integrity data', (t) => {
   const INTEGRITY = 'sha1-deadbeef sha1-13371337'
 
   // patches method in order to force a last error scenario
-  const mockedRead = getRead({
+  const mockedRead = getRead(t, {
     ssri: {
       parse (sri) {
         if (sri !== INTEGRITY) {
@@ -374,7 +373,7 @@ t.test('hasContent: tests content existence', (t) => {
 t.test('hasContent: permission error', (t) => {
   const CACHE = t.testdir()
   // setup a syntetic permission error
-  const mockedRead = getReadLstatFailure(permissionError)
+  const mockedRead = getReadLstatFailure(t, permissionError)
 
   t.plan(1)
   t.rejects(
@@ -386,7 +385,7 @@ t.test('hasContent: permission error', (t) => {
 
 t.test('hasContent: generic error', (t) => {
   const CACHE = t.testdir()
-  const mockedRead = getReadLstatFailure(genericError)
+  const mockedRead = getReadLstatFailure(t, genericError)
 
   t.plan(1)
   t.resolves(
@@ -430,7 +429,7 @@ t.test('hasContent.sync: checks content existence synchronously', (t) => {
 
 t.test('hasContent.sync: permission error', (t) => {
   const CACHE = t.testdir()
-  const mockedRead = getReadLstatFailure(permissionError)
+  const mockedRead = getReadLstatFailure(t, permissionError)
 
   t.throws(
     () => mockedRead.hasContent.sync(CACHE, 'sha1-deadbeef sha1-13371337'),
@@ -442,7 +441,7 @@ t.test('hasContent.sync: permission error', (t) => {
 
 t.test('hasContent.sync: generic error', (t) => {
   const CACHE = t.testdir()
-  const mockedRead = getReadLstatFailure(genericError)
+  const mockedRead = getReadLstatFailure(t, genericError)
 
   t.notOk(
     mockedRead.hasContent.sync(CACHE, 'sha1-deadbeef sha1-13371337'),

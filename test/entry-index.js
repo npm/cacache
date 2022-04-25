@@ -5,7 +5,6 @@ const path = require('path')
 
 const ssri = require('ssri')
 const t = require('tap')
-const requireInject = require('require-inject')
 
 const index = require('../lib/entry-index')
 const CacheContent = require('./util/cache-content')
@@ -16,8 +15,8 @@ genericError.code = 'ERR'
 const missingFileError = new Error('ENOENT')
 missingFileError.code = 'ENOENT'
 
-const getEntryIndex = (opts) => requireInject('../lib/entry-index', opts)
-const getEntryIndexReadFileFailure = (err) => getEntryIndex({
+const getEntryIndex = (t, opts) => t.mock('../lib/entry-index', opts)
+const getEntryIndexReadFileFailure = (t, err) => getEntryIndex(t, {
   fs: Object.assign({}, fs, {
     readFile: (path, encode, cb) => {
       cb(err)
@@ -33,7 +32,7 @@ const getEntryIndexFixOwnerFailure = (err) => {
   chownr.sync = () => {
     throw err
   }
-  return getEntryIndex({
+  return getEntryIndex(t, {
     '../lib/util/fix-owner': {
       mkdirfix: require('../lib/util/fix-owner').mkdirfix,
       chownr,
@@ -179,7 +178,7 @@ t.test('compact: error in moveFile removes temp', async (t) => {
     index.insert(cache, KEY, INTEGRITY, { metadata: { rev: 1 } }),
   ])
 
-  const { compact } = getEntryIndex({
+  const { compact } = getEntryIndex(t, {
     '@npmcli/move-file': () => Promise.reject(new Error('foo')),
   })
   const filter = (entryA, entryB) => entryA.metadata.rev === entryB.metadata.rev
@@ -257,7 +256,7 @@ t.test('delete: removeFully deletes the index entirely', async (t) => {
 t.test('find: error on parsing json data', (t) => {
   const cache = t.testdir(cacheContent)
   // mocks readFile in order to return a borked json payload
-  const { find } = getEntryIndex({
+  const { find } = getEntryIndex(t, {
     fs: Object.assign({}, require('fs'), {
       readFile: (path, encode, cb) => {
         cb(null, '\ncec8d2e4685534ed189b563c8ee1cb1cb7c72874\t{"""// foo')
@@ -275,7 +274,7 @@ t.test('find: error on parsing json data', (t) => {
 
 t.test('find: unknown error on finding entries', (t) => {
   const cache = t.testdir(cacheContent)
-  const { find } = getEntryIndexReadFileFailure(genericError)
+  const { find } = getEntryIndexReadFileFailure(t, genericError)
 
   t.plan(1)
   t.rejects(
@@ -291,7 +290,7 @@ t.test('find.sync: retrieve from bucket containing multiple entries', (t) => {
     '\na7eb00332fe51ff62b1bdb1564855f2624f16f34\t{"key":"foo", "integrity": "foo"}',
     '\n46b1607f427665a99668c02d3a4cc52061afd83a\t{"key":"bar", "integrity": "bar"}',
   ]
-  const { find } = getEntryIndex({
+  const { find } = getEntryIndex(t, {
     fs: Object.assign({}, require('fs'), {
       readFileSync: (path, encode) => entries.join(''),
     }),
@@ -307,7 +306,7 @@ t.test('find.sync: retrieve from bucket containing multiple entries', (t) => {
 
 t.test('find.sync: unknown error on finding entries', (t) => {
   const cache = t.testdir(cacheContent)
-  const { find } = getEntryIndexReadFileFailure(genericError)
+  const { find } = getEntryIndexReadFileFailure(t, genericError)
 
   t.throws(
     () => find.sync(cache, KEY),
@@ -319,7 +318,7 @@ t.test('find.sync: unknown error on finding entries', (t) => {
 
 t.test('find.sync: retrieve entry with invalid content', (t) => {
   const cache = t.testdir(cacheContent)
-  const { find } = getEntryIndex({
+  const { find } = getEntryIndex(t, {
     fs: Object.assign({}, require('fs'), {
       readFileSync: (path, encode) =>
         '\nb6589fc6ab0dc82cf12099d1c2d40ab994e8410c\t0',
@@ -384,7 +383,7 @@ t.test('lsStream: unknown error reading files', (t) => {
   const cache = t.testdir(cacheContent)
   index.insert.sync(cache, KEY, INTEGRITY)
 
-  const { lsStream } = getEntryIndexReadFileFailure(genericError)
+  const { lsStream } = getEntryIndexReadFileFailure(t, genericError)
 
   lsStream(cache)
     .on('error', err => {
@@ -397,7 +396,7 @@ t.test('lsStream: missing files error', (t) => {
   const cache = t.testdir(cacheContent)
   index.insert.sync(cache, KEY, INTEGRITY)
 
-  const { lsStream } = getEntryIndexReadFileFailure(missingFileError)
+  const { lsStream } = getEntryIndexReadFileFailure(t, missingFileError)
 
   lsStream(cache)
     .on('error', () => {
@@ -412,7 +411,7 @@ t.test('lsStream: missing files error', (t) => {
 
 t.test('lsStream: unknown error reading dirs', (t) => {
   const cache = t.testdir(cacheContent)
-  const { lsStream } = getEntryIndex({
+  const { lsStream } = getEntryIndex(t, {
     fs: Object.assign({}, require('fs'), {
       readdir: (path, cb) => {
         cb(genericError)

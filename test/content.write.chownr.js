@@ -8,7 +8,6 @@ process.getuid = () => 0
 const path = require('path')
 const fs = require('fs')
 
-const requireInject = require('require-inject')
 const ssri = require('ssri')
 const t = require('tap')
 
@@ -39,7 +38,7 @@ t.test('infers ownership from cache folder owner', (t) => {
   const CONTENT = 'foobarbaz'
   const INTEGRITY = ssri.fromData(CONTENT)
   const updatedPaths = []
-  const write = requireInject('../lib/content/write', {
+  const write = t.mock('../lib/content/write', {
     chownr: function (p, uid, gid, cb) {
       process.nextTick(function () {
         const rel = path.relative(CACHE, p)

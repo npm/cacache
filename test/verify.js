@@ -6,7 +6,6 @@ const contentPath = require('../lib/content/path')
 const index = require('../lib/entry-index')
 const fs = require('fs')
 const path = require('path')
-const requireInject = require('require-inject')
 const t = require('tap')
 const ssri = require('ssri')
 
@@ -30,7 +29,7 @@ const genericError = new Error('ERR')
 genericError.code = 'ERR'
 
 // helpers
-const getVerify = (opts) => requireInject('../lib/verify', opts)
+const getVerify = (t, opts) => t.mock('../lib/verify', opts)
 
 function mockCache (t) {
   const cacheContent = CacheContent({
@@ -267,7 +266,7 @@ t.test('fixes permissions and users on cache contents')
 t.test('missing file error when validating cache content', (t) => {
   const missingFileError = new Error('ENOENT')
   missingFileError.code = 'ENOENT'
-  const mockVerify = getVerify({
+  const mockVerify = getVerify(t, {
     fs: Object.assign({}, fs, {
       stat: (path, cb) => {
         cb(missingFileError)
@@ -290,7 +289,7 @@ t.test('missing file error when validating cache content', (t) => {
 })
 
 t.test('unknown error when validating content', (t) => {
-  const mockVerify = getVerify({
+  const mockVerify = getVerify(t, {
     fs: Object.assign({}, fs, {
       stat: (path, cb) => {
         cb(genericError)
@@ -309,7 +308,7 @@ t.test('unknown error when validating content', (t) => {
 })
 
 t.test('unknown error when checking sri stream', (t) => {
-  const mockVerify = getVerify({
+  const mockVerify = getVerify(t, {
     ssri: Object.assign({}, ssri, {
       checkStream: () => Promise.reject(genericError),
     }),
@@ -329,7 +328,7 @@ t.test('unknown error when rebuilding bucket', (t) => {
   // rebuild bucket uses stat after content-validation
   // shouldFail controls the right time to mock the error
   let shouldFail = false
-  const mockVerify = getVerify({
+  const mockVerify = getVerify(t, {
     fs: Object.assign({}, fs, {
       stat: (path, cb) => {
         if (shouldFail) {
@@ -401,7 +400,7 @@ t.test('re-builds the index with the size parameter', (t) => {
 })
 
 t.test('hash collisions', (t) => {
-  const mockVerify = getVerify({
+  const mockVerify = getVerify(t, {
     '../lib/entry-index': Object.assign({}, index, {
       hashKey: () => 'aaa',
     }),
@@ -432,7 +431,7 @@ t.test('hash collisions', (t) => {
 })
 
 t.test('hash collisions excluded', (t) => {
-  const mockVerify = getVerify({
+  const mockVerify = getVerify(t, {
     '../lib/entry-index': Object.assign({}, index, {
       hashKey: () => 'aaa',
     }),

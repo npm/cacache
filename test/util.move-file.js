@@ -4,8 +4,7 @@ const util = require('util')
 
 const fs = require('fs')
 const path = require('path')
-const requireInject = require('require-inject')
-const { test } = require('tap')
+const t = require('tap')
 
 const moveFile = require('../lib/util/move-file')
 
@@ -16,7 +15,7 @@ const close = util.promisify(fs.close)
 const readdir = util.promisify(fs.readdir)
 const chmod = util.promisify(fs.chmod)
 
-test('move a file', function (t) {
+t.test('move a file', function (t) {
   const testDir = t.testdir({
     src: 'foo',
   })
@@ -33,7 +32,7 @@ test('move a file', function (t) {
     })
 })
 
-test('does not clobber existing files', function (t) {
+t.test('does not clobber existing files', function (t) {
   const testDir = t.testdir({
     src: 'foo',
     dest: 'bar',
@@ -51,7 +50,7 @@ test('does not clobber existing files', function (t) {
     })
 })
 
-test('does not move a file into an existing directory', function (t) {
+t.test('does not move a file into an existing directory', function (t) {
   const testDir = t.testdir({
     src: 'foo',
     dest: {},
@@ -65,7 +64,7 @@ test('does not move a file into an existing directory', function (t) {
     })
 })
 
-test('does not error if destination file is open', function (t) {
+t.test('does not error if destination file is open', function (t) {
   const testDir = t.testdir({
     src: 'foo',
     dest: 'bar',
@@ -89,7 +88,7 @@ test('does not error if destination file is open', function (t) {
   })
 })
 
-test('fallback to renaming on missing files post-move', function (t) {
+t.test('fallback to renaming on missing files post-move', function (t) {
   const testDir = t.testdir({
     src: 'foo',
   })
@@ -168,9 +167,9 @@ test('fallback to renaming on missing files post-move', function (t) {
       }
     },
   }
-  const mockedMoveFile = requireInject.withEmptyCache('../lib/util/move-file', {
+  const mockedMoveFile = t.mock('../lib/util/move-file', {
     fs: mockFS,
-    '@npmcli/move-file': requireInject.withEmptyCache('@npmcli/move-file', {
+    '@npmcli/move-file': t.mock('@npmcli/move-file', {
       fs: mockFS,
     }),
   })
@@ -193,7 +192,7 @@ test('fallback to renaming on missing files post-move', function (t) {
     })
 })
 
-test('verify weird EPERM on Windows behavior', t => {
+t.test('verify weird EPERM on Windows behavior', t => {
   const gfsLink = fs.link
   global.__CACACHE_TEST_FAKE_WINDOWS__ = true
   const gfs = require('fs')
@@ -222,7 +221,7 @@ test('verify weird EPERM on Windows behavior', t => {
     }, 'src file did get deleted'))
 })
 
-test(
+t.test(
   'errors if dest is not writable',
   {
     skip: process.platform === 'win32',

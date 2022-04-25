@@ -70,7 +70,6 @@
   "devDependencies": {
     "@npmcli/eslint-config": "^3.0.1",
     "@npmcli/template-oss": "3.4.1",
-    "require-inject": "^1.4.4",
     "tap": "^16.0.0"
   },
   "tap": {
