@@ -7,16 +7,13 @@ const index = require('../lib/entry-index')
 const memo = require('../lib/memoization')
 const path = require('path')
 const rimraf = util.promisify(require('rimraf'))
-const Tacks = require('tacks')
-const { test } = require('tap')
-const testDir = require('./util/test-dir')(__filename)
+const t = require('tap')
 const ssri = require('ssri')
 
 const readFile = util.promisify(fs.readFile)
 
 const CacheContent = require('./util/cache-content')
 
-const CACHE = path.join(testDir, 'cache')
 const CONTENT = Buffer.from('foobarbaz', 'utf8')
 const SIZE = CONTENT.length
 const KEY = 'my-test-key'
@@ -61,7 +58,8 @@ function streamGet (byDigest) {
     }))
 }
 
-test('get.info index entry lookup', (t) => {
+t.test('get.info index entry lookup', (t) => {
+  const CACHE = t.testdir()
   return index.insert(CACHE, KEY, INTEGRITY, opts()).then((ENTRY) => {
     return get.info(CACHE, KEY).then((entry) => {
       t.same(entry, ENTRY, 'get.info() returned the right entry')
@@ -69,7 +67,7 @@ test('get.info index entry lookup', (t) => {
   })
 })
 
-test('get.sync will throw ENOENT if not found', (t) => {
+t.test('get.sync will throw ENOENT if not found', (t) => {
   try {
     get.sync('foo', 'bar')
   } catch (err) {
@@ -79,7 +77,8 @@ test('get.sync will throw ENOENT if not found', (t) => {
   }
 })
 
-test('get will throw ENOENT if not found', (t) => {
+t.test('get will throw ENOENT if not found', (t) => {
+  const CACHE = t.testdir()
   return get(CACHE, KEY)
     .then(() => {
       throw new Error('lookup should fail')
@@ -95,13 +94,12 @@ test('get will throw ENOENT if not found', (t) => {
     })
 })
 
-test('basic bulk get', (t) => {
-  const fixture = new Tacks(
+t.test('basic bulk get', (t) => {
+  const CACHE = t.testdir(
     CacheContent({
       [INTEGRITY]: CONTENT,
     })
   )
-  fixture.create(CACHE)
   return index
     .insert(CACHE, KEY, INTEGRITY, opts())
     .then(() => {
@@ -127,13 +125,12 @@ test('basic bulk get', (t) => {
     })
 })
 
-test('get.sync.byDigest without memoization', (t) => {
-  const fixture = new Tacks(
+t.test('get.sync.byDigest without memoization', (t) => {
+  const CACHE = t.testdir(
     CacheContent({
       [INTEGRITY]: CONTENT,
     })
   )
-  fixture.create(CACHE)
   index.insert.sync(CACHE, KEY, INTEGRITY, opts())
   const res = get.sync(CACHE, KEY)
   t.same(
@@ -151,13 +148,12 @@ test('get.sync.byDigest without memoization', (t) => {
   t.end()
 })
 
-test('get.sync.byDigest with memoization', (t) => {
-  const fixture = new Tacks(
+t.test('get.sync.byDigest with memoization', (t) => {
+  const CACHE = t.testdir(
     CacheContent({
       [INTEGRITY]: CONTENT,
     })
   )
-  fixture.create(CACHE)
   index.insert.sync(CACHE, KEY, INTEGRITY, opts())
   const res = get.sync(CACHE, KEY, { memoize: true })
   t.same(
@@ -180,13 +176,12 @@ test('get.sync.byDigest with memoization', (t) => {
   t.end()
 })
 
-test('get.sync with memoization', (t) => {
-  const fixture = new Tacks(
+t.test('get.sync with memoization', (t) => {
+  const CACHE = t.testdir(
     CacheContent({
       [INTEGRITY]: CONTENT,
     })
   )
-  fixture.create(CACHE)
   index.insert.sync(CACHE, KEY, INTEGRITY, opts())
   memo.clearMemoized()
   t.same(memo.get(CACHE, KEY), undefined)
@@ -212,13 +207,12 @@ test('get.sync with memoization', (t) => {
   t.end()
 })
 
-test('get.byDigest without memoization', (t) => {
-  const fixture = new Tacks(
+t.test('get.byDigest without memoization', (t) => {
+  const CACHE = t.testdir(
     CacheContent({
       [INTEGRITY]: CONTENT,
     })
   )
-  fixture.create(CACHE)
   index.insert.sync(CACHE, KEY, INTEGRITY, opts())
   get(CACHE, KEY)
     .then((res) => {
@@ -248,13 +242,12 @@ test('get.byDigest without memoization', (t) => {
     })
 })
 
-test('get.byDigest with memoization', (t) => {
-  const fixture = new Tacks(
+t.test('get.byDigest with memoization', (t) => {
+  const CACHE = t.testdir(
     CacheContent({
       [INTEGRITY]: CONTENT,
     })
   )
-  fixture.create(CACHE)
   index.insert.sync(CACHE, KEY, INTEGRITY, opts())
   get(CACHE, KEY)
     .then((res) => {
@@ -284,13 +277,12 @@ test('get.byDigest with memoization', (t) => {
     })
 })
 
-test('get without memoization', (t) => {
-  const fixture = new Tacks(
+t.test('get without memoization', (t) => {
+  const CACHE = t.testdir(
     CacheContent({
       [INTEGRITY]: CONTENT,
     })
   )
-  fixture.create(CACHE)
   index.insert.sync(CACHE, KEY, INTEGRITY, opts())
   get(CACHE, KEY)
     .then((res) => {
@@ -330,13 +322,12 @@ test('get without memoization', (t) => {
     })
 })
 
-test('get with memoization', (t) => {
-  const fixture = new Tacks(
+t.test('get with memoization', (t) => {
+  const CACHE = t.testdir(
     CacheContent({
       [INTEGRITY]: CONTENT,
     })
   )
-  fixture.create(CACHE)
   index.insert.sync(CACHE, KEY, INTEGRITY, opts())
   get(CACHE, KEY)
     .then((res) => {
@@ -376,13 +367,12 @@ test('get with memoization', (t) => {
     })
 })
 
-test('basic stream get', (t) => {
-  const fixture = new Tacks(
+t.test('basic stream get', (t) => {
+  const CACHE = t.testdir(
     CacheContent({
       [INTEGRITY]: CONTENT,
     })
   )
-  fixture.create(CACHE)
   return index.insert(CACHE, KEY, INTEGRITY, opts()).then(() => {
     return Promise.all([
       streamGet(false, CACHE, KEY),
@@ -403,13 +393,12 @@ test('basic stream get', (t) => {
   })
 })
 
-test('get.stream add new listeners post stream creation', (t) => {
-  const fixture = new Tacks(
+t.test('get.stream add new listeners post stream creation', (t) => {
+  const CACHE = t.testdir(
     CacheContent({
       [INTEGRITY]: CONTENT,
     })
   )
-  fixture.create(CACHE)
 
   t.plan(3)
   return index.insert(CACHE, KEY, INTEGRITY, opts()).then(() => {
@@ -435,7 +424,8 @@ test('get.stream add new listeners post stream creation', (t) => {
   })
 })
 
-test('get.copy will throw ENOENT if not found', (t) => {
+t.test('get.copy will throw ENOENT if not found', (t) => {
+  const CACHE = t.testdir()
   const DEST = path.join(CACHE, 'not-found')
   return get.copy(CACHE, 'NOT-FOUND', DEST)
     .then(() => {
@@ -447,16 +437,13 @@ test('get.copy will throw ENOENT if not found', (t) => {
     })
 })
 
-test('get.copy with fs.copyfile', {
-  skip: !fs.copyFile && 'Not supported on node versions without fs.copyFile',
-}, (t) => {
-  const DEST = path.join(CACHE, 'copymehere')
-  const fixture = new Tacks(
+t.test('get.copy with fs.copyfile', (t) => {
+  const CACHE = t.testdir(
     CacheContent({
       [INTEGRITY]: CONTENT,
     })
   )
-  fixture.create(CACHE)
+  const DEST = path.join(CACHE, 'copymehere')
   return index
     .insert(CACHE, KEY, INTEGRITY, opts())
     .then(() => get.copy(CACHE, KEY, DEST))
@@ -484,52 +471,13 @@ test('get.copy with fs.copyfile', {
     })
 })
 
-test('get.copy without fs.copyfile', (t) => {
-  const readModuleCache = require.cache[require.resolve('./../lib/content/read')]
-  delete readModuleCache.exports.copy
-
-  const DEST = path.join(CACHE, 'copymehere')
-  const fixture = new Tacks(
-    CacheContent({
-      [INTEGRITY]: CONTENT,
-    })
-  )
-  fixture.create(CACHE)
-  return index
-    .insert(CACHE, KEY, INTEGRITY, opts())
-    .then(() => get.copy(CACHE, KEY, DEST))
-    .then((res) => {
-      t.same(
-        res,
-        {
-          metadata: METADATA,
-          integrity: INTEGRITY,
-          size: SIZE,
-        },
-        'copy operation returns basic metadata'
-      )
-      return readFile(DEST)
-    })
-    .then((data) => {
-      t.same(data, CONTENT, 'data copied by key matches')
-      return rimraf(DEST)
-    })
-    .then(() => get.copy.byDigest(CACHE, INTEGRITY, DEST))
-    .then(() => readFile(DEST))
-    .then((data) => {
-      t.same(data, CONTENT, 'data copied by digest matches')
-      return rimraf(DEST)
-    })
-})
-
-test('memoizes data on bulk read', (t) => {
+t.test('memoizes data on bulk read', (t) => {
   memo.clearMemoized()
-  const fixture = new Tacks(
+  const CACHE = t.testdir(
     CacheContent({
       [INTEGRITY]: CONTENT,
     })
   )
-  fixture.create(CACHE)
   return index.insert(CACHE, KEY, INTEGRITY, opts()).then((ENTRY) => {
     return get(CACHE, KEY)
       .then(() => {
@@ -591,14 +539,13 @@ test('memoizes data on bulk read', (t) => {
   })
 })
 
-test('memoizes data on stream read', (t) => {
+t.test('memoizes data on stream read', (t) => {
   memo.clearMemoized()
-  const fixture = new Tacks(
+  const CACHE = t.testdir(
     CacheContent({
       [INTEGRITY]: CONTENT,
     })
   )
-  fixture.create(CACHE)
   return index.insert(CACHE, KEY, INTEGRITY, opts()).then((ENTRY) => {
     return Promise.all([
       streamGet(false, CACHE, KEY),
@@ -707,8 +654,9 @@ test('memoizes data on stream read', (t) => {
   })
 })
 
-test('get.info uses memoized data', (t) => {
+t.test('get.info uses memoized data', (t) => {
   memo.clearMemoized()
+  const CACHE = t.testdir()
   const ENTRY = {
     key: KEY,
     integrity: INTEGRITY,
@@ -722,5 +670,5 @@ test('get.info uses memoized data', (t) => {
   })
 })
 
-test('identical hashes with different algorithms do not conflict')
-test('throw error if something is really wrong with bucket')
+t.test('identical hashes with different algorithms do not conflict')
+t.test('throw error if something is really wrong with bucket')

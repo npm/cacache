@@ -5,13 +5,10 @@ const util = require('util')
 const fs = require('fs')
 const index = require('../lib/entry-index')
 const path = require('path')
-const Tacks = require('tacks')
-const { test } = require('tap')
-const testDir = require('./util/test-dir')(__filename)
+const t = require('tap')
 const ssri = require('ssri')
 
 const CacheContent = require('./util/cache-content')
-const CACHE = path.join(testDir, 'cache')
 const CONTENT = Buffer.from('foobarbaz')
 const KEY = 'my-test-key'
 const INTEGRITY = ssri.fromData(CONTENT)
@@ -26,24 +23,22 @@ const readFile = util.promisify(fs.readFile)
 const mkdir = util.promisify(fs.mkdir)
 const writeFile = util.promisify(fs.writeFile)
 const readdir = util.promisify(fs.readdir)
+const cacheContent = CacheContent({
+  [INTEGRITY]: CONTENT,
+})
 
-test('rm.entry removes entries, not content', (t) => {
-  const fixture = new Tacks(
-    CacheContent({
-      [INTEGRITY]: CONTENT,
-    })
-  )
-  fixture.create(CACHE)
+t.test('rm.entry removes entries, not content', (t) => {
+  const cache = t.testdir(cacheContent)
   return index
-    .insert(CACHE, KEY, INTEGRITY, {
+    .insert(cache, KEY, INTEGRITY, {
       metadata: METADATA,
     })
     .then(() => {
       t.equal(rm, rm.entry, 'rm is an alias for rm.entry')
-      return rm.entry(CACHE, KEY)
+      return rm.entry(cache, KEY)
     })
     .then(() => {
-      return get(CACHE, KEY)
+      return get(cache, KEY)
     })
     .then((res) => {
       throw new Error('unexpected success')
@@ -56,29 +51,24 @@ test('rm.entry removes entries, not content', (t) => {
       throw err
     })
     .then(() => {
-      return readFile(contentPath(CACHE, INTEGRITY))
+      return readFile(contentPath(cache, INTEGRITY))
     })
     .then((data) => {
       t.same(data, CONTENT, 'content remains in cache')
     })
 })
 
-test('rm.content removes content, not entries', (t) => {
-  const fixture = new Tacks(
-    CacheContent({
-      [INTEGRITY]: CONTENT,
-    })
-  )
-  fixture.create(CACHE)
+t.test('rm.content removes content, not entries', (t) => {
+  const cache = t.testdir(cacheContent)
   return index
-    .insert(CACHE, KEY, INTEGRITY, {
+    .insert(cache, KEY, INTEGRITY, {
       metadata: METADATA,
     })
     .then(() => {
-      return rm.content(CACHE, INTEGRITY)
+      return rm.content(cache, INTEGRITY)
     })
     .then(() => {
-      return get(CACHE, KEY)
+      return get(cache, KEY)
     })
     .then((res) => {
       throw new Error('unexpected success')
@@ -91,7 +81,7 @@ test('rm.content removes content, not entries', (t) => {
       throw err
     })
     .then(() => {
-      return readFile(contentPath(CACHE, INTEGRITY))
+      return readFile(contentPath(cache, INTEGRITY))
     })
     .then(() => {
       throw new Error('unexpected success')
@@ -105,28 +95,23 @@ test('rm.content removes content, not entries', (t) => {
     })
 })
 
-test('rm.all deletes content and index dirs', (t) => {
-  const fixture = new Tacks(
-    CacheContent({
-      [INTEGRITY]: CONTENT,
-    })
-  )
-  fixture.create(CACHE)
+t.test('rm.all deletes content and index dirs', (t) => {
+  const cache = t.testdir(cacheContent)
   return index
-    .insert(CACHE, KEY, INTEGRITY, {
+    .insert(cache, KEY, INTEGRITY, {
       metadata: METADATA,
     })
     .then(() => {
-      return mkdir(path.join(CACHE, 'tmp'))
+      return mkdir(path.join(cache, 'tmp'))
     })
     .then(() => {
-      return writeFile(path.join(CACHE, 'other.js'), 'hi')
+      return writeFile(path.join(cache, 'other.js'), 'hi')
     })
     .then(() => {
-      return rm.all(CACHE)
+      return rm.all(cache)
     })
     .then(() => {
-      return readdir(CACHE)
+      return readdir(cache)
     })
     .then((files) => {
       t.same(
