@@ -409,6 +409,9 @@ t.test('get.stream add new listeners post stream creation', (t) => {
     // in which the stream has already been created and has the entry data
     // available, allowing for the validation of the newListener event handler
     return index.find(CACHE, KEY)
+      // we additionally wait for setTimeout because we want to be as sure as
+      // we can the event loop has ticked over after the i/o cycle completes
+      .then(() => new Promise((resolve) => setTimeout(resolve, 0)))
       .then(() => {
         [
           'integrity',
