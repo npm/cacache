@@ -1,15 +1,15 @@
 'use strict'
 
-const fs = require('fs')
+const fs = require('@npmcli/fs')
 const path = require('path')
 const rimraf = require('rimraf')
 const ssri = require('ssri')
 const t = require('tap')
 
-const CacheContent = require('./util/cache-content')
-const contentPath = require('../lib/content/path')
+const CacheContent = require('../fixtures/cache-content')
+const contentPath = require('../../lib/content/path')
 
-const write = require('../lib/content/write')
+const write = require('../../lib/content/write')
 
 t.test('basic put', (t) => {
   const CACHE = t.testdir()

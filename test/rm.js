@@ -1,14 +1,12 @@
 'use strict'
 
-const util = require('util')
-
-const fs = require('fs')
+const fs = require('@npmcli/fs')
 const index = require('../lib/entry-index')
 const path = require('path')
 const t = require('tap')
 const ssri = require('ssri')
 
-const CacheContent = require('./util/cache-content')
+const CacheContent = require('./fixtures/cache-content')
 const CONTENT = Buffer.from('foobarbaz')
 const KEY = 'my-test-key'
 const INTEGRITY = ssri.fromData(CONTENT)
@@ -19,10 +17,6 @@ const get = require('..').get
 
 const rm = require('..').rm
 
-const readFile = util.promisify(fs.readFile)
-const mkdir = util.promisify(fs.mkdir)
-const writeFile = util.promisify(fs.writeFile)
-const readdir = util.promisify(fs.readdir)
 const cacheContent = CacheContent({
   [INTEGRITY]: CONTENT,
 })
@@ -51,7 +45,7 @@ t.test('rm.entry removes entries, not content', (t) => {
       throw err
     })
     .then(() => {
-      return readFile(contentPath(cache, INTEGRITY))
+      return fs.readFile(contentPath(cache, INTEGRITY))
     })
     .then((data) => {
       t.same(data, CONTENT, 'content remains in cache')
@@ -81,7 +75,7 @@ t.test('rm.content removes content, not entries', (t) => {
       throw err
     })
     .then(() => {
-      return readFile(contentPath(cache, INTEGRITY))
+      return fs.readFile(contentPath(cache, INTEGRITY))
     })
     .then(() => {
       throw new Error('unexpected success')
@@ -102,16 +96,16 @@ t.test('rm.all deletes content and index dirs', (t) => {
       metadata: METADATA,
     })
     .then(() => {
-      return mkdir(path.join(cache, 'tmp'))
+      return fs.mkdir(path.join(cache, 'tmp'))
     })
     .then(() => {
-      return writeFile(path.join(cache, 'other.js'), 'hi')
+      return fs.writeFile(path.join(cache, 'other.js'), 'hi')
     })
     .then(() => {
       return rm.all(cache)
     })
     .then(() => {
-      return readdir(cache)
+      return fs.readdir(cache)
     })
     .then((files) => {
       t.same(

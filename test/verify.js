@@ -1,15 +1,13 @@
 'use strict'
 
-const util = require('util')
-
 const contentPath = require('../lib/content/path')
 const index = require('../lib/entry-index')
-const fs = require('fs')
+const fs = require('@npmcli/fs')
 const path = require('path')
 const t = require('tap')
 const ssri = require('ssri')
 
-const CacheContent = require('./util/cache-content')
+const CacheContent = require('./fixtures/cache-content')
 
 const CONTENT = Buffer.from('foobarbaz', 'utf8')
 const KEY = 'my-test-key'
@@ -17,12 +15,6 @@ const INTEGRITY = ssri.fromData(CONTENT)
 const METADATA = { foo: 'bar' }
 
 const verify = require('..').verify
-
-const readFile = util.promisify(fs.readFile)
-const truncate = util.promisify(fs.truncate)
-const stat = util.promisify(fs.stat)
-const appendFile = util.promisify(fs.appendFile)
-const writeFile = util.promisify(fs.writeFile)
 
 // defines reusable errors
 const genericError = new Error('ERR')
@@ -47,9 +39,9 @@ function mockCache (t) {
 t.test('removes corrupted index entries from buckets', (t) => {
   return mockCache(t).then((CACHE) => {
     const BUCKET = index.bucketPath(CACHE, KEY)
-    return readFile(BUCKET, 'utf8').then((BUCKETDATA) => {
+    return fs.readFile(BUCKET, 'utf8').then((BUCKETDATA) => {
       // traaaaash
-      return appendFile(BUCKET, '\n234uhhh')
+      return fs.appendFile(BUCKET, '\n234uhhh')
         .then(() => {
           return verify(CACHE)
         })
@@ -60,7 +52,7 @@ t.test('removes corrupted index entries from buckets', (t) => {
             'content valid because of good entry'
           )
           t.equal(stats.totalEntries, 1, 'only one entry counted')
-          return readFile(BUCKET, 'utf8')
+          return fs.readFile(BUCKET, 'utf8')
         })
         .then((bucketData) => {
           const bucketEntry = JSON.parse(bucketData.split('\t')[1])
@@ -92,7 +84,7 @@ t.test('removes shadowed index entries from buckets', (t) => {
               'content valid because of good entry'
             )
             t.equal(stats.totalEntries, 1, 'only one entry counted')
-            return readFile(BUCKET, 'utf8')
+            return fs.readFile(BUCKET, 'utf8')
           })
           .then((bucketData) => {
             const stringified = JSON.stringify({
@@ -159,7 +151,7 @@ t.test('accepts function for custom user filtering of index entries', (t) => {
 t.test('removes corrupted content', (t) => {
   return mockCache(t).then((CACHE) => {
     const cpath = contentPath(CACHE, INTEGRITY)
-    return truncate(cpath, CONTENT.length - 1)
+    return fs.truncate(cpath, CONTENT.length - 1)
       .then(() => {
         return verify(CACHE)
       }).then((stats) => {
@@ -180,7 +172,7 @@ t.test('removes corrupted content', (t) => {
           },
           'reported correct collection counts'
         )
-        return stat(cpath)
+        return fs.stat(cpath)
           .then(() => {
             throw new Error('expected a failure')
           })
@@ -227,18 +219,18 @@ t.test('cleans up contents of tmp dir', (t) => {
     .then((CACHE) => {
       const tmpFile = path.join(CACHE, 'tmp', 'x')
       const misc = path.join(CACHE, 'y')
-      return Promise.all([writeFile(tmpFile, ''), writeFile(misc, '')]).then(
+      return Promise.all([fs.writeFile(tmpFile, ''), fs.writeFile(misc, '')]).then(
         () => verify(CACHE)
       ).then(() => {
         return Promise.all([
-          stat(tmpFile).catch((err) => {
+          fs.stat(tmpFile).catch((err) => {
             if (err.code === 'ENOENT') {
               return err
             }
 
             throw err
           }),
-          stat(misc),
+          fs.stat(misc),
         ]).then(([err, stat]) => {
           t.equal(err.code, 'ENOENT', 'tmp file was blown away')
           t.ok(stat, 'misc file was not touched')
@@ -252,7 +244,7 @@ t.test('writes a file with last verification time', (t) => {
   return verify(CACHE).then(() => {
     return Promise.all([
       verify.lastRun(CACHE),
-      readFile(path.join(CACHE, '_lastverified'), 'utf8').then((data) => {
+      fs.readFile(path.join(CACHE, '_lastverified'), 'utf8').then((data) => {
         return new Date(parseInt(data))
       }),
     ]).then(([fromLastRun, fromFile]) => {
@@ -267,9 +259,9 @@ t.test('missing file error when validating cache content', (t) => {
   const missingFileError = new Error('ENOENT')
   missingFileError.code = 'ENOENT'
   const mockVerify = getVerify(t, {
-    fs: Object.assign({}, fs, {
-      stat: (path, cb) => {
-        cb(missingFileError)
+    '@npmcli/fs': Object.assign({}, fs, {
+      stat: async (path) => {
+        throw missingFileError
       },
     }),
   })
@@ -290,9 +282,9 @@ t.test('missing file error when validating cache content', (t) => {
 
 t.test('unknown error when validating content', (t) => {
   const mockVerify = getVerify(t, {
-    fs: Object.assign({}, fs, {
-      stat: (path, cb) => {
-        cb(genericError)
+    '@npmcli/fs': Object.assign({}, fs, {
+      stat: async (path) => {
+        throw genericError
       },
     }),
   })
@@ -329,14 +321,13 @@ t.test('unknown error when rebuilding bucket', (t) => {
   // shouldFail controls the right time to mock the error
   let shouldFail = false
   const mockVerify = getVerify(t, {
-    fs: Object.assign({}, fs, {
-      stat: (path, cb) => {
+    '@npmcli/fs': Object.assign({}, fs, {
+      stat: async (path) => {
         if (shouldFail) {
-          return cb(genericError)
+          throw genericError
         }
-
-        fs.stat(path, cb)
         shouldFail = true
+        return fs.stat(path)
       },
     }),
   })
