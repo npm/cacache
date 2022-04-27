@@ -209,7 +209,7 @@ t.test('cleans up tmp on successful completion', (t) => {
     }))
 })
 
-t.test('cleans up tmp on error', (t) => {
+t.test('cleans up tmp on streaming error', (t) => {
   const CONTENT = 'foobarbaz'
   const CACHE = t.testdir()
   return t.rejects(
@@ -219,6 +219,25 @@ t.test('cleans up tmp on error', (t) => {
     { code: 'EBADSIZE' },
     'got expected code'
   )
+    .then(() => new Promise((resolve, reject) => {
+      const tmp = path.join(CACHE, 'tmp')
+      fs.readdir(tmp, function (err, files) {
+        if (!err || (err && err.code === 'ENOENT')) {
+          files = files || []
+          t.same(files, [], 'nothing in the tmp dir!')
+          resolve()
+        } else {
+          reject(err)
+        }
+      })
+    }))
+})
+
+t.test('cleans up tmp on non streaming error', (t) => {
+  // mock writefile and make it reject
+  const CONTENT = 'foobarbaz'
+  const CACHE = t.testdir({ 'content-v2': 'oh no a file' })
+  return t.rejects(write(CACHE, CONTENT))
     .then(() => new Promise((resolve, reject) => {
       const tmp = path.join(CACHE, 'tmp')
       fs.readdir(tmp, function (err, files) {
@@ -270,12 +289,11 @@ t.test('checks the size of stream data if opts.size provided', (t) => {
   })
 })
 
-t.test('only one algorithm for now', t => {
+t.test('only one algorithm for now', async t => {
   const CACHE = t.testdir()
-  t.throws(() => write(CACHE, 'foo', { algorithms: [1, 2] }), {
+  await t.rejects(() => write(CACHE, 'foo', { algorithms: [1, 2] }), {
     message: 'opts.algorithms only supports a single algorithm for now',
   })
-  t.end()
 })
 
 t.test('writes to cache with default options', t => {
