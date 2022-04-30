@@ -4,17 +4,15 @@ const fs = require('fs')
 const path = require('path')
 const rimraf = require('rimraf')
 const ssri = require('ssri')
-const Tacks = require('tacks')
-const { test } = require('tap')
-const testDir = require('./util/test-dir')(__filename)
+const t = require('tap')
 
-const CACHE = path.join(testDir, 'cache')
 const CacheContent = require('./util/cache-content')
 const contentPath = require('../lib/content/path')
 
 const write = require('../lib/content/write')
 
-test('basic put', (t) => {
+t.test('basic put', (t) => {
+  const CACHE = t.testdir()
   const CONTENT = 'foobarbaz'
   // Default is sha512
   const INTEGRITY = ssri.fromData(CONTENT)
@@ -34,11 +32,12 @@ test('basic put', (t) => {
     })
 })
 
-test("checks input digest doesn't match data", (t) => {
+t.test("checks input digest doesn't match data", (t) => {
   const CONTENT = 'foobarbaz'
   const integrity = ssri.fromData(CONTENT)
   let int1 = null
   let int2 = null
+  const CACHE = t.testdir()
 
   return t.rejects(
     write.stream(CACHE, { integrity })
@@ -60,7 +59,8 @@ test("checks input digest doesn't match data", (t) => {
     .then(() => t.same(int2, integrity, 'returns a matching digest'))
 })
 
-test('errors if stream ends with no data', (t) => {
+t.test('errors if stream ends with no data', (t) => {
+  const CACHE = t.testdir()
   let integrity = null
   return t.rejects(
     write.stream(CACHE).end('')
@@ -73,10 +73,11 @@ test('errors if stream ends with no data', (t) => {
   ).then(() => t.equal(integrity, null, 'no digest returned'))
 })
 
-test('errors if input size does not match expected', (t) => {
+t.test('errors if input size does not match expected', (t) => {
   let int1 = null
   let int2 = null
 
+  const CACHE = t.testdir()
   return t.rejects(
     write.stream(CACHE, { size: 5 })
       .on('integrity', int => {
@@ -101,15 +102,14 @@ test('errors if input size does not match expected', (t) => {
     .then(() => t.equal(int2, null, 'no digest returned'))
 })
 
-test('does not overwrite content if already on disk', (t) => {
+t.test('does not overwrite content if already on disk', (t) => {
   const CONTENT = 'foobarbaz'
   const INTEGRITY = ssri.fromData(CONTENT)
-  const fixture = new Tacks(
+  const CACHE = t.testdir(
     CacheContent({
       [INTEGRITY]: 'nope',
     })
   )
-  fixture.create(CACHE)
 
   let int1
   let int2
@@ -139,8 +139,9 @@ test('does not overwrite content if already on disk', (t) => {
     })
 })
 
-test('errors if input stream errors', (t) => {
+t.test('errors if input stream errors', (t) => {
   let integrity = null
+  const CACHE = t.testdir()
   const putter = write.stream(CACHE)
     .on('integrity', (int) => {
       integrity = int
@@ -157,16 +158,15 @@ test('errors if input stream errors', (t) => {
     })
 })
 
-test('exits normally if file already open', (t) => {
+t.test('exits normally if file already open', (t) => {
   const CONTENT = 'foobarbaz'
   const INTEGRITY = ssri.fromData(CONTENT)
-  const fixture = new Tacks(
+  const CACHE = t.testdir(
     CacheContent({
       [INTEGRITY]: CONTENT,
     })
   )
   let integrity
-  fixture.create(CACHE)
   // This case would only fail on Windows, when an entry is being read.
   // Generally, you'd get an EBUSY back.
   fs.open(contentPath(CACHE, INTEGRITY), 'r+', function (err, fd) {
@@ -189,8 +189,9 @@ test('exits normally if file already open', (t) => {
   })
 })
 
-test('cleans up tmp on successful completion', (t) => {
+t.test('cleans up tmp on successful completion', (t) => {
   const CONTENT = 'foobarbaz'
+  const CACHE = t.testdir()
   return write.stream(CACHE)
     .end(CONTENT)
     .promise()
@@ -208,8 +209,9 @@ test('cleans up tmp on successful completion', (t) => {
     }))
 })
 
-test('cleans up tmp on error', (t) => {
+t.test('cleans up tmp on streaming error', (t) => {
   const CONTENT = 'foobarbaz'
+  const CACHE = t.testdir()
   return t.rejects(
     write.stream(CACHE, { size: 1 })
       .end(CONTENT)
@@ -231,12 +233,32 @@ test('cleans up tmp on error', (t) => {
     }))
 })
 
-test('checks the size of stream data if opts.size provided', (t) => {
+t.test('cleans up tmp on non streaming error', (t) => {
+  // mock writefile and make it reject
+  const CONTENT = 'foobarbaz'
+  const CACHE = t.testdir({ 'content-v2': 'oh no a file' })
+  return t.rejects(write(CACHE, CONTENT))
+    .then(() => new Promise((resolve, reject) => {
+      const tmp = path.join(CACHE, 'tmp')
+      fs.readdir(tmp, function (err, files) {
+        if (!err || (err && err.code === 'ENOENT')) {
+          files = files || []
+          t.same(files, [], 'nothing in the tmp dir!')
+          resolve()
+        } else {
+          reject(err)
+        }
+      })
+    }))
+})
+
+t.test('checks the size of stream data if opts.size provided', (t) => {
   const CONTENT = 'foobarbaz'
   let int1 = null
   const int2 = null
   let int3 = null
 
+  const CACHE = t.testdir()
   t.test('chair too small', t => {
     const w = write.stream(CACHE, { size: CONTENT.length })
     w.write(CONTENT.slice(3))
@@ -267,15 +289,16 @@ test('checks the size of stream data if opts.size provided', (t) => {
   })
 })
 
-test('only one algorithm for now', t => {
-  t.throws(() => write(CACHE, 'foo', { algorithms: [1, 2] }), {
+t.test('only one algorithm for now', async t => {
+  const CACHE = t.testdir()
+  await t.rejects(() => write(CACHE, 'foo', { algorithms: [1, 2] }), {
     message: 'opts.algorithms only supports a single algorithm for now',
   })
-  t.end()
 })
 
-test('writes to cache with default options', t =>
-  t.resolveMatch(write(CACHE, 'foo'), {
+t.test('writes to cache with default options', t => {
+  const CACHE = t.testdir()
+  return t.resolveMatch(write(CACHE, 'foo'), {
     size: 3,
     integrity: {
       sha512: [
@@ -289,4 +312,5 @@ test('writes to cache with default options', t =>
         },
       ],
     },
-  }))
+  })
+})

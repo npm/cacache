@@ -1,5 +1,14 @@
 # Changelog
 
+### [16.0.7](https://github.com/npm/cacache/compare/v16.0.6...v16.0.7) (2022-04-27)
+
+
+### Bug Fixes
+
+* **put:** don't flush if an error happened ([e870016](https://github.com/npm/cacache/commit/e8700167e036f392e5554af2d582caa17e4e7237))
+* remove disposer ([76ab648](https://github.com/npm/cacache/commit/76ab64857b6874bc54d542ddd483c526434c0b9b))
+* remove fs.copyFile checks ([90776fd](https://github.com/npm/cacache/commit/90776fd4a6c5362ea56a979b9611bdf4391e1fd8))
+
 ### [16.0.6](https://github.com/npm/cacache/compare/v16.0.5...v16.0.6) (2022-04-21)
 
 

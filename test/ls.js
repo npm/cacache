@@ -3,17 +3,11 @@
 const CacheIndex = require('./util/cache-index')
 const contentPath = require('../lib/content/path')
 const index = require('../lib/entry-index.js')
-const path = require('path')
-const Tacks = require('tacks')
-const { test } = require('tap')
-const testDir = require('./util/test-dir')(__filename)
-
-const CACHE = path.join(testDir, 'cache')
-const File = Tacks.File
+const t = require('tap')
 
 const { ls } = require('..')
 
-test('basic listing', function (t) {
+t.test('basic listing', function (t) {
   const contents = {
     whatever: {
       key: 'whatever',
@@ -30,10 +24,9 @@ test('basic listing', function (t) {
       size: 425345345,
     },
   }
-  const fixture = new Tacks(CacheIndex(contents))
+  const CACHE = t.testdir(CacheIndex(contents))
   contents.whatever.path = contentPath(CACHE, contents.whatever.integrity)
   contents.whatnot.path = contentPath(CACHE, contents.whatnot.integrity)
-  fixture.create(CACHE)
   return ls(CACHE)
     .then((listing) => {
       t.same(listing, contents, 'index contents correct')
@@ -50,7 +43,7 @@ test('basic listing', function (t) {
     })
 })
 
-test('separate keys in conflicting buckets', function (t) {
+t.test('separate keys in conflicting buckets', function (t) {
   const contents = {
     whatever: {
       key: 'whatever',
@@ -67,7 +60,7 @@ test('separate keys in conflicting buckets', function (t) {
       size: 99234234,
     },
   }
-  const fixture = new Tacks(
+  const CACHE = t.testdir(
     CacheIndex({
       // put both in the same bucket
       whatever: [contents.whatever, contents.whatev],
@@ -75,19 +68,19 @@ test('separate keys in conflicting buckets', function (t) {
   )
   contents.whatever.path = contentPath(CACHE, contents.whatever.integrity)
   contents.whatev.path = contentPath(CACHE, contents.whatev.integrity)
-  fixture.create(CACHE)
   return ls(CACHE).then((listing) => {
     t.same(listing, contents, 'index contents correct')
   })
 })
 
-test('works fine on an empty/missing cache', function (t) {
+t.test('works fine on an empty/missing cache', function (t) {
+  const CACHE = t.testdir()
   return ls(CACHE).then((listing) => {
     t.same(listing, {}, 'returned an empty listing')
   })
 })
 
-test('ignores non-dir files', function (t) {
+t.test('ignores non-dir files', function (t) {
   const index = CacheIndex({
     whatever: {
       key: 'whatever',
@@ -97,16 +90,15 @@ test('ignores non-dir files', function (t) {
       size: 234234,
     },
   })
-  index.contents.garbage = File('hello world')
-  const fixture = new Tacks(index)
-  fixture.create(CACHE)
+  index.garbage = 'hello world'
+  const CACHE = t.testdir(index)
   return ls(CACHE).then((listing) => {
     t.equal(Object.keys(listing).length, 1, 'only 1 item in listing')
     t.equal(listing.whatever.key, 'whatever', 'only the correct entry listed')
   })
 })
 
-test('correctly ignores deleted entries', (t) => {
+t.test('correctly ignores deleted entries', (t) => {
   const contents = {
     whatever: {
       key: 'whatever',
@@ -130,11 +122,10 @@ test('correctly ignores deleted entries', (t) => {
       size: 425345345,
     },
   }
-  const fixture = new Tacks(CacheIndex(contents))
+  const CACHE = t.testdir(CacheIndex(contents))
   contents.whatever.path = contentPath(CACHE, contents.whatever.integrity)
   contents.whatnot.path = contentPath(CACHE, contents.whatnot.integrity)
   contents.whatwhere.path = contentPath(CACHE, contents.whatwhere.integrity)
-  fixture.create(CACHE)
   return index
     .delete(CACHE, 'whatnot')
     .then(() => ls(CACHE))

@@ -2,8 +2,7 @@
 
 const os = require('os')
 
-const { test } = require('tap')
-const requireInject = require('require-inject')
+const t = require('tap')
 const uniqueFilename = require('unique-filename')
 
 // defines reusable errors
@@ -15,7 +14,7 @@ const pathExistsError = new Error('EEXIST')
 pathExistsError.code = 'EEXIST'
 
 // helpers
-const CACHE = require('./util/test-dir')(__filename)
+const CACHE = t.testdir()
 const filename = uniqueFilename(os.tmpdir())
 const getuid = process.getuid
 const patchesGetuid = (t) => {
@@ -24,13 +23,13 @@ const patchesGetuid = (t) => {
     process.getuid = getuid
   })
 }
-const getFixOwner = (opts) => requireInject('../lib/util/fix-owner', opts)
+const getFixOwner = (t, opts) => t.mock('../lib/util/fix-owner', opts)
 
 // chownr and chownr.fix error handling tests
 
-test('attempt to chownr existing path', (t) => {
+t.test('attempt to chownr existing path', (t) => {
   patchesGetuid(t)
-  const fixOwner = getFixOwner({
+  const fixOwner = getFixOwner(t, {
     chownr: function chownr (path, uid, gid, cb) {
       cb(missingFileError)
     },
@@ -44,9 +43,9 @@ test('attempt to chownr existing path', (t) => {
     })
 })
 
-test('attempt to chownr unknown error', (t) => {
+t.test('attempt to chownr unknown error', (t) => {
   patchesGetuid(t)
-  const fixOwner = getFixOwner({
+  const fixOwner = getFixOwner(t, {
     chownr: function chownr (path, uid, gid, cb) {
       cb(genericError)
     },
@@ -57,9 +56,9 @@ test('attempt to chownr unknown error', (t) => {
   t.rejects(() => fixOwner.chownr(CACHE, filename), 'should throw unknown errors')
 })
 
-test('attempt to chownr using same user', (t) => {
+t.test('attempt to chownr using same user', (t) => {
   patchesGetuid(t)
-  const fixOwner = getFixOwner({
+  const fixOwner = getFixOwner(t, {
     'infer-owner': () => Promise.resolve({
       uid: process.getuid(),
       gid: process.getgid(),
@@ -73,7 +72,7 @@ test('attempt to chownr using same user', (t) => {
     })
 })
 
-test('calls setuid setgid to replace user', (t) => {
+t.test('calls setuid setgid to replace user', (t) => {
   const setuid = process.setuid
   const setgid = process.setgid
   process.getuid = () => 0
@@ -84,7 +83,7 @@ test('calls setuid setgid to replace user', (t) => {
     process.stuid = setuid
     process.stgid = setgid
   })
-  const fixOwner = getFixOwner({
+  const fixOwner = getFixOwner(t, {
     'infer-owner': () => {
       process.setuid(process.getuid())
       process.setgid(process.getgid())
@@ -102,7 +101,7 @@ test('calls setuid setgid to replace user', (t) => {
     })
 })
 
-test('attempt to chownr.sync on platforms that do not need ownership fix', (t) => {
+t.test('attempt to chownr.sync on platforms that do not need ownership fix', (t) => {
   process.getuid = undefined
   t.teardown(() => {
     process.getuid = getuid
@@ -116,13 +115,13 @@ test('attempt to chownr.sync on platforms that do not need ownership fix', (t) =
     })
 })
 
-test('attempt to chownr.sync existing path', (t) => {
+t.test('attempt to chownr.sync existing path', (t) => {
   patchesGetuid(t)
   function chownr () {}
   chownr.sync = () => {
     throw missingFileError
   }
-  const fixOwner = getFixOwner({
+  const fixOwner = getFixOwner(t, {
     chownr,
     'infer-owner': { sync: () => ({}) },
   })
@@ -131,13 +130,13 @@ test('attempt to chownr.sync existing path', (t) => {
   t.end()
 })
 
-test('attempt to chownr.sync unknown error', (t) => {
+t.test('attempt to chownr.sync unknown error', (t) => {
   patchesGetuid(t)
   function chownr () {}
   chownr.sync = () => {
     throw genericError
   }
-  const fixOwner = getFixOwner({
+  const fixOwner = getFixOwner(t, {
     chownr,
     'infer-owner': { sync: () => ({}) },
   })
@@ -146,9 +145,9 @@ test('attempt to chownr.sync unknown error', (t) => {
   t.end()
 })
 
-test('attempt to chownr.sync using same user', (t) => {
+t.test('attempt to chownr.sync using same user', (t) => {
   patchesGetuid(t)
-  const fixOwner = getFixOwner({
+  const fixOwner = getFixOwner(t, {
     'infer-owner': {
       sync: () => ({
         uid: process.getuid(),
@@ -161,7 +160,7 @@ test('attempt to chownr.sync using same user', (t) => {
   t.end()
 })
 
-test('attempt to chownr.sync on platforms that do not need ownership fix', (t) => {
+t.test('attempt to chownr.sync on platforms that do not need ownership fix', (t) => {
   process.getuid = undefined
   t.teardown(() => {
     process.getuid = getuid
@@ -172,7 +171,7 @@ test('attempt to chownr.sync on platforms that do not need ownership fix', (t) =
   t.end()
 })
 
-test('uses infer-owner ids instead of process-retrieved if valid', (t) => {
+t.test('uses infer-owner ids instead of process-retrieved if valid', (t) => {
   const getgid = process.getgid
   process.getuid = () => 0
   process.getgid = () => 1
@@ -187,7 +186,7 @@ test('uses infer-owner ids instead of process-retrieved if valid', (t) => {
     t.equal(uid, 501, 'should match uid')
     t.equal(gid, 20, 'should match gid')
   }
-  const fixOwner = getFixOwner({
+  const fixOwner = getFixOwner(t, {
     chownr,
     'infer-owner': {
       sync: () => ({
@@ -202,8 +201,8 @@ test('uses infer-owner ids instead of process-retrieved if valid', (t) => {
 
 // mkdirfix and mkdirfix.sync error handling tests
 
-test('attempt to mkdirfix existing path', (t) => {
-  const fixOwner = getFixOwner({
+t.test('attempt to mkdirfix existing path', (t) => {
+  const fixOwner = getFixOwner(t, {
     mkdirp: () => Promise.reject(pathExistsError),
   })
 
@@ -214,8 +213,8 @@ test('attempt to mkdirfix existing path', (t) => {
     })
 })
 
-test('attempt to mkdirfix unknown error', (t) => {
-  const fixOwner = getFixOwner({
+t.test('attempt to mkdirfix unknown error', (t) => {
+  const fixOwner = getFixOwner(t, {
     mkdirp: () => Promise.reject(genericError),
   })
 
@@ -223,23 +222,23 @@ test('attempt to mkdirfix unknown error', (t) => {
   t.rejects(() => fixOwner.mkdirfix(CACHE, filename), 'should throw unknown errors')
 })
 
-test('attempt to mkdirfix.sync existing path', (t) => {
+t.test('attempt to mkdirfix.sync existing path', (t) => {
   function mkdirp () {}
   mkdirp.sync = () => {
     throw pathExistsError
   }
-  const fixOwner = getFixOwner({ mkdirp })
+  const fixOwner = getFixOwner(t, { mkdirp })
 
   t.notOk(fixOwner.mkdirfix.sync(CACHE, filename), 'should not throw if path exists')
   t.end()
 })
 
-test('attempt to mkdirfix.sync unknown error', (t) => {
+t.test('attempt to mkdirfix.sync unknown error', (t) => {
   function mkdirp () {}
   mkdirp.sync = () => {
     throw genericError
   }
-  const fixOwner = getFixOwner({ mkdirp })
+  const fixOwner = getFixOwner(t, { mkdirp })
 
   t.throws(
     () => fixOwner.mkdirfix.sync(CACHE, filename),
@@ -249,10 +248,10 @@ test('attempt to mkdirfix.sync unknown error', (t) => {
   t.end()
 })
 
-test('attempt to mkdirfix.sync but no dir created', (t) => {
+t.test('attempt to mkdirfix.sync but no dir created', (t) => {
   function mkdirp () {}
   mkdirp.sync = () => {}
-  const fixOwner = getFixOwner({ mkdirp })
+  const fixOwner = getFixOwner(t, { mkdirp })
 
   t.notOk(fixOwner.mkdirfix.sync(CACHE, filename), 'should not throw')
   t.end()

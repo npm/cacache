@@ -5,75 +5,66 @@ const NEWGID = process.getgid() + 1
 
 process.getuid = () => 0
 
-const testDir = require('./util/test-dir')(__filename)
 const path = require('path')
-const CACHE = path.join(testDir, 'cache')
 const fs = require('fs')
-const stat = fs.lstat
-fs.lstat = (path, cb) => {
-  stat(path, (er, st) => {
-    if (st && path === testDir) {
-      st.uid = NEWUID
-      st.gid = NEWGID
-    }
-    cb(er, st)
-  })
-}
 
-const statSync = fs.lstatSync
-fs.lstatSync = (path) => {
-  const st = statSync(path)
-  if (path === testDir) {
-    st.uid = NEWUID
-    st.gid = NEWGID
-  }
-  return st
-}
-
-const requireInject = require('require-inject')
 const ssri = require('ssri')
-const { test } = require('tap')
+const t = require('tap')
 
 const contentPath = require('../lib/content/path')
 
-test(
-  'infers ownership from cache folder owner',
-  {
-    skip: process.getuid
-      ? false
-      : 'test only works on platforms that can set uid/gid',
-  },
-  (t) => {
-    const CONTENT = 'foobarbaz'
-    const INTEGRITY = ssri.fromData(CONTENT)
-    const updatedPaths = []
-    const write = requireInject('../lib/content/write', {
-      chownr: function (p, uid, gid, cb) {
-        process.nextTick(function () {
-          const rel = path.relative(CACHE, p)
-          t.equal(uid, NEWUID, 'new uid set for ' + rel)
-          t.equal(gid, NEWGID, 'new gid set for ' + rel)
-          updatedPaths.push(p)
-          cb(null)
-        })
-      },
+t.test('infers ownership from cache folder owner', (t) => {
+  const CACHE = t.testdir({ cache: {} })
+  const stat = fs.lstat
+  fs.lstat = (path, cb) => {
+    stat(path, (er, st) => {
+      if (st && path === CACHE) {
+        st.uid = NEWUID
+        st.gid = NEWGID
+      }
+      cb(er, st)
     })
-    t.plan(7)
-    return write.stream(CACHE, { hashAlgorithm: 'sha1' })
-      .end(CONTENT)
-      .promise()
-      .then(() => {
-        const cpath = contentPath(CACHE, INTEGRITY)
-        const expectedPaths = [
-          CACHE,
-          path.join(CACHE, path.relative(CACHE, cpath).split(path.sep)[0]),
-          cpath,
-        ]
-        t.same(
-          updatedPaths.sort(),
-          expectedPaths,
-          'all paths that needed user stuff set got set'
-        )
-      })
   }
+
+  const statSync = fs.lstatSync
+  fs.lstatSync = (path) => {
+    const st = statSync(path)
+    if (path === CACHE) {
+      st.uid = NEWUID
+      st.gid = NEWGID
+    }
+    return st
+  }
+  const CONTENT = 'foobarbaz'
+  const INTEGRITY = ssri.fromData(CONTENT)
+  const updatedPaths = []
+  const write = t.mock('../lib/content/write', {
+    chownr: function (p, uid, gid, cb) {
+      process.nextTick(function () {
+        const rel = path.relative(CACHE, p)
+        t.equal(uid, NEWUID, 'new uid set for ' + rel)
+        t.equal(gid, NEWGID, 'new gid set for ' + rel)
+        updatedPaths.push(p)
+        cb(null)
+      })
+    },
+  })
+  t.plan(7)
+  return write.stream(CACHE, { hashAlgorithm: 'sha1' })
+    .end(CONTENT)
+    .promise()
+    .then(() => {
+      const cpath = contentPath(CACHE, INTEGRITY)
+      const expectedPaths = [
+        path.join(CACHE, path.relative(CACHE, cpath).split(path.sep)[0]),
+        cpath,
+        path.join(CACHE, 'tmp'),
+      ]
+      t.same(
+        updatedPaths.sort(),
+        expectedPaths,
+        'all paths that needed user stuff set got set'
+      )
+    })
+}
 )
