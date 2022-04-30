@@ -69,7 +69,7 @@
   },
   "devDependencies": {
     "@npmcli/eslint-config": "^3.0.1",
-    "@npmcli/template-oss": "3.4.1",
+    "@npmcli/template-oss": "3.4.2",
     "tap": "^16.0.0"
   },
   "tap": {
@@ -82,7 +82,7 @@
   "templateOSS": {
     "//@npmcli/template-oss": "This file is partially managed by @npmcli/template-oss. Edits may be overwritten.",
     "windowsCI": false,
-    "version": "3.4.1"
+    "version": "3.4.2"
   },
   "author": "GitHub Inc."
 }
