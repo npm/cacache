@@ -72,10 +72,6 @@
     "@npmcli/template-oss": "3.4.3",
     "tap": "^16.0.0"
   },
-  "tap": {
-    "100": true,
-    "test-regex": "test/[^/]*.js"
-  },
   "engines": {
     "node": "^12.13.0 || ^14.15.0 || >=16.0.0"
   },

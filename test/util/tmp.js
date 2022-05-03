@@ -1,8 +1,6 @@
 'use strict'
 
-const util = require('util')
-
-const fs = require('fs')
+const fs = require('@npmcli/fs')
 const path = require('path')
 const t = require('tap')
 
@@ -10,12 +8,10 @@ const CACHE = t.testdir()
 
 const mockedFixOwner = () => Promise.resolve(1)
 // temporarily points to original mkdirfix implementation
-mockedFixOwner.mkdirfix = require('../lib/util/fix-owner').mkdirfix
-const tmp = t.mock('../lib/util/tmp', {
-  '../lib/util/fix-owner': mockedFixOwner,
+mockedFixOwner.mkdirfix = require('../../lib/util/fix-owner').mkdirfix
+const tmp = t.mock('../../lib/util/tmp', {
+  '../../lib/util/fix-owner': mockedFixOwner,
 })
-
-const stat = util.promisify(fs.stat)
 
 t.test('creates a unique tmpdir inside the cache', (t) => {
   return tmp
@@ -26,7 +22,7 @@ t.test('creates a unique tmpdir inside the cache', (t) => {
         /^tmp[\\/].*/,
         'returns a path inside tmp'
       )
-      return stat(dir)
+      return fs.stat(dir)
     })
     .then((s) => {
       t.ok(s.isDirectory(), 'path points to an existing directory')
@@ -36,7 +32,7 @@ t.test('creates a unique tmpdir inside the cache', (t) => {
 t.test('provides a utility that does resource disposal on tmp', (t) => {
   return tmp
     .withTmp(CACHE, (dir) => {
-      return stat(dir)
+      return fs.stat(dir)
         .then((s) => {
           t.ok(s.isDirectory(), 'path points to an existing directory')
         })
@@ -44,7 +40,7 @@ t.test('provides a utility that does resource disposal on tmp', (t) => {
     })
     .then((dir) => {
       return Promise.all([
-        stat(dir)
+        fs.stat(dir)
           .then(() => {
             throw new Error('expected fail')
           })
@@ -55,7 +51,7 @@ t.test('provides a utility that does resource disposal on tmp', (t) => {
 
             throw err
           }),
-        stat(path.join(CACHE, 'tmp')),
+        fs.stat(path.join(CACHE, 'tmp')),
       ]).then(([nope, yes]) => {
         t.notOk(nope, 'tmp subdir removed')
         t.ok(yes.isDirectory(), 'tmp parent dir left intact')

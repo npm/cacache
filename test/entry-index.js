@@ -1,13 +1,13 @@
 'use strict'
 
-const fs = require('fs')
+const fs = require('@npmcli/fs')
 const path = require('path')
 
 const ssri = require('ssri')
 const t = require('tap')
 
 const index = require('../lib/entry-index')
-const CacheContent = require('./util/cache-content')
+const CacheContent = require('./fixtures/cache-content')
 
 // defines reusable errors
 const genericError = new Error('ERR')
@@ -17,9 +17,9 @@ missingFileError.code = 'ENOENT'
 
 const getEntryIndex = (t, opts) => t.mock('../lib/entry-index', opts)
 const getEntryIndexReadFileFailure = (t, err) => getEntryIndex(t, {
-  fs: Object.assign({}, fs, {
-    readFile: (path, encode, cb) => {
-      cb(err)
+  '@npmcli/fs': Object.assign({}, fs, {
+    readFile: async (path, encode) => {
+      throw err
     },
     readFileSync: () => {
       throw genericError
@@ -257,9 +257,9 @@ t.test('find: error on parsing json data', (t) => {
   const cache = t.testdir(cacheContent)
   // mocks readFile in order to return a borked json payload
   const { find } = getEntryIndex(t, {
-    fs: Object.assign({}, require('fs'), {
-      readFile: (path, encode, cb) => {
-        cb(null, '\ncec8d2e4685534ed189b563c8ee1cb1cb7c72874\t{"""// foo')
+    '@npmcli/fs': Object.assign({}, require('@npmcli/fs'), {
+      readFile: async (path, encode) => {
+        return '\ncec8d2e4685534ed189b563c8ee1cb1cb7c72874\t{"""// foo'
       },
     }),
   })
@@ -291,7 +291,7 @@ t.test('find.sync: retrieve from bucket containing multiple entries', (t) => {
     '\n46b1607f427665a99668c02d3a4cc52061afd83a\t{"key":"bar", "integrity": "bar"}',
   ]
   const { find } = getEntryIndex(t, {
-    fs: Object.assign({}, require('fs'), {
+    '@npmcli/fs': Object.assign({}, require('@npmcli/fs'), {
       readFileSync: (path, encode) => entries.join(''),
     }),
   })
@@ -319,7 +319,7 @@ t.test('find.sync: unknown error on finding entries', (t) => {
 t.test('find.sync: retrieve entry with invalid content', (t) => {
   const cache = t.testdir(cacheContent)
   const { find } = getEntryIndex(t, {
-    fs: Object.assign({}, require('fs'), {
+    '@npmcli/fs': Object.assign({}, require('@npmcli/fs'), {
       readFileSync: (path, encode) =>
         '\nb6589fc6ab0dc82cf12099d1c2d40ab994e8410c\t0',
     }),
@@ -412,9 +412,9 @@ t.test('lsStream: missing files error', (t) => {
 t.test('lsStream: unknown error reading dirs', (t) => {
   const cache = t.testdir(cacheContent)
   const { lsStream } = getEntryIndex(t, {
-    fs: Object.assign({}, require('fs'), {
-      readdir: (path, cb) => {
-        cb(genericError)
+    '@npmcli/fs': Object.assign({}, require('@npmcli/fs'), {
+      readdir: async (path) => {
+        throw genericError
       },
     }),
   })

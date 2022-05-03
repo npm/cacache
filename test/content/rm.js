@@ -1,14 +1,11 @@
 'use strict'
 
-const contentPath = require('../lib/content/path')
-const fs = require('fs')
-const util = require('util')
+const contentPath = require('../../lib/content/path')
+const fs = require('@npmcli/fs')
 const t = require('tap')
 
-const stat = util.promisify(fs.stat)
-
-const CacheContent = require('./util/cache-content')
-const rm = require('../lib/content/rm')
+const CacheContent = require('../fixtures/cache-content')
+const rm = require('../../lib/content/rm')
 
 t.test('removes a content entry', function (t) {
   const CACHE = t.testdir(
@@ -17,7 +14,7 @@ t.test('removes a content entry', function (t) {
     })
   )
   return rm(CACHE, 'sha1-deadbeef')
-    .then(() => stat(contentPath(CACHE, 'sha1-deadbeef')))
+    .then(() => fs.stat(contentPath(CACHE, 'sha1-deadbeef')))
     .then(() => {
       throw new Error('expected an error')
     })
@@ -30,7 +27,7 @@ t.test('removes a content entry', function (t) {
 t.test('works fine if entry missing', function (t) {
   const CACHE = t.testdir(CacheContent({}))
   return rm(CACHE, 'sha1-deadbeef')
-    .then(() => stat(contentPath(CACHE, 'sha1-deadbeef')))
+    .then(() => fs.stat(contentPath(CACHE, 'sha1-deadbeef')))
     .then(() => {
       throw new Error('expected an error')
     })

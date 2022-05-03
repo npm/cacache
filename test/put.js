@@ -1,14 +1,10 @@
 'use strict'
 
-const util = require('util')
-
-const fs = require('fs')
+const fs = require('@npmcli/fs')
 const index = require('../lib/entry-index')
 const memo = require('../lib/memoization')
 const t = require('tap')
 const ssri = require('ssri')
-
-const readFile = util.promisify(fs.readFile)
 
 const CONTENT = Buffer.from('foobarbaz', 'utf8')
 const KEY = 'my-test-key'
@@ -24,7 +20,7 @@ t.test('basic bulk insertion', (t) => {
     .then((integrity) => {
       t.equal(integrity.toString(), INTEGRITY, 'returned content integrity')
       const dataPath = contentPath(CACHE, integrity)
-      return readFile(dataPath)
+      return fs.readFile(dataPath)
     })
     .then((data) => {
       t.same(data, CONTENT, 'content was correctly inserted')
@@ -40,7 +36,7 @@ t.test('basic stream insertion', (t) => {
   return stream.end(CONTENT).promise()
     .then(() => {
       t.equal(int.toString(), INTEGRITY, 'returned integrity matches expected')
-      return readFile(contentPath(CACHE, int))
+      return fs.readFile(contentPath(CACHE, int))
     })
     .then((data) => {
       t.same(data, CONTENT, 'contents are identical to inserted content')
@@ -102,7 +98,7 @@ t.test('optionally memoizes data on stream insertion', (t) => {
   return stream.end(CONTENT).promise()
     .then(() => {
       t.equal(int.toString(), INTEGRITY, 'integrity emitted as usual')
-      return readFile(contentPath(CACHE, int))
+      return fs.readFile(contentPath(CACHE, int))
     })
     .then((data) => {
       t.same(data, CONTENT, 'contents are identical to inserted content')

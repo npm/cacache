@@ -1,16 +1,13 @@
 'use strict'
 
-const util = require('util')
-
-const fs = require('fs')
+const fs = require('@npmcli/fs')
 const path = require('path')
 const ssri = require('ssri')
 const t = require('tap')
-const readFile = util.promisify(fs.readFile)
 
-const CacheContent = require('./util/cache-content')
+const CacheContent = require('../fixtures/cache-content')
 
-const read = require('../lib/content/read')
+const read = require('../../lib/content/read')
 
 // defines reusable errors
 const genericError = new Error('ERR')
@@ -19,11 +16,11 @@ const permissionError = new Error('EPERM')
 permissionError.code = 'EPERM'
 
 // helpers
-const getRead = (t, opts) => t.mock('../lib/content/read', opts)
+const getRead = (t, opts) => t.mock('../../lib/content/read', opts)
 const getReadLstatFailure = (t, err) => getRead(t, {
-  fs: Object.assign({}, require('fs'), {
-    lstat (path, cb) {
-      cb(err)
+  '@npmcli/fs': Object.assign({}, require('@npmcli/fs'), {
+    async lstat (path) {
+      throw err
     },
     lstatSync () {
       throw err
@@ -263,9 +260,9 @@ t.test('read: returns only first result if other hashes fails', function (t) {
 t.test('read: opening large files', function (t) {
   const CACHE = t.testdir()
   const mockedRead = getRead(t, {
-    fs: Object.assign({}, require('fs'), {
-      lstat (path, cb) {
-        cb(null, { size: Number.MAX_SAFE_INTEGER })
+    '@npmcli/fs': Object.assign({}, require('@npmcli/fs'), {
+      async lstat (path) {
+        return { size: Number.MAX_SAFE_INTEGER }
       },
     }),
     'fs-minipass': {
@@ -472,7 +469,7 @@ t.test('copy: copies content to a destination path', (t) => {
   return read
     .copy(CACHE, INTEGRITY, DEST)
     .then(() => {
-      return readFile(DEST)
+      return fs.readFile(DEST)
     })
     .then((data) => {
       t.same(data, CONTENT, 'file successfully copied')

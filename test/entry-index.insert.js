@@ -1,13 +1,9 @@
 'use strict'
 
-const util = require('util')
-
-const CacheIndex = require('./util/cache-index')
+const CacheIndex = require('./fixtures/cache-index')
 const contentPath = require('../lib/content/path')
-const fs = require('fs')
+const fs = require('@npmcli/fs')
 const t = require('tap')
-
-const readFile = util.promisify(fs.readFile)
 
 const index = require('../lib/entry-index')
 
@@ -41,7 +37,7 @@ t.test('basic insertion', function (t) {
         },
         'formatted entry returned'
       )
-      return readFile(bucket, 'utf8')
+      return fs.readFile(bucket, 'utf8')
     })
     .then((data) => {
       t.equal(data[0], '\n', 'first entry starts with a \\n')
@@ -82,7 +78,7 @@ t.test('inserts additional entries into existing key', function (t) {
     )
     .then(() => index.insert(cache, key, integrity, { size, metadata: 2 }))
     .then(() => {
-      return readFile(bucket, 'utf8')
+      return fs.readFile(bucket, 'utf8')
     })
     .then((data) => {
       const entries = data
@@ -135,7 +131,7 @@ t.test('separates entries even if one is corrupted', function (t) {
   const bucket = index.bucketPath(cache, key)
   return index
     .insert(cache, key, integrity, { size })
-    .then(() => readFile(bucket, 'utf8'))
+    .then(() => fs.readFile(bucket, 'utf8'))
     .then((data) => {
       const entry = JSON.parse(data.split('\n')[4].split('\t')[1])
       delete entry.time
@@ -158,7 +154,7 @@ t.test('optional arbitrary metadata', function (t) {
   return index
     .insert(cache, key, integrity, { size, metadata: metadata })
     .then(() => {
-      return readFile(bucket, 'utf8')
+      return fs.readFile(bucket, 'utf8')
     })
     .then((data) => {
       const entry = JSON.parse(data.split('\t')[1])
@@ -225,7 +221,7 @@ t.test('path-breaking characters', function (t) {
     .insert(cache, newKey, integrity, { size })
     .then(() => {
       const bucket = index.bucketPath(cache, newKey)
-      return readFile(bucket, 'utf8')
+      return fs.readFile(bucket, 'utf8')
     })
     .then((data) => {
       const entry = JSON.parse(data.split('\t')[1])
@@ -253,7 +249,7 @@ t.test('extremely long keys', function (t) {
     .insert(cache, newKey, integrity, { size })
     .then(() => {
       const bucket = index.bucketPath(cache, newKey)
-      return readFile(bucket, 'utf8')
+      return fs.readFile(bucket, 'utf8')
     })
     .then((data) => {
       const entry = JSON.parse(data.split('\t')[1])

@@ -23,7 +23,7 @@ const patchesGetuid = (t) => {
     process.getuid = getuid
   })
 }
-const getFixOwner = (t, opts) => t.mock('../lib/util/fix-owner', opts)
+const getFixOwner = (t, opts) => t.mock('../../lib/util/fix-owner', opts)
 
 // chownr and chownr.fix error handling tests
 
@@ -106,7 +106,7 @@ t.test('attempt to chownr.sync on platforms that do not need ownership fix', (t)
   t.teardown(() => {
     process.getuid = getuid
   })
-  const fixOwner = require('../lib/util/fix-owner')
+  const fixOwner = require('../../lib/util/fix-owner')
 
   t.plan(1)
   return fixOwner.chownr(CACHE, filename)
@@ -165,7 +165,7 @@ t.test('attempt to chownr.sync on platforms that do not need ownership fix', (t)
   t.teardown(() => {
     process.getuid = getuid
   })
-  const fixOwner = require('../lib/util/fix-owner')
+  const fixOwner = require('../../lib/util/fix-owner')
 
   t.notOk(fixOwner.chownr.sync(CACHE, filename), 'should not throw')
   t.end()

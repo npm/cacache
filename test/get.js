@@ -2,7 +2,7 @@
 
 const util = require('util')
 
-const fs = require('fs')
+const fs = require('@npmcli/fs')
 const index = require('../lib/entry-index')
 const memo = require('../lib/memoization')
 const path = require('path')
@@ -10,9 +10,7 @@ const rimraf = util.promisify(require('rimraf'))
 const t = require('tap')
 const ssri = require('ssri')
 
-const readFile = util.promisify(fs.readFile)
-
-const CacheContent = require('./util/cache-content')
+const CacheContent = require('./fixtures/cache-content')
 
 const CONTENT = Buffer.from('foobarbaz', 'utf8')
 const SIZE = CONTENT.length
@@ -460,14 +458,14 @@ t.test('get.copy with fs.copyfile', (t) => {
         },
         'copy operation returns basic metadata'
       )
-      return readFile(DEST)
+      return fs.readFile(DEST)
     })
     .then((data) => {
       t.same(data, CONTENT, 'data copied by key matches')
       return rimraf(DEST)
     })
     .then(() => get.copy.byDigest(CACHE, INTEGRITY, DEST))
-    .then(() => readFile(DEST))
+    .then(() => fs.readFile(DEST))
     .then((data) => {
       t.same(data, CONTENT, 'data copied by digest matches')
       return rimraf(DEST)

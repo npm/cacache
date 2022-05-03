@@ -1,6 +1,6 @@
 'use strict'
 
-const CacheIndex = require('./util/cache-index')
+const CacheIndex = require('./fixtures/cache-index')
 const path = require('path')
 const t = require('tap')
 
