@@ -1,5 +1,12 @@
 # Changelog
 
+### [16.0.8](https://github.com/npm/cacache/compare/v16.0.7...v16.0.8) (2022-05-03)
+
+
+### Bug Fixes
+
+* move to async functions where possible ([#106](https://github.com/npm/cacache/issues/106)) ([71d4389](https://github.com/npm/cacache/commit/71d4389ff8a35330c3fedce97761094e243d4faf))
+
 ### [16.0.7](https://github.com/npm/cacache/compare/v16.0.6...v16.0.7) (2022-04-27)
 
 
