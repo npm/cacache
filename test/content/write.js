@@ -1,6 +1,8 @@
 'use strict'
 
+const events = require('events')
 const fs = require('@npmcli/fs')
+const Minipass = require('minipass')
 const path = require('path')
 const rimraf = require('rimraf')
 const ssri = require('ssri')
@@ -30,6 +32,62 @@ t.test('basic put', (t) => {
       t.equal(fs.readFileSync(cpath, 'utf8'), CONTENT,
         'contents are identical to inserted content')
     })
+})
+
+t.test('basic put, providing external integrity emitter', async (t) => {
+  const CACHE = t.testdir()
+  const CONTENT = 'foobarbaz'
+  const INTEGRITY = ssri.fromData(CONTENT)
+
+  const write = t.mock('../../lib/content/write.js', {
+    ssri: {
+      ...ssri,
+      integrityStream: () => {
+        throw new Error('Should not be called')
+      },
+    },
+  })
+
+  const source = new Minipass().end(CONTENT)
+
+  const tee = new Minipass()
+
+  const integrityStream = ssri.integrityStream()
+  // since the integrityStream is not going anywhere, we need to manually resume it
+  // otherwise it'll get stuck in paused mode and will never process any data events
+  integrityStream.resume()
+  const integrityStreamP = Promise.all([
+    events.once(integrityStream, 'integrity').then((res) => res[0]),
+    events.once(integrityStream, 'size').then((res) => res[0]),
+  ])
+
+  const contentStream = write.stream(CACHE, { integrityEmitter: integrityStream })
+  const contentStreamP = Promise.all([
+    events.once(contentStream, 'integrity').then((res) => res[0]),
+    events.once(contentStream, 'size').then((res) => res[0]),
+    contentStream.promise(),
+  ])
+
+  tee.pipe(integrityStream)
+  tee.pipe(contentStream)
+  source.pipe(tee)
+
+  const [
+    [ssriIntegrity, ssriSize],
+    [contentIntegrity, contentSize],
+  ] = await Promise.all([
+    integrityStreamP,
+    contentStreamP,
+  ])
+
+  t.equal(ssriSize, CONTENT.length, 'ssri got the right size')
+  t.equal(contentSize, CONTENT.length, 'content got the right size')
+  t.same(ssriIntegrity, INTEGRITY, 'ssri got the right integrity')
+  t.same(contentIntegrity, INTEGRITY, 'content got the right integrity')
+
+  const cpath = contentPath(CACHE, ssriIntegrity)
+  t.ok(fs.lstatSync(cpath).isFile(), 'content inserted as a single file')
+  t.equal(fs.readFileSync(cpath, 'utf8'), CONTENT, 'contents are identical to inserted content')
 })
 
 t.test("checks input digest doesn't match data", (t) => {
