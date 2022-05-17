@@ -12,6 +12,18 @@
 
 * move to async functions where possible ([#106](https://github.com/npm/cacache/issues/106)) ([71d4389](https://github.com/npm/cacache/commit/71d4389ff8a35330c3fedce97761094e243d4faf))
 
+## [16.1.0](https://github.com/npm/cacache/compare/v16.0.7...v16.1.0) (2022-05-17)
+
+
+### Features
+
+* allow external integrity/size source ([#110](https://github.com/npm/cacache/issues/110)) ([61785e1](https://github.com/npm/cacache/commit/61785e106765f4b44041de318f6e387d93759e60))
+
+
+### Bug Fixes
+
+* move to async functions where possible ([#106](https://github.com/npm/cacache/issues/106)) ([71d4389](https://github.com/npm/cacache/commit/71d4389ff8a35330c3fedce97761094e243d4faf))
+
 ### [16.0.7](https://github.com/npm/cacache/compare/v16.0.6...v16.0.7) (2022-04-27)
 
 
