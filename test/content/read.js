@@ -17,12 +17,12 @@ permissionError.code = 'EPERM'
 
 // helpers
 const getRead = (t, opts) => t.mock('../../lib/content/read', opts)
-const getReadLstatFailure = (t, err) => getRead(t, {
+const getReadStatFailure = (t, err) => getRead(t, {
   '@npmcli/fs': Object.assign({}, require('@npmcli/fs'), {
-    async lstat (path) {
+    async stat (path) {
       throw err
     },
-    lstatSync () {
+    statSync () {
       throw err
     },
   }),
@@ -261,7 +261,7 @@ t.test('read: opening large files', function (t) {
   const CACHE = t.testdir()
   const mockedRead = getRead(t, {
     '@npmcli/fs': Object.assign({}, require('@npmcli/fs'), {
-      async lstat (path) {
+      async stat (path) {
         return { size: Number.MAX_SAFE_INTEGER }
       },
     }),
@@ -370,7 +370,7 @@ t.test('hasContent: tests content existence', (t) => {
 t.test('hasContent: permission error', (t) => {
   const CACHE = t.testdir()
   // setup a syntetic permission error
-  const mockedRead = getReadLstatFailure(t, permissionError)
+  const mockedRead = getReadStatFailure(t, permissionError)
 
   t.plan(1)
   t.rejects(
@@ -382,7 +382,7 @@ t.test('hasContent: permission error', (t) => {
 
 t.test('hasContent: generic error', (t) => {
   const CACHE = t.testdir()
-  const mockedRead = getReadLstatFailure(t, genericError)
+  const mockedRead = getReadStatFailure(t, genericError)
 
   t.plan(1)
   t.resolves(
@@ -426,7 +426,7 @@ t.test('hasContent.sync: checks content existence synchronously', (t) => {
 
 t.test('hasContent.sync: permission error', (t) => {
   const CACHE = t.testdir()
-  const mockedRead = getReadLstatFailure(t, permissionError)
+  const mockedRead = getReadStatFailure(t, permissionError)
 
   t.throws(
     () => mockedRead.hasContent.sync(CACHE, 'sha1-deadbeef sha1-13371337'),
@@ -438,7 +438,7 @@ t.test('hasContent.sync: permission error', (t) => {
 
 t.test('hasContent.sync: generic error', (t) => {
   const CACHE = t.testdir()
-  const mockedRead = getReadLstatFailure(t, genericError)
+  const mockedRead = getReadStatFailure(t, genericError)
 
   t.notOk(
     mockedRead.hasContent.sync(CACHE, 'sha1-deadbeef sha1-13371337'),
