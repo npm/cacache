@@ -74,7 +74,7 @@ t.test('read.stream: returns a stream with cache content data', function (t) {
 
 t.test('read: allows hashAlgorithm configuration', function (t) {
   const CONTENT = Buffer.from('foobarbaz')
-  const HASH = 'whirlpool'
+  const HASH = 'sha384'
   const INTEGRITY = ssri.fromData(CONTENT, { algorithms: [HASH] })
   const CACHE = t.testdir(
     CacheContent({
