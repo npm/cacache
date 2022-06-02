@@ -1,5 +1,12 @@
 # Changelog
 
+## [16.1.1](https://github.com/npm/cacache/compare/v16.1.0...v16.1.1) (2022-06-02)
+
+
+### Bug Fixes
+
+* **read:** change lstat to stat to correctly evaluate file size ([#114](https://github.com/npm/cacache/issues/114)) ([e3a2928](https://github.com/npm/cacache/commit/e3a2928e053e19fb6e8e73946ffe3d212e402ba7))
+
 ## [16.1.0](https://github.com/npm/cacache/compare/v16.0.7...v16.1.0) (2022-05-17)
 
 
