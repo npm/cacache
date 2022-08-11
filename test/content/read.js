@@ -28,7 +28,7 @@ const getReadStatFailure = (t, err) => getRead(t, {
   }),
 })
 
-t.test('read: returns a Promise with cache content data', function (t) {
+t.test('read: returns a Promise with cache content data', async t => {
   const CONTENT = Buffer.from('foobarbaz')
   const INTEGRITY = ssri.fromData(CONTENT)
   const CACHE = t.testdir(
@@ -36,9 +36,8 @@ t.test('read: returns a Promise with cache content data', function (t) {
       [INTEGRITY]: CONTENT,
     })
   )
-  return read(CACHE, INTEGRITY).then((data) => {
-    t.same(data, CONTENT, 'cache contents read correctly')
-  })
+  const data = await read(CACHE, INTEGRITY)
+  t.same(data, CONTENT, 'cache contents read correctly')
 })
 
 t.test('read.sync: reads synchronously', (t) => {
@@ -54,7 +53,7 @@ t.test('read.sync: reads synchronously', (t) => {
   t.end()
 })
 
-t.test('read.stream: returns a stream with cache content data', function (t) {
+t.test('read.stream: returns a stream with cache content data', async t => {
   const CONTENT = Buffer.from('foobarbaz')
   const INTEGRITY = ssri.fromData(CONTENT)
   const CACHE = t.testdir(
@@ -63,16 +62,15 @@ t.test('read.stream: returns a stream with cache content data', function (t) {
     })
   )
   const stream = read.stream(CACHE, INTEGRITY)
-  return Promise.all([
+  const [fromStream, fromBulk] = await Promise.all([
     stream.concat(),
     read(CACHE, INTEGRITY, { size: CONTENT.length }),
-  ]).then(([fromStream, fromBulk]) => {
-    t.same(fromStream, CONTENT, 'stream data checks out')
-    t.same(fromBulk, CONTENT, 'promise data checks out')
-  })
+  ])
+  t.same(fromStream, CONTENT, 'stream data checks out')
+  t.same(fromBulk, CONTENT, 'promise data checks out')
 })
 
-t.test('read: allows hashAlgorithm configuration', function (t) {
+t.test('read: allows hashAlgorithm configuration', async t => {
   const CONTENT = Buffer.from('foobarbaz')
   const HASH = 'sha384'
   const INTEGRITY = ssri.fromData(CONTENT, { algorithms: [HASH] })
@@ -82,16 +80,15 @@ t.test('read: allows hashAlgorithm configuration', function (t) {
     })
   )
   const stream = read.stream(CACHE, INTEGRITY)
-  return Promise.all([
+  const [fromStream, fromBulk] = await Promise.all([
     stream.concat(),
     read(CACHE, INTEGRITY),
-  ]).then(([fromStream, fromBulk]) => {
-    t.same(fromStream, CONTENT, 'stream used algorithm')
-    t.same(fromBulk, CONTENT, 'promise used algorithm')
-  })
+  ])
+  t.same(fromStream, CONTENT, 'stream used algorithm')
+  t.same(fromBulk, CONTENT, 'promise used algorithm')
 })
 
-t.test('read: errors if content missing', function (t) {
+t.test('read: errors if content missing', async t => {
   const CACHE = t.testdir({})
   const stream = read.stream(CACHE, 'sha512-whatnot')
   stream.on('data', function (data) {
@@ -100,28 +97,19 @@ t.test('read: errors if content missing', function (t) {
   stream.on('end', function () {
     throw new Error('end was emitted even though stream errored')
   })
-  return Promise.all([
-    stream.promise().catch((err) => {
-      if (err.code === 'ENOENT') {
-        return err
-      }
-
-      throw err
-    }),
-    read(CACHE, 'sha512-whatnot').catch((err) => {
-      if (err.code === 'ENOENT') {
-        return err
-      }
-
-      throw err
-    }),
-  ]).then(([streamErr, bulkErr]) => {
-    t.match(streamErr, { code: 'ENOENT' }, 'stream got the right error')
-    t.match(bulkErr, { code: 'ENOENT' }, 'bulk got the right error')
-  })
+  await t.rejects(
+    stream.promise(),
+    { code: 'ENOENT' },
+    'stream got the right error'
+  )
+  await t.rejects(
+    read(CACHE, 'sha512-whatnot'),
+    { code: 'ENOENT' },
+    'bulk got the right error'
+  )
 })
 
-t.test('read: errors if content fails checksum', function (t) {
+t.test('read: errors if content fails checksum', async t => {
   const CONTENT = Buffer.from('foobarbaz')
   const INTEGRITY = ssri.fromData(CONTENT)
   const CACHE = t.testdir(
@@ -133,28 +121,19 @@ t.test('read: errors if content fails checksum', function (t) {
   stream.on('end', function () {
     throw new Error('end was emitted even though stream errored')
   })
-  return Promise.all([
-    stream.promise().catch((err) => {
-      if (err.code === 'EINTEGRITY') {
-        return err
-      }
-
-      throw err
-    }),
-    read(CACHE, INTEGRITY).catch((err) => {
-      if (err.code === 'EINTEGRITY') {
-        return err
-      }
-
-      throw err
-    }),
-  ]).then(([streamErr, bulkErr]) => {
-    t.match(streamErr, { code: 'EINTEGRITY' }, 'stream got the right error')
-    t.match(bulkErr, { code: 'EINTEGRITY' }, 'bulk got the right error')
-  })
+  await t.rejects(
+    stream.promise(),
+    { code: 'EINTEGRITY' },
+    'stream got the right error'
+  )
+  await t.rejects(
+    read(CACHE, INTEGRITY),
+    { code: 'EINTEGRITY' },
+    'bulk got the right error'
+  )
 })
 
-t.test('read: errors if content size does not match size option', function (t) {
+t.test('read: errors if content size does not match size option', async t => {
   const CONTENT = Buffer.from('foobarbaz')
   const INTEGRITY = ssri.fromData(CONTENT)
   const CACHE = t.testdir(
@@ -166,27 +145,16 @@ t.test('read: errors if content size does not match size option', function (t) {
   stream.on('end', function () {
     throw new Error('end was called even though stream errored')
   })
-  return Promise.all([
-    stream.promise().catch((err) => {
-      if (err.code === 'EBADSIZE') {
-        return err
-      }
-
-      throw err
-    }),
-    read(CACHE, INTEGRITY, {
-      size: CONTENT.length,
-    }).catch((err) => {
-      if (err.code === 'EBADSIZE') {
-        return err
-      }
-
-      throw err
-    }),
-  ]).then(([streamErr, bulkErr]) => {
-    t.match(streamErr, { code: 'EBADSIZE' }, 'stream got the right error')
-    t.match(bulkErr, { code: 'EBADSIZE' }, 'bulk got the right error')
-  })
+  await t.rejects(
+    stream.promise(),
+    { code: 'EBADSIZE' },
+    'stream got the right error'
+  )
+  await t.rejects(
+    read(CACHE, INTEGRITY, { size: CONTENT.length }),
+    { code: 'EBADSIZE' },
+    'bulk got the right error'
+  )
 })
 
 t.test('read: error while parsing provided integrity data', function (t) {
@@ -344,27 +312,26 @@ t.test('read.sync: content size value does not match option', (t) => {
   t.end()
 })
 
-t.test('hasContent: tests content existence', (t) => {
+t.test('hasContent: tests content existence', async t => {
   const CACHE = t.testdir(
     CacheContent({
       'sha1-deadbeef': '',
     })
   )
-  return Promise.all([
-    read.hasContent(CACHE, 'sha1-deadbeef').then((content) => {
-      t.ok(content.sri, 'returned sri for this content')
-      t.equal(content.size, 0, 'returned the right size for this content')
-      t.ok(content.stat.isFile(), 'returned actual stat object')
-    }),
-    read.hasContent(CACHE, 'sha1-not-there').then((content) => {
-      t.equal(content, false, 'returned false for missing content')
-    }),
-    read
-      .hasContent(CACHE, 'sha1-not-here sha1-also-not-here')
-      .then((content) => {
-        t.equal(content, false, 'multi-content hash failures work ok')
-      }),
-  ])
+  const content = await read.hasContent(CACHE, 'sha1-deadbeef')
+  t.ok(content.sri, 'returned sri for this content')
+  t.equal(content.size, 0, 'returned the right size for this content')
+  t.ok(content.stat.isFile(), 'returned actual stat object')
+  await t.resolveMatch(
+    read.hasContent(CACHE, 'sha1-not-there'),
+    false,
+    'returned false for missing content'
+  )
+  await t.resolveMatch(
+    read.hasContent(CACHE, 'sha1-not-here sha1-also-not-here'),
+    false,
+    'multi-content hash failures work ok'
+  )
 })
 
 t.test('hasContent: permission error', (t) => {
@@ -457,7 +424,7 @@ t.test('hasContent.sync: no integrity provided', (t) => {
   t.end()
 })
 
-t.test('copy: copies content to a destination path', (t) => {
+t.test('copy: copies content to a destination path', async t => {
   const CONTENT = Buffer.from('foobarbaz')
   const INTEGRITY = ssri.fromData(CONTENT)
   const CACHE = t.testdir(
@@ -466,14 +433,9 @@ t.test('copy: copies content to a destination path', (t) => {
     })
   )
   const DEST = path.join(CACHE, 'foobar-file')
-  return read
-    .copy(CACHE, INTEGRITY, DEST)
-    .then(() => {
-      return fs.readFile(DEST)
-    })
-    .then((data) => {
-      t.same(data, CONTENT, 'file successfully copied')
-    })
+  await read.copy(CACHE, INTEGRITY, DEST)
+  const data = await fs.readFile(DEST)
+  t.same(data, CONTENT, 'file successfully copied')
 })
 
 t.test('copy.sync: copies content to a destination path synchronously', (t) => {

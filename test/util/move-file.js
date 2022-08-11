@@ -41,18 +41,14 @@ t.test('does not clobber existing files', function (t) {
     })
 })
 
-t.test('does not move a file into an existing directory', function (t) {
+t.test('does not move a file into an existing directory', async t => {
   const testDir = t.testdir({
     src: 'foo',
     dest: {},
   })
-  return moveFile(testDir + '/src', testDir + '/dest')
-    .then(() => {
-      return fs.readdir(testDir + '/dest')
-    })
-    .then((files) => {
-      t.equal(files.length, 0, 'directory remains empty')
-    })
+  await moveFile(testDir + '/src', testDir + '/dest')
+  const files = await fs.readdir(testDir + '/dest')
+  t.equal(files.length, 0, 'directory remains empty')
 })
 
 t.test('does not error if destination file is open', function (t) {
@@ -79,7 +75,7 @@ t.test('does not error if destination file is open', function (t) {
   })
 })
 
-t.test('fallback to renaming on missing files post-move', async function (t) {
+t.test('fallback to renaming on missing files post-move', async t => {
   const testDir = t.testdir({
     src: 'foo',
   })
@@ -176,26 +172,20 @@ t.test(
   {
     skip: process.platform === 'win32',
   },
-  function (t) {
+  async t => {
     const testDir = t.testdir({
       src: 'foo',
       dest: {},
     })
 
-    return fs.chmod(testDir + '/dest', parseInt('400', 8))
-      .then(() => {
-        return moveFile(testDir + '/src', path.join(testDir + '/dest', 'file'))
-          .then(() => {
-            throw new Error('move succeeded and should not have')
-          })
-          .catch((err) => {
-            t.ok(err, 'error was returned')
-            t.equal(err.code, 'EACCES', 'error is about permissions')
-            return fs.readFile(testDir + '/src', 'utf8')
-          })
-      })
-      .then((data) => {
-        t.equal(data, 'foo', 'src contents left intact')
-      })
+    await fs.chmod(testDir + '/dest', parseInt('400', 8))
+    await t.rejects(
+      moveFile(testDir + '/src', path.join(testDir + '/dest', 'file')),
+      { code: 'EACCES' },
+      'error is about permissions'
+    )
+
+    const data = await fs.readFile(testDir + '/src', 'utf8')
+    t.equal(data, 'foo', 'src contents left intact')
   }
 )

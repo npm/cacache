@@ -12,7 +12,7 @@ const t = require('tap')
 
 const contentPath = require('../../lib/content/path')
 
-t.test('infers ownership from cache folder owner', (t) => {
+t.test('infers ownership from cache folder owner', async t => {
   const CACHE = t.testdir({ cache: {} })
   const CONTENT = 'foobarbaz'
   const INTEGRITY = ssri.fromData(CONTENT)
@@ -32,21 +32,16 @@ t.test('infers ownership from cache folder owner', (t) => {
     },
   })
   t.plan(7)
-  return write.stream(CACHE, { hashAlgorithm: 'sha1' })
-    .end(CONTENT)
-    .promise()
-    .then(() => {
-      const cpath = contentPath(CACHE, INTEGRITY)
-      const expectedPaths = [
-        path.join(CACHE, path.relative(CACHE, cpath).split(path.sep)[0]),
-        cpath,
-        path.join(CACHE, 'tmp'),
-      ]
-      t.same(
-        updatedPaths.sort(),
-        expectedPaths,
-        'all paths that needed user stuff set got set'
-      )
-    })
-}
-)
+  await write.stream(CACHE, { hashAlgorithm: 'sha1' }).end(CONTENT).promise()
+  const cpath = contentPath(CACHE, INTEGRITY)
+  const expectedPaths = [
+    path.join(CACHE, path.relative(CACHE, cpath).split(path.sep)[0]),
+    cpath,
+    path.join(CACHE, 'tmp'),
+  ]
+  t.same(
+    updatedPaths.sort(),
+    expectedPaths,
+    'all paths that needed user stuff set got set'
+  )
+})

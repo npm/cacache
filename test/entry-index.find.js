@@ -8,7 +8,7 @@ const SIZE = 999
 const contentPath = require('../lib/content/path')
 const index = require('../lib/entry-index')
 
-t.test('index.find cache hit', function (t) {
+t.test('index.find cache hit', async t => {
   const entry = {
     key: 'whatever',
     integrity: 'whatnot-deadbeef',
@@ -21,38 +21,40 @@ t.test('index.find cache hit', function (t) {
       whatever: entry,
     })
   )
-  return index.find(CACHE, entry.key).then((info) => {
-    t.ok(info, 'cache hit')
-    t.equal(
-      info.path,
-      contentPath(CACHE, entry.integrity),
-      'path added to info'
-    )
-    delete info.path
-    t.same(info, entry, 'rest of info matches entry on disk')
-  })
+  const info = await index.find(CACHE, entry.key)
+  t.ok(info, 'cache hit')
+  t.equal(
+    info.path,
+    contentPath(CACHE, entry.integrity),
+    'path added to info'
+  )
+  delete info.path
+  t.same(info, entry, 'rest of info matches entry on disk')
 })
 
-t.test('index.find cache miss', function (t) {
+t.test('index.find cache miss', async t => {
   const CACHE = t.testdir(
     CacheIndex({
       foo: { key: 'foo' },
       'w/e': { key: 'w/e' },
     })
   )
-  return index.find(CACHE, 'whatever').then((info) => {
-    t.ok(!info, 'cache miss when specific key not present')
-  })
+  await t.resolveMatch(
+    index.find(CACHE, 'whatever'),
+    null,
+    'cache miss when specific key not present'
+  )
 })
 
-t.test('index.find no cache', function (t) {
-  return index.find(path.resolve('adirectorythatdoesnotexit'), 'whatever')
-    .then((info) => {
-      t.ok(!info, 'if there is no cache dir, behaves like a cache miss')
-    })
+t.test('index.find no cache', async t => {
+  await t.resolveMatch(
+    index.find(path.resolve('adirectorythatdoesnotexit'), 'whatever'),
+    null,
+    'if there is no cache dir, behaves like a cache miss'
+  )
 })
 
-t.test('index.find key case-sensitivity', function (t) {
+t.test('index.find key case-sensitivity', async t => {
   const CACHE = t.testdir(
     CacheIndex({
       jsonstream: {
@@ -69,22 +71,24 @@ t.test('index.find key case-sensitivity', function (t) {
       },
     })
   )
-  return Promise.all([
-    index.find(CACHE, 'JSONStream').then((info) => {
-      t.ok(info, 'found an entry for JSONStream')
-      t.equal(info.key, 'JSONStream', 'fetched the correct entry')
-    }),
-    index.find(CACHE, 'jsonstream').then((info) => {
-      t.ok(info, 'found an entry for jsonstream')
-      t.equal(info.key, 'jsonstream', 'fetched the correct entry')
-    }),
-    index.find(CACHE, 'jsonStream').then((info) => {
-      t.ok(!info, 'no entry for jsonStream')
-    }),
-  ])
+  await t.resolveMatch(
+    index.find(CACHE, 'JSONStream'),
+    { key: 'JSONStream' },
+    'fetched the correct entry'
+  )
+  await t.resolveMatch(
+    index.find(CACHE, 'jsonstream'),
+    { key: 'jsonstream' },
+    'fetched the correct entry'
+  )
+  await t.resolveMatch(
+    index.find(CACHE, 'jsonStream'),
+    null,
+    'no entry for jsonStream'
+  )
 })
 
-t.test('index.find path-breaking characters', function (t) {
+t.test('index.find path-breaking characters', async t => {
   const entry = {
     key: ';;!registry\nhttps://registry.npmjs.org/back \\ slash@Cool™?',
     integrity: 'sha1-deadbeef',
@@ -97,18 +101,17 @@ t.test('index.find path-breaking characters', function (t) {
       [entry.key]: entry,
     })
   )
-  return index.find(CACHE, entry.key).then((info) => {
-    t.ok(info, 'cache hit')
-    delete info.path
-    t.same(
-      info,
-      entry,
-      'info remains intact even with fs-unfriendly chars'
-    )
-  })
+  const info = await index.find(CACHE, entry.key)
+  t.ok(info, 'cache hit')
+  delete info.path
+  t.same(
+    info,
+    entry,
+    'info remains intact even with fs-unfriendly chars'
+  )
 })
 
-t.test('index.find extremely long keys', function (t) {
+t.test('index.find extremely long keys', async t => {
   let key = ''
   for (let i = 0; i < 10000; i++) {
     key += i
@@ -126,14 +129,13 @@ t.test('index.find extremely long keys', function (t) {
       [entry.key]: entry,
     })
   )
-  return index.find(CACHE, entry.key).then((info) => {
-    t.ok(info, 'cache hit')
-    delete info.path
-    t.same(info, entry, 'info remains intact even with absurdly long key')
-  })
+  const info = await index.find(CACHE, entry.key)
+  t.ok(info, 'cache hit')
+  delete info.path
+  t.same(info, entry, 'info remains intact even with absurdly long key')
 })
 
-t.test('index.find multiple index entries for key', function (t) {
+t.test('index.find multiple index entries for key', async t => {
   const key = 'whatever'
   const CACHE = t.testdir(
     CacheIndex({
@@ -143,13 +145,12 @@ t.test('index.find multiple index entries for key', function (t) {
       ],
     })
   )
-  return index.find(CACHE, key).then((info) => {
-    t.ok(info, 'cache hit')
-    t.equal(info.integrity, 'sha1-bada55', 'most recent entry wins')
-  })
+  const info = await index.find(CACHE, key)
+  t.ok(info, 'cache hit')
+  t.equal(info.integrity, 'sha1-bada55', 'most recent entry wins')
 })
 
-t.test('index.find garbled data in index file', function (t) {
+t.test('index.find garbled data in index file', async t => {
   // Even though `index.insert()` is safe from direct
   // race conditions, it's still possible for individual
   // entries to become corrupted, or to be partially written,
@@ -176,13 +177,12 @@ t.test('index.find garbled data in index file', function (t) {
         '"\noway',
     })
   )
-  return index.find(CACHE, key).then((info) => {
-    t.ok(info, 'cache hit in spite of crash-induced fail')
-    t.equal(info.integrity, 'sha1-deadbeef', ' recent entry wins')
-  })
+  const info = await index.find(CACHE, key)
+  t.ok(info, 'cache hit in spite of crash-induced fail')
+  t.equal(info.integrity, 'sha1-deadbeef', ' recent entry wins')
 })
 
-t.test('index.find hash conflict in same bucket', function (t) {
+t.test('index.find hash conflict in same bucket', async t => {
   // This... is very unlikely to happen. But hey.
   const entry = {
     key: 'whatever',
@@ -200,13 +200,12 @@ t.test('index.find hash conflict in same bucket', function (t) {
       ],
     })
   )
-  return index.find(CACHE, entry.key).then((info) => {
-    t.ok(info, 'cache hit')
-    delete info.path
-    t.same(
-      info,
-      entry,
-      'got the right one even though different keys exist in index'
-    )
-  })
+  const info = await index.find(CACHE, entry.key)
+  t.ok(info, 'cache hit')
+  delete info.path
+  t.same(
+    info,
+    entry,
+    'got the right one even though different keys exist in index'
+  )
 })

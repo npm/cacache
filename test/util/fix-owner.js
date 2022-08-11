@@ -27,7 +27,7 @@ const getFixOwner = (t, opts) => t.mock('../../lib/util/fix-owner', opts)
 
 // chownr and chownr.fix error handling tests
 
-t.test('attempt to chownr existing path', (t) => {
+t.test('attempt to chownr existing path', async t => {
   patchesGetuid(t)
   const fixOwner = getFixOwner(t, {
     chownr: function chownr (path, uid, gid, cb) {
@@ -36,11 +36,7 @@ t.test('attempt to chownr existing path', (t) => {
     'infer-owner': () => Promise.resolve({}),
   })
 
-  t.plan(1)
-  return fixOwner.chownr(CACHE, filename)
-    .then(res => {
-      t.notOk(res, 'should not throw if path exists')
-    })
+  await t.resolves(fixOwner.chownr(CACHE, filename), 'should not throw if path exists')
 })
 
 t.test('attempt to chownr unknown error', (t) => {
@@ -56,7 +52,7 @@ t.test('attempt to chownr unknown error', (t) => {
   t.rejects(() => fixOwner.chownr(CACHE, filename), 'should throw unknown errors')
 })
 
-t.test('attempt to chownr using same user', (t) => {
+t.test('attempt to chownr using same user', async t => {
   patchesGetuid(t)
   const fixOwner = getFixOwner(t, {
     'infer-owner': () => Promise.resolve({
@@ -65,14 +61,10 @@ t.test('attempt to chownr using same user', (t) => {
     }),
   })
 
-  t.plan(1)
-  return fixOwner.chownr(CACHE, filename)
-    .then(res => {
-      t.notOk(res, 'should not throw')
-    })
+  await t.resolves(fixOwner.chownr(CACHE, filename), 'should not throw')
 })
 
-t.test('calls setuid setgid to replace user', (t) => {
+t.test('calls setuid setgid to replace user', async t => {
   const setuid = process.setuid
   const setgid = process.setgid
   process.getuid = () => 0
@@ -94,25 +86,17 @@ t.test('calls setuid setgid to replace user', (t) => {
     },
   })
 
-  t.plan(1)
-  return fixOwner.chownr(CACHE, filename)
-    .then(res => {
-      t.notOk(res, 'should not throw')
-    })
+  await t.resolves(fixOwner.chownr(CACHE, filename), 'should not throw')
 })
 
-t.test('attempt to chownr.sync on platforms that do not need ownership fix', (t) => {
+t.test('attempt to chownr.sync on platforms that do not need ownership fix', async t => {
   process.getuid = undefined
   t.teardown(() => {
     process.getuid = getuid
   })
   const fixOwner = require('../../lib/util/fix-owner')
 
-  t.plan(1)
-  return fixOwner.chownr(CACHE, filename)
-    .then(res => {
-      t.notOk(res, 'should not throw')
-    })
+  await t.resolves(fixOwner.chownr(CACHE, filename), 'should not throw')
 })
 
 t.test('attempt to chownr.sync existing path', (t) => {
@@ -201,16 +185,13 @@ t.test('uses infer-owner ids instead of process-retrieved if valid', (t) => {
 
 // mkdirfix and mkdirfix.sync error handling tests
 
-t.test('attempt to mkdirfix existing path', (t) => {
+t.test('attempt to mkdirfix existing path', async t => {
   const fixOwner = getFixOwner(t, {
     mkdirp: () => Promise.reject(pathExistsError),
   })
 
-  t.plan(1)
-  return fixOwner.mkdirfix(CACHE, filename)
-    .then(res => {
-      t.notOk(res, 'should not throw if path exists')
-    })
+  const res = await fixOwner.mkdirfix(CACHE, filename)
+  t.notOk(res, 'should not throw if path exists')
 })
 
 t.test('attempt to mkdirfix unknown error', (t) => {

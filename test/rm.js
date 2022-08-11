@@ -21,35 +21,21 @@ const cacheContent = CacheContent({
   [INTEGRITY]: CONTENT,
 })
 
-t.test('rm.entry removes entries, not content', (t) => {
+t.test('rm.entry removes entries, not content', async t => {
   const cache = t.testdir(cacheContent)
-  return index
-    .insert(cache, KEY, INTEGRITY, {
-      metadata: METADATA,
-    })
-    .then(() => {
-      t.equal(rm, rm.entry, 'rm is an alias for rm.entry')
-      return rm.entry(cache, KEY)
-    })
-    .then(() => {
-      return get(cache, KEY)
-    })
-    .then((res) => {
-      throw new Error('unexpected success')
-    })
-    .catch((err) => {
-      if (err.code === 'ENOENT') {
-        t.match(err.message, KEY, 'entry no longer accessible')
-        return
-      }
-      throw err
-    })
-    .then(() => {
-      return fs.readFile(contentPath(cache, INTEGRITY))
-    })
-    .then((data) => {
-      t.same(data, CONTENT, 'content remains in cache')
-    })
+  await index.insert(cache, KEY, INTEGRITY, { metadata: METADATA })
+  t.equal(rm, rm.entry, 'rm is an alias for rm.entry')
+  await rm.entry(cache, KEY)
+  await t.rejects(
+    get(cache, KEY),
+    {
+      code: 'ENOENT',
+      message: new RegExp(KEY),
+    },
+    'entry no longer accessible'
+  )
+  const data = await fs.readFile(contentPath(cache, INTEGRITY))
+  t.same(data, CONTENT, 'content remains in cache')
 })
 
 t.test('rm.content removes content, not entries', (t) => {
@@ -89,29 +75,16 @@ t.test('rm.content removes content, not entries', (t) => {
     })
 })
 
-t.test('rm.all deletes content and index dirs', (t) => {
+t.test('rm.all deletes content and index dirs', async t => {
   const cache = t.testdir(cacheContent)
-  return index
-    .insert(cache, KEY, INTEGRITY, {
-      metadata: METADATA,
-    })
-    .then(() => {
-      return fs.mkdir(path.join(cache, 'tmp'))
-    })
-    .then(() => {
-      return fs.writeFile(path.join(cache, 'other.js'), 'hi')
-    })
-    .then(() => {
-      return rm.all(cache)
-    })
-    .then(() => {
-      return fs.readdir(cache)
-    })
-    .then((files) => {
-      t.same(
-        files.sort(),
-        ['other.js', 'tmp'],
-        'removes content and index directories without touching other stuff'
-      )
-    })
+  await index.insert(cache, KEY, INTEGRITY, { metadata: METADATA })
+  await fs.mkdir(path.join(cache, 'tmp'))
+  await fs.writeFile(path.join(cache, 'other.js'), 'hi')
+  await rm.all(cache)
+  const files = await fs.readdir(cache)
+  t.same(
+    files.sort(),
+    ['other.js', 'tmp'],
+    'removes content and index directories without touching other stuff'
+  )
 })
