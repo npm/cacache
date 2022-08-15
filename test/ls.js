@@ -7,7 +7,7 @@ const t = require('tap')
 
 const { ls } = require('..')
 
-t.test('basic listing', function (t) {
+t.test('basic listing', async t => {
   const contents = {
     whatever: {
       key: 'whatever',
@@ -27,23 +27,18 @@ t.test('basic listing', function (t) {
   const CACHE = t.testdir(CacheIndex(contents))
   contents.whatever.path = contentPath(CACHE, contents.whatever.integrity)
   contents.whatnot.path = contentPath(CACHE, contents.whatnot.integrity)
-  return ls(CACHE)
-    .then((listing) => {
-      t.same(listing, contents, 'index contents correct')
-    })
-    .then(() => {
-      const listing = {}
-      const stream = ls.stream(CACHE)
-      stream.on('data', (entry) => {
-        listing[entry.key] = entry
-      })
-      return stream.promise().then(() => {
-        t.same(listing, contents, 'ls is streamable')
-      })
-    })
+  const listing = await ls(CACHE)
+  t.same(listing, contents, 'index contents correct')
+  const newListing = {}
+  const stream = ls.stream(CACHE)
+  stream.on('data', (entry) => {
+    newListing[entry.key] = entry
+  })
+  await stream.promise()
+  t.same(newListing, contents, 'ls is streamable')
 })
 
-t.test('separate keys in conflicting buckets', function (t) {
+t.test('separate keys in conflicting buckets', async t => {
   const contents = {
     whatever: {
       key: 'whatever',
@@ -68,19 +63,17 @@ t.test('separate keys in conflicting buckets', function (t) {
   )
   contents.whatever.path = contentPath(CACHE, contents.whatever.integrity)
   contents.whatev.path = contentPath(CACHE, contents.whatev.integrity)
-  return ls(CACHE).then((listing) => {
-    t.same(listing, contents, 'index contents correct')
-  })
+  const listing = await ls(CACHE)
+  t.same(listing, contents, 'index contents correct')
 })
 
-t.test('works fine on an empty/missing cache', function (t) {
+t.test('works fine on an empty/missing cache', async t => {
   const CACHE = t.testdir()
-  return ls(CACHE).then((listing) => {
-    t.same(listing, {}, 'returned an empty listing')
-  })
+  const listing = await ls(CACHE)
+  t.same(listing, {}, 'returned an empty listing')
 })
 
-t.test('ignores non-dir files', function (t) {
+t.test('ignores non-dir files', async t => {
   const index = CacheIndex({
     whatever: {
       key: 'whatever',
@@ -92,10 +85,9 @@ t.test('ignores non-dir files', function (t) {
   })
   index.garbage = 'hello world'
   const CACHE = t.testdir(index)
-  return ls(CACHE).then((listing) => {
-    t.equal(Object.keys(listing).length, 1, 'only 1 item in listing')
-    t.equal(listing.whatever.key, 'whatever', 'only the correct entry listed')
-  })
+  const listing = await ls(CACHE)
+  t.equal(Object.keys(listing).length, 1, 'only 1 item in listing')
+  t.equal(listing.whatever.key, 'whatever', 'only the correct entry listed')
 })
 
 t.test('correctly ignores deleted entries', (t) => {

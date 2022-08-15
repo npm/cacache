@@ -56,13 +56,11 @@ function streamGet (byDigest) {
     }))
 }
 
-t.test('get.info index entry lookup', (t) => {
+t.test('get.info index entry lookup', async t => {
   const CACHE = t.testdir()
-  return index.insert(CACHE, KEY, INTEGRITY, opts()).then((ENTRY) => {
-    return get.info(CACHE, KEY).then((entry) => {
-      t.same(entry, ENTRY, 'get.info() returned the right entry')
-    })
-  })
+  const indexInsert = await index.insert(CACHE, KEY, INTEGRITY, opts())
+  const entry = await get.info(CACHE, KEY)
+  t.same(entry, indexInsert, 'get.info() returned the right entry')
 })
 
 t.test('get.sync will throw ENOENT if not found', (t) => {
@@ -92,35 +90,28 @@ t.test('get will throw ENOENT if not found', (t) => {
     })
 })
 
-t.test('basic bulk get', (t) => {
+t.test('basic bulk get', async t => {
   const CACHE = t.testdir(
     CacheContent({
       [INTEGRITY]: CONTENT,
     })
   )
-  return index
-    .insert(CACHE, KEY, INTEGRITY, opts())
-    .then(() => {
-      return get(CACHE, KEY)
-    })
-    .then((res) => {
-      t.same(
-        res,
-        {
-          metadata: METADATA,
-          data: CONTENT,
-          integrity: INTEGRITY,
-          size: SIZE,
-        },
-        'bulk key get returned proper data'
-      )
-    })
-    .then(() => {
-      return get.byDigest(CACHE, INTEGRITY)
-    })
-    .then((res) => {
-      t.same(res, CONTENT, 'byDigest returned proper data')
-    })
+  await index.insert(CACHE, KEY, INTEGRITY, opts())
+  await t.resolveMatch(
+    get(CACHE, KEY),
+    {
+      metadata: METADATA,
+      data: CONTENT,
+      integrity: INTEGRITY,
+      size: SIZE,
+    },
+    'bulk key get returned proper data'
+  )
+  await t.resolveMatch(
+    get.byDigest(CACHE, INTEGRITY),
+    CONTENT,
+    'byDigest returned proper data'
+  )
 })
 
 t.test('get.sync.byDigest without memoization', (t) => {
@@ -205,190 +196,160 @@ t.test('get.sync with memoization', (t) => {
   t.end()
 })
 
-t.test('get.byDigest without memoization', (t) => {
+t.test('get.byDigest without memoization', async t => {
   const CACHE = t.testdir(
     CacheContent({
       [INTEGRITY]: CONTENT,
     })
   )
   index.insert.sync(CACHE, KEY, INTEGRITY, opts())
-  get(CACHE, KEY)
-    .then((res) => {
-      t.same(
-        res,
-        {
-          metadata: METADATA,
-          data: CONTENT,
-          integrity: INTEGRITY,
-          size: SIZE,
-        },
-        'bulk key get returned proper data')
+  const res = await get(CACHE, KEY)
+  t.same(
+    res,
+    {
+      metadata: METADATA,
+      data: CONTENT,
+      integrity: INTEGRITY,
+      size: SIZE,
+    },
+    'bulk key get returned proper data')
 
-      memo.clearMemoized()
-      t.same(memo.get.byDigest(CACHE, INTEGRITY), undefined)
-      return get.byDigest(CACHE, INTEGRITY)
-        .then((resByDig) => {
-          t.same(resByDig, CONTENT, 'byDigest returned proper data')
-          t.same(memo.get.byDigest(CACHE, INTEGRITY), undefined)
+  memo.clearMemoized()
+  t.same(memo.get.byDigest(CACHE, INTEGRITY), undefined)
+  const resByDig = await get.byDigest(CACHE, INTEGRITY)
+  t.same(resByDig, CONTENT, 'byDigest returned proper data')
+  t.same(memo.get.byDigest(CACHE, INTEGRITY), undefined)
 
-          return get.byDigest(CACHE, INTEGRITY)
-        })
-        .then((resByDigMemo) => {
-          t.same(resByDigMemo, CONTENT, 'byDigest returned proper data')
-          t.end()
-        })
-    })
+  const resByDigMemo = await get.byDigest(CACHE, INTEGRITY)
+  t.same(resByDigMemo, CONTENT, 'byDigest returned proper data')
 })
 
-t.test('get.byDigest with memoization', (t) => {
+t.test('get.byDigest with memoization', async t => {
   const CACHE = t.testdir(
     CacheContent({
       [INTEGRITY]: CONTENT,
     })
   )
   index.insert.sync(CACHE, KEY, INTEGRITY, opts())
-  get(CACHE, KEY)
-    .then((res) => {
-      t.same(
-        res,
-        {
-          metadata: METADATA,
-          data: CONTENT,
-          integrity: INTEGRITY,
-          size: SIZE,
-        },
-        'bulk key get returned proper data')
+  const res = await get(CACHE, KEY)
+  t.same(
+    res,
+    {
+      metadata: METADATA,
+      data: CONTENT,
+      integrity: INTEGRITY,
+      size: SIZE,
+    },
+    'bulk key get returned proper data')
 
-      memo.clearMemoized()
-      t.same(memo.get.byDigest(CACHE, INTEGRITY), undefined)
-      return get.byDigest(CACHE, INTEGRITY, { memoize: true })
-        .then((resByDig) => {
-          t.same(resByDig, CONTENT, 'byDigest returned proper data')
-          t.notSame(memo.get.byDigest(CACHE, INTEGRITY), undefined)
+  memo.clearMemoized()
+  t.same(memo.get.byDigest(CACHE, INTEGRITY), undefined)
+  const resByDig = await get.byDigest(CACHE, INTEGRITY, { memoize: true })
+  t.same(resByDig, CONTENT, 'byDigest returned proper data')
+  t.notSame(memo.get.byDigest(CACHE, INTEGRITY), undefined)
 
-          return get.byDigest(CACHE, INTEGRITY, { memoize: true })
-        })
-        .then((resByDigMemo) => {
-          t.same(resByDigMemo, CONTENT, 'byDigest returned proper data')
-          t.end()
-        })
-    })
+  const resByDigMemo = await get.byDigest(CACHE, INTEGRITY, { memoize: true })
+  t.same(resByDigMemo, CONTENT, 'byDigest returned proper data')
 })
 
-t.test('get without memoization', (t) => {
+t.test('get without memoization', async t => {
   const CACHE = t.testdir(
     CacheContent({
       [INTEGRITY]: CONTENT,
     })
   )
   index.insert.sync(CACHE, KEY, INTEGRITY, opts())
-  get(CACHE, KEY)
-    .then((res) => {
-      t.same(
-        res,
-        {
-          metadata: METADATA,
-          data: CONTENT,
-          integrity: INTEGRITY,
-          size: SIZE,
-        },
-        'bulk key get returned proper data')
+  const res = await get(CACHE, KEY)
+  t.same(
+    res,
+    {
+      metadata: METADATA,
+      data: CONTENT,
+      integrity: INTEGRITY,
+      size: SIZE,
+    },
+    'bulk key get returned proper data')
 
-      memo.clearMemoized()
-      t.same(memo.get(CACHE, KEY), undefined)
-      return get(CACHE, KEY)
-        .then((resByDig) => {
-          t.same(resByDig, {
-            metadata: METADATA,
-            data: CONTENT,
-            integrity: INTEGRITY,
-            size: SIZE,
-          }, 'get returned proper data')
-          t.same(memo.get(CACHE, KEY), undefined)
+  memo.clearMemoized()
+  t.same(memo.get(CACHE, KEY), undefined)
+  const resByDig = await get(CACHE, KEY)
+  t.same(resByDig, {
+    metadata: METADATA,
+    data: CONTENT,
+    integrity: INTEGRITY,
+    size: SIZE,
+  }, 'get returned proper data')
+  t.same(memo.get(CACHE, KEY), undefined)
 
-          return get(CACHE, KEY)
-        })
-        .then((resByDigMemo) => {
-          t.same(resByDigMemo, {
-            metadata: METADATA,
-            data: CONTENT,
-            integrity: INTEGRITY,
-            size: SIZE,
-          }, 'get returned proper data')
-          t.end()
-        })
-    })
+  const resByDigMemo = await get(CACHE, KEY)
+  t.same(resByDigMemo, {
+    metadata: METADATA,
+    data: CONTENT,
+    integrity: INTEGRITY,
+    size: SIZE,
+  }, 'get returned proper data')
 })
 
-t.test('get with memoization', (t) => {
+t.test('get with memoization', async t => {
   const CACHE = t.testdir(
     CacheContent({
       [INTEGRITY]: CONTENT,
     })
   )
   index.insert.sync(CACHE, KEY, INTEGRITY, opts())
-  get(CACHE, KEY)
-    .then((res) => {
-      t.same(
-        res,
-        {
-          metadata: METADATA,
-          data: CONTENT,
-          integrity: INTEGRITY,
-          size: SIZE,
-        },
-        'bulk key get returned proper data')
+  const res = await get(CACHE, KEY)
+  t.same(
+    res,
+    {
+      metadata: METADATA,
+      data: CONTENT,
+      integrity: INTEGRITY,
+      size: SIZE,
+    },
+    'bulk key get returned proper data')
 
-      memo.clearMemoized()
-      t.same(memo.get(CACHE, KEY), undefined)
-      return get(CACHE, KEY, { memoize: true })
-        .then((resByDig) => {
-          t.same(resByDig, {
-            metadata: METADATA,
-            data: CONTENT,
-            integrity: INTEGRITY,
-            size: SIZE,
-          }, 'get returned proper data')
-          t.notSame(memo.get(CACHE, KEY), undefined)
+  memo.clearMemoized()
+  t.same(memo.get(CACHE, KEY), undefined)
+  const resByDig = await get(CACHE, KEY, { memoize: true })
+  t.same(resByDig, {
+    metadata: METADATA,
+    data: CONTENT,
+    integrity: INTEGRITY,
+    size: SIZE,
+  }, 'get returned proper data')
+  t.notSame(memo.get(CACHE, KEY), undefined)
 
-          return get(CACHE, KEY, { memoize: true })
-        })
-        .then((resByDigMemo) => {
-          t.same(resByDigMemo, {
-            metadata: METADATA,
-            data: CONTENT,
-            integrity: INTEGRITY,
-            size: SIZE,
-          }, 'get returned proper data')
-          t.end()
-        })
-    })
+  const resByDigMemo = await get(CACHE, KEY, { memoize: true })
+  t.same(resByDigMemo, {
+    metadata: METADATA,
+    data: CONTENT,
+    integrity: INTEGRITY,
+    size: SIZE,
+  }, 'get returned proper data')
 })
 
-t.test('basic stream get', (t) => {
+t.test('basic stream get', async t => {
   const CACHE = t.testdir(
     CacheContent({
       [INTEGRITY]: CONTENT,
     })
   )
-  return index.insert(CACHE, KEY, INTEGRITY, opts()).then(() => {
-    return Promise.all([
-      streamGet(false, CACHE, KEY),
-      streamGet(true, CACHE, INTEGRITY),
-    ]).then(([byKey, byDigest]) => {
-      t.same(
-        byKey,
-        {
-          data: CONTENT,
-          integrity: INTEGRITY,
-          metadata: METADATA,
-          size: SIZE,
-        },
-        'got all expected data and fields from key fetch'
-      )
-      t.same(byDigest.data, CONTENT, 'got correct data from digest fetch')
-    })
-  })
+  await index.insert(CACHE, KEY, INTEGRITY, opts())
+  const [byKey, byDigest] = await Promise.all([
+    streamGet(false, CACHE, KEY),
+    streamGet(true, CACHE, INTEGRITY),
+  ])
+  t.same(
+    byKey,
+    {
+      data: CONTENT,
+      integrity: INTEGRITY,
+      metadata: METADATA,
+      size: SIZE,
+    },
+    'got all expected data and fields from key fetch'
+  )
+  t.same(byDigest.data, CONTENT, 'got correct data from digest fetch')
 })
 
 t.test('get.stream add new listeners post stream creation', (t) => {
@@ -540,122 +501,98 @@ t.test('memoizes data on bulk read', (t) => {
   })
 })
 
-t.test('memoizes data on stream read', (t) => {
+t.test('memoizes data on stream read', async t => {
   memo.clearMemoized()
   const CACHE = t.testdir(
     CacheContent({
       [INTEGRITY]: CONTENT,
     })
   )
-  return index.insert(CACHE, KEY, INTEGRITY, opts()).then((ENTRY) => {
-    return Promise.all([
-      streamGet(false, CACHE, KEY),
-      streamGet(true, CACHE, INTEGRITY),
-    ])
-      .then(() => {
-        t.same(memo.get(CACHE, KEY), null, 'no memoization by key!')
-        t.same(
-          memo.get.byDigest(CACHE, INTEGRITY),
-          null,
-          'no memoization by digest!'
-        )
-      })
-      .then(() => {
-        memo.clearMemoized()
-        return streamGet(true, CACHE, INTEGRITY, {
-          memoize: true,
-        })
-      })
-      .then((byDigest) => {
-        t.same(byDigest.data, CONTENT, 'usual data returned from stream')
-        t.same(memo.get(CACHE, KEY), null, 'digest fetch = no key entry')
-        t.same(
-          memo.get.byDigest(CACHE, INTEGRITY),
-          CONTENT,
-          'content memoized'
-        )
-        t.same(
-          memo.get.byDigest('whatev', INTEGRITY),
-          null,
-          'content memoization filtered by cache'
-        )
-      })
-      .then(() => {
-        memo.clearMemoized()
-        return streamGet(false, CACHE, KEY, { memoize: true })
-      })
-      .then((byKey) => {
-        t.same(
-          byKey,
-          {
-            metadata: METADATA,
-            data: CONTENT,
-            integrity: INTEGRITY,
-            size: SIZE,
-          },
-          'usual data returned from key fetch'
-        )
-        t.same(
-          memo.get(CACHE, KEY),
-          {
-            entry: ENTRY,
-            data: CONTENT,
-          },
-          'data inserted into memoization cache'
-        )
-        t.same(
-          memo.get.byDigest(CACHE, INTEGRITY),
-          CONTENT,
-          'content memoized by digest, too'
-        )
-        t.same(
-          memo.get('whatev', KEY),
-          null,
-          'entry memoization filtered by cache'
-        )
-      })
-      .then(() => {
-        return rimraf(CACHE)
-      })
-      .then(() => {
-        return Promise.all([
-          streamGet(false, CACHE, KEY),
-          streamGet(true, CACHE, INTEGRITY),
-        ]).then(([byKey, byDigest]) => {
-          t.same(
-            byKey,
-            {
-              metadata: METADATA,
-              data: CONTENT,
-              integrity: INTEGRITY,
-              size: SIZE,
-            },
-            'key fetch fulfilled by memoization cache'
-          )
-          t.same(
-            byDigest.data,
-            CONTENT,
-            'digest fetch fulfilled by memoization cache'
-          )
-        })
-      })
-      .then(() => {
-        return Promise.all([
-          streamGet(false, CACHE, KEY, {
-            memoize: false,
-          }).catch((err) => err),
-          streamGet(true, CACHE, INTEGRITY, {
-            memoize: false,
-          }).catch((err) => err),
-        ]).then(([keyErr, digestErr]) => {
-          t.equal(keyErr.code, 'ENOENT', 'key get memoization bypassed')
-          t.equal(keyErr.code, 'ENOENT', 'digest get memoization bypassed')
-        })
-      })
+  const ENTRY = await index.insert(CACHE, KEY, INTEGRITY, opts())
+  await Promise.all([
+    streamGet(false, CACHE, KEY),
+    streamGet(true, CACHE, INTEGRITY),
+  ])
+  t.same(memo.get(CACHE, KEY), null, 'no memoization by key!')
+  t.same(
+    memo.get.byDigest(CACHE, INTEGRITY),
+    null,
+    'no memoization by digest!'
+  )
+  memo.clearMemoized()
+  const byDigest = await streamGet(true, CACHE, INTEGRITY, {
+    memoize: true,
   })
+  t.same(byDigest.data, CONTENT, 'usual data returned from stream')
+  t.same(memo.get(CACHE, KEY), null, 'digest fetch = no key entry')
+  t.same(
+    memo.get.byDigest(CACHE, INTEGRITY),
+    CONTENT,
+    'content memoized'
+  )
+  t.same(
+    memo.get.byDigest('whatev', INTEGRITY),
+    null,
+    'content memoization filtered by cache'
+  )
+  memo.clearMemoized()
+  await t.resolveMatch(
+    streamGet(false, CACHE, KEY, { memoize: true }),
+    {
+      metadata: METADATA,
+      data: CONTENT,
+      integrity: INTEGRITY,
+      size: SIZE,
+    },
+    'usual data returned from key fetch'
+  )
+  t.same(
+    memo.get(CACHE, KEY),
+    {
+      entry: ENTRY,
+      data: CONTENT,
+    },
+    'data inserted into memoization cache'
+  )
+  t.same(
+    memo.get.byDigest(CACHE, INTEGRITY),
+    CONTENT,
+    'content memoized by digest, too'
+  )
+  t.same(
+    memo.get('whatev', KEY),
+    null,
+    'entry memoization filtered by cache'
+  )
+  await rimraf(CACHE)
+  await t.resolveMatch(
+    streamGet(false, CACHE, KEY),
+    {
+      metadata: METADATA,
+      data: CONTENT,
+      integrity: INTEGRITY,
+      size: SIZE,
+    },
+    'key fetch fulfilled by memoization cache'
+  )
+  await t.resolveMatch(
+    streamGet(true, CACHE, INTEGRITY),
+    { data: CONTENT },
+    'digest fetch fulfilled by memoization cache'
+  )
+  await t.rejects(
+    streamGet(false, CACHE, KEY, { memoize: false }),
+    { code: 'ENOENT' },
+    'key get memoization bypassed'
+  )
+  await t.rejects(
+    streamGet(true, CACHE, INTEGRITY, { memoize: false }),
+    { code: 'ENOENT' },
+    'digest get memoization bypassed'
+  )
 })
 
-t.test('get.info uses memoized data', (t) => {
+t.test('get.info uses memoized data', async t => {
   memo.clearMemoized()
   const CACHE = t.testdir()
   const ENTRY = {
@@ -666,9 +603,8 @@ t.test('get.info uses memoized data', (t) => {
     metadata: null,
   }
   memo.put(CACHE, ENTRY, CONTENT)
-  return get.info(CACHE, KEY).then((info) => {
-    t.same(info, ENTRY, 'got the entry from memoization cache')
-  })
+  const info = await get.info(CACHE, KEY)
+  t.same(info, ENTRY, 'got the entry from memoization cache')
 })
 
 t.test('identical hashes with different algorithms do not conflict')

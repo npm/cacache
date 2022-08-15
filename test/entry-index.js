@@ -188,25 +188,18 @@ t.test('compact: error in moveFile removes temp', async (t) => {
   t.equal(tmpFiles.length, 0, 'temp file is gone')
 })
 
-t.test('delete.sync: removes a cache entry', (t) => {
+t.test('delete.sync: removes a cache entry', async t => {
   const cache = t.testdir(cacheContent)
-  t.plan(3)
-  index.insert(cache, KEY, INTEGRITY)
-    .then(index.ls(cache))
-    .then(lsResults => {
-      t.match(lsResults, { key: KEY }, 'should have entries')
-    })
-    .then(() => {
-      t.equal(
-        index.delete.sync(cache, KEY),
-        null,
-        'should return null on successful deletion'
-      )
-      return index.ls(cache)
-    })
-    .then(lsResults => {
-      t.notOk(Object.keys(lsResults).length, 'should have no entries')
-    })
+  await index.insert(cache, KEY, INTEGRITY)
+  const lsResults = await index.ls(cache)
+  t.ok(lsResults[KEY], 'should have entry')
+  t.equal(
+    index.delete.sync(cache, KEY),
+    null,
+    'should return null on successful deletion'
+  )
+  const emptyResults = await index.ls(cache)
+  t.notOk(Object.keys(emptyResults).length, 'should have no entries')
 })
 
 t.test('delete.sync: removeFully deletes the index entirely', async (t) => {

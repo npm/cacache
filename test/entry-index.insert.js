@@ -11,107 +11,81 @@ const key = 'foo'
 const integrity = 'sha512-deadbeef'
 const size = 999
 
-t.test('basic insertion', function (t) {
+t.test('basic insertion', async t => {
   const cache = t.testdir({})
   const bucket = index.bucketPath(cache, key)
-  return index
-    .insert(
-      cache,
+  const insertEntry = await index.insert(cache, key, integrity, { size, metadata: 'foo' })
+  t.same(
+    insertEntry,
+    {
       key,
       integrity,
-      {
-        size,
-        metadata: 'foo',
-      }
-    )
-    .then((entry) => {
-      t.same(
-        entry,
-        {
-          key,
-          integrity,
-          path: contentPath(cache, integrity),
-          time: entry.time,
-          metadata: 'foo',
-          size,
-        },
-        'formatted entry returned'
-      )
-      return fs.readFile(bucket, 'utf8')
-    })
-    .then((data) => {
-      t.equal(data[0], '\n', 'first entry starts with a \\n')
-      const split = data.split('\t')
-      t.equal(
-        split[0].slice(1),
-        index.hashEntry(split[1]),
-        'consistency header correct'
-      )
-      const entry = JSON.parse(split[1])
-      t.ok(entry.time, 'entry has a timestamp')
-      t.same(
-        entry,
-        {
-          key,
-          integrity,
-          time: entry.time,
-          metadata: 'foo',
-          size,
-        },
-        'entry matches what was inserted'
-      )
-    })
+      path: contentPath(cache, integrity),
+      time: insertEntry.time,
+      metadata: 'foo',
+      size,
+    },
+    'formatted entry returned'
+  )
+  const data = await fs.readFile(bucket, 'utf8')
+  t.equal(data[0], '\n', 'first entry starts with a \\n')
+  const split = data.split('\t')
+  t.equal(
+    split[0].slice(1),
+    index.hashEntry(split[1]),
+    'consistency header correct'
+  )
+  const entry = JSON.parse(split[1])
+  t.ok(entry.time, 'entry has a timestamp')
+  t.same(
+    entry,
+    {
+      key,
+      integrity,
+      time: entry.time,
+      metadata: 'foo',
+      size,
+    },
+    'entry matches what was inserted'
+  )
 })
 
-t.test('inserts additional entries into existing key', function (t) {
+t.test('inserts additional entries into existing key', async t => {
   const cache = t.testdir({})
   const bucket = index.bucketPath(cache, key)
-  return index
-    .insert(
-      cache,
-      key,
-      integrity,
+  await index.insert(cache, key, integrity, { size, metadata: 1 })
+  await index.insert(cache, key, integrity, { size, metadata: 2 })
+  const data = await fs.readFile(bucket, 'utf8')
+  const entries = data
+    .split('\n')
+    .slice(1)
+    .map((line) => {
+      return JSON.parse(line.split('\t')[1])
+    })
+  entries.forEach(function (e) {
+    delete e.time
+  })
+  t.same(
+    entries,
+    [
       {
-        size,
+        key,
+        integrity,
         metadata: 1,
-      }
-    )
-    .then(() => index.insert(cache, key, integrity, { size, metadata: 2 }))
-    .then(() => {
-      return fs.readFile(bucket, 'utf8')
-    })
-    .then((data) => {
-      const entries = data
-        .split('\n')
-        .slice(1)
-        .map((line) => {
-          return JSON.parse(line.split('\t')[1])
-        })
-      entries.forEach(function (e) {
-        delete e.time
-      })
-      t.same(
-        entries,
-        [
-          {
-            key,
-            integrity,
-            metadata: 1,
-            size,
-          },
-          {
-            key,
-            integrity,
-            metadata: 2,
-            size,
-          },
-        ],
-        'all entries present'
-      )
-    })
+        size,
+      },
+      {
+        key,
+        integrity,
+        metadata: 2,
+        size,
+      },
+    ],
+    'all entries present'
+  )
 })
 
-t.test('separates entries even if one is corrupted', function (t) {
+t.test('separates entries even if one is corrupted', async t => {
   // TODO - check that middle-of-string corrupted writes won't hurt.
   const cache = t.testdir(
     CacheIndex({
@@ -129,141 +103,121 @@ t.test('separates entries even if one is corrupted', function (t) {
     })
   )
   const bucket = index.bucketPath(cache, key)
-  return index
-    .insert(cache, key, integrity, { size })
-    .then(() => fs.readFile(bucket, 'utf8'))
-    .then((data) => {
-      const entry = JSON.parse(data.split('\n')[4].split('\t')[1])
-      delete entry.time
-      t.same(
-        entry,
-        {
-          key,
-          integrity,
-          size,
-        },
-        'new entry unaffected by corruption'
-      )
-    })
+  await index.insert(cache, key, integrity, { size })
+  const data = await fs.readFile(bucket, 'utf8')
+  const entry = JSON.parse(data.split('\n')[4].split('\t')[1])
+  delete entry.time
+  t.same(
+    entry,
+    {
+      key,
+      integrity,
+      size,
+    },
+    'new entry unaffected by corruption'
+  )
 })
 
-t.test('optional arbitrary metadata', function (t) {
+t.test('optional arbitrary metadata', async t => {
   const cache = t.testdir({})
   const bucket = index.bucketPath(cache, key)
   const metadata = { foo: 'bar' }
-  return index
-    .insert(cache, key, integrity, { size, metadata: metadata })
-    .then(() => {
-      return fs.readFile(bucket, 'utf8')
-    })
-    .then((data) => {
-      const entry = JSON.parse(data.split('\t')[1])
-      delete entry.time
-      t.same(
-        entry,
-        {
-          key,
-          integrity,
-          metadata: metadata,
-          size,
-        },
-        'entry includes inserted metadata'
-      )
-    })
+  await index.insert(cache, key, integrity, { size, metadata: metadata })
+  const data = await fs.readFile(bucket, 'utf8')
+  const entry = JSON.parse(data.split('\t')[1])
+  delete entry.time
+  t.same(
+    entry,
+    {
+      key,
+      integrity,
+      metadata: metadata,
+      size,
+    },
+    'entry includes inserted metadata'
+  )
 })
 
-t.test('key case-sensitivity', function (t) {
+t.test('key case-sensitivity', async t => {
   const cache = t.testdir({})
-  return Promise.all([
+  await Promise.all([
     index.insert(cache, key, integrity, { size }),
     index.insert(cache, key.toUpperCase(), `${integrity}upper`, { size }),
-  ]).then(() => {
-    return Promise.all([
-      index.find(cache, key),
-      index.find(cache, key.toUpperCase()),
-    ]).then(([entry, upperEntry]) => {
-      delete entry.time
-      delete upperEntry.time
-      t.same(
-        {
-          key: entry.key,
-          integrity: entry.integrity,
-          size,
-        },
-        {
-          key,
-          integrity,
-          size,
-        },
-        'regular entry exists'
-      )
-      t.same(
-        {
-          key: upperEntry.key,
-          integrity: upperEntry.integrity,
-          size,
-        },
-        {
-          key: key.toUpperCase(),
-          integrity: `${integrity}upper`,
-          size,
-        },
-        'case-variant entry intact'
-      )
-    })
-  })
+  ])
+  const [entry, upperEntry] = await Promise.all([
+    index.find(cache, key),
+    index.find(cache, key.toUpperCase()),
+  ])
+  delete entry.time
+  delete upperEntry.time
+  t.same(
+    {
+      key: entry.key,
+      integrity: entry.integrity,
+      size,
+    },
+    {
+      key,
+      integrity,
+      size,
+    },
+    'regular entry exists'
+  )
+  t.same(
+    {
+      key: upperEntry.key,
+      integrity: upperEntry.integrity,
+      size,
+    },
+    {
+      key: key.toUpperCase(),
+      integrity: `${integrity}upper`,
+      size,
+    },
+    'case-variant entry intact'
+  )
 })
 
-t.test('path-breaking characters', function (t) {
+t.test('path-breaking characters', async t => {
   const cache = t.testdir({})
   const newKey = ';;!registry\nhttps://registry.npmjs.org/back \\ slash@Cool™?'
-  return index
-    .insert(cache, newKey, integrity, { size })
-    .then(() => {
-      const bucket = index.bucketPath(cache, newKey)
-      return fs.readFile(bucket, 'utf8')
-    })
-    .then((data) => {
-      const entry = JSON.parse(data.split('\t')[1])
-      delete entry.time
-      t.same(
-        entry,
-        {
-          key: newKey,
-          integrity,
-          size,
-        },
-        'entry exists and matches original key with invalid chars'
-      )
-    })
+  await index.insert(cache, newKey, integrity, { size })
+  const bucket = index.bucketPath(cache, newKey)
+  const data = await fs.readFile(bucket, 'utf8')
+  const entry = JSON.parse(data.split('\t')[1])
+  delete entry.time
+  t.same(
+    entry,
+    {
+      key: newKey,
+      integrity,
+      size,
+    },
+    'entry exists and matches original key with invalid chars'
+  )
 })
 
-t.test('extremely long keys', function (t) {
+t.test('extremely long keys', async t => {
   const cache = t.testdir({})
   let newKey = ''
   for (let i = 0; i < 10000; i++) {
     newKey += i
   }
 
-  return index
-    .insert(cache, newKey, integrity, { size })
-    .then(() => {
-      const bucket = index.bucketPath(cache, newKey)
-      return fs.readFile(bucket, 'utf8')
-    })
-    .then((data) => {
-      const entry = JSON.parse(data.split('\t')[1])
-      delete entry.time
-      t.same(
-        entry,
-        {
-          key: newKey,
-          integrity,
-          size,
-        },
-        'entry exists in spite of INCREDIBLY LONG key'
-      )
-    })
+  await index.insert(cache, newKey, integrity, { size })
+  const bucket = index.bucketPath(cache, newKey)
+  const data = await fs.readFile(bucket, 'utf8')
+  const entry = JSON.parse(data.split('\t')[1])
+  delete entry.time
+  t.same(
+    entry,
+    {
+      key: newKey,
+      integrity,
+      size,
+    },
+    'entry exists in spite of INCREDIBLY LONG key'
+  )
 })
 
 t.test('concurrent writes')
