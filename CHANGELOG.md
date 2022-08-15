@@ -1,5 +1,12 @@
 # Changelog
 
+## [16.1.2](https://github.com/npm/cacache/compare/v16.1.1...v16.1.2) (2022-08-15)
+
+
+### Bug Fixes
+
+* linting ([#121](https://github.com/npm/cacache/issues/121)) ([a683cff](https://github.com/npm/cacache/commit/a683cffdfd956e1a4ac0e5ccbfa30615192e1ea0))
+
 ## [16.1.1](https://github.com/npm/cacache/compare/v16.1.0...v16.1.1) (2022-06-02)
 
 
