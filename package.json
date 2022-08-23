@@ -65,7 +65,7 @@
     "rimraf": "^3.0.2",
     "ssri": "^9.0.0",
     "tar": "^6.1.11",
-    "unique-filename": "^1.1.1"
+    "unique-filename": "^2.0.0"
   },
   "devDependencies": {
     "@npmcli/eslint-config": "^3.0.1",
