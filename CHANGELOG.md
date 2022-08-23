@@ -1,5 +1,12 @@
 # Changelog
 
+## [16.1.3](https://github.com/npm/cacache/compare/v16.1.2...v16.1.3) (2022-08-23)
+
+
+### Dependencies
+
+* bump unique-filename from 1.1.1 to 2.0.0 ([#123](https://github.com/npm/cacache/issues/123)) ([6235554](https://github.com/npm/cacache/commit/6235554e46d19a9d9af25f87aa797fb85efc9519))
+
 ## [16.1.2](https://github.com/npm/cacache/compare/v16.1.1...v16.1.2) (2022-08-15)
 
 
