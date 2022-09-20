@@ -12,9 +12,6 @@
     "lib/"
   ],
   "scripts": {
-    "preversion": "npm test",
-    "postversion": "npm publish",
-    "prepublishOnly": "git push origin --follow-tags",
     "test": "tap",
     "snap": "tap",
     "coverage": "tap",
@@ -73,12 +70,18 @@
     "tap": "^16.0.0"
   },
   "engines": {
-    "node": "^12.13.0 || ^14.15.0 || >=16.0.0"
+    "node": "^14.17.0 || ^16.13.0 || >=18.0.0"
   },
   "templateOSS": {
     "//@npmcli/template-oss": "This file is partially managed by @npmcli/template-oss. Edits may be overwritten.",
     "windowsCI": false,
-    "version": "3.5.0"
+    "version": "4.3.2"
   },
-  "author": "GitHub Inc."
+  "author": "GitHub Inc.",
+  "tap": {
+    "nyc-arg": [
+      "--exclude",
+      "tap-snapshots/**"
+    ]
+  }
 }
