@@ -601,7 +601,7 @@ See: [options](#tmp-options)
 
 ```javascript
 cacache.tmp.withTmp(cache, dir => {
-  return fs.writeFileAsync(path.join(dir, 'blablabla'), Buffer#<1234>, ...)
+  return fs.writeFile(path.join(dir, 'blablabla'), 'blabla contents', { encoding: 'utf8' })
 }).then(() => {
   // `dir` no longer exists
 })

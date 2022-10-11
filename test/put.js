@@ -108,7 +108,7 @@ t.test('errors if integrity errors', async t => {
   )
 })
 
-t.test('signals error if error writing to cache', { saveFixture: true }, async t => {
+t.test('signals error if error writing to cache', async t => {
   const CACHE = t.testdir()
   const [bulkErr, streamErr] = await Promise.all([
     put(CACHE, KEY, CONTENT, {

@@ -25,7 +25,7 @@ const patchesGetuid = (t) => {
 }
 const getFixOwner = (t, opts) => t.mock('../../lib/util/fix-owner', opts)
 
-// chownr and chownr.fix error handling tests
+// chownr error handling tests
 
 t.test('attempt to chownr existing path', async t => {
   patchesGetuid(t)
@@ -89,7 +89,7 @@ t.test('calls setuid setgid to replace user', async t => {
   await t.resolves(fixOwner.chownr(CACHE, filename), 'should not throw')
 })
 
-t.test('attempt to chownr.sync on platforms that do not need ownership fix', async t => {
+t.test('attempt to chownr on platforms that do not need ownership fix', async t => {
   process.getuid = undefined
   t.teardown(() => {
     process.getuid = getuid
@@ -99,63 +99,7 @@ t.test('attempt to chownr.sync on platforms that do not need ownership fix', asy
   await t.resolves(fixOwner.chownr(CACHE, filename), 'should not throw')
 })
 
-t.test('attempt to chownr.sync existing path', (t) => {
-  patchesGetuid(t)
-  function chownr () {}
-  chownr.sync = () => {
-    throw missingFileError
-  }
-  const fixOwner = getFixOwner(t, {
-    chownr,
-    'infer-owner': { sync: () => ({}) },
-  })
-
-  t.notOk(fixOwner.chownr.sync(CACHE, filename), 'should not throw if path exists')
-  t.end()
-})
-
-t.test('attempt to chownr.sync unknown error', (t) => {
-  patchesGetuid(t)
-  function chownr () {}
-  chownr.sync = () => {
-    throw genericError
-  }
-  const fixOwner = getFixOwner(t, {
-    chownr,
-    'infer-owner': { sync: () => ({}) },
-  })
-
-  t.throws(() => fixOwner.chownr.sync(CACHE, filename), genericError, 'should throw unknown errors')
-  t.end()
-})
-
-t.test('attempt to chownr.sync using same user', (t) => {
-  patchesGetuid(t)
-  const fixOwner = getFixOwner(t, {
-    'infer-owner': {
-      sync: () => ({
-        uid: process.getuid(),
-        gid: process.getgid(),
-      }),
-    },
-  })
-
-  t.notOk(fixOwner.chownr.sync(CACHE, filename), 'should not throw')
-  t.end()
-})
-
-t.test('attempt to chownr.sync on platforms that do not need ownership fix', (t) => {
-  process.getuid = undefined
-  t.teardown(() => {
-    process.getuid = getuid
-  })
-  const fixOwner = require('../../lib/util/fix-owner')
-
-  t.notOk(fixOwner.chownr.sync(CACHE, filename), 'should not throw')
-  t.end()
-})
-
-t.test('uses infer-owner ids instead of process-retrieved if valid', (t) => {
+t.test('uses infer-owner ids instead of process-retrieved if valid', async (t) => {
   const getgid = process.getgid
   process.getuid = () => 0
   process.getgid = () => 1
@@ -163,27 +107,25 @@ t.test('uses infer-owner ids instead of process-retrieved if valid', (t) => {
     process.getuid = getuid
     process.getgid = getgid
   })
-  t.plan(3)
-  function chownr () {}
-  chownr.sync = (path, uid, gid) => {
-    t.equal(path, filename, 'should match filename')
-    t.equal(uid, 501, 'should match uid')
-    t.equal(gid, 20, 'should match gid')
-  }
   const fixOwner = getFixOwner(t, {
-    chownr,
-    'infer-owner': {
-      sync: () => ({
+    chownr: (path, uid, gid, cb) => {
+      t.equal(path, filename, 'should match filename')
+      t.equal(uid, 501, 'should match uid')
+      t.equal(gid, 20, 'should match gid')
+      return cb()
+    },
+    'infer-owner': () => {
+      return Promise.resolve({
         uid: 501,
         gid: 20,
-      }),
+      })
     },
   })
 
-  fixOwner.chownr.sync(CACHE, filename)
+  await fixOwner.chownr(CACHE, filename)
 })
 
-// mkdirfix and mkdirfix.sync error handling tests
+// mkdirfix error handling tests
 
 t.test('attempt to mkdirfix existing path', async t => {
   const fixOwner = getFixOwner(t, {
@@ -201,39 +143,4 @@ t.test('attempt to mkdirfix unknown error', (t) => {
 
   t.plan(1)
   t.rejects(() => fixOwner.mkdirfix(CACHE, filename), 'should throw unknown errors')
-})
-
-t.test('attempt to mkdirfix.sync existing path', (t) => {
-  function mkdirp () {}
-  mkdirp.sync = () => {
-    throw pathExistsError
-  }
-  const fixOwner = getFixOwner(t, { mkdirp })
-
-  t.notOk(fixOwner.mkdirfix.sync(CACHE, filename), 'should not throw if path exists')
-  t.end()
-})
-
-t.test('attempt to mkdirfix.sync unknown error', (t) => {
-  function mkdirp () {}
-  mkdirp.sync = () => {
-    throw genericError
-  }
-  const fixOwner = getFixOwner(t, { mkdirp })
-
-  t.throws(
-    () => fixOwner.mkdirfix.sync(CACHE, filename),
-    genericError,
-    'should throw unknown errors'
-  )
-  t.end()
-})
-
-t.test('attempt to mkdirfix.sync but no dir created', (t) => {
-  function mkdirp () {}
-  mkdirp.sync = () => {}
-  const fixOwner = getFixOwner(t, { mkdirp })
-
-  t.notOk(fixOwner.mkdirfix.sync(CACHE, filename), 'should not throw')
-  t.end()
 })

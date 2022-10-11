@@ -188,42 +188,6 @@ t.test('compact: error in moveFile removes temp', async (t) => {
   t.equal(tmpFiles.length, 0, 'temp file is gone')
 })
 
-t.test('delete.sync: removes a cache entry', async t => {
-  const cache = t.testdir(cacheContent)
-  await index.insert(cache, KEY, INTEGRITY)
-  const lsResults = await index.ls(cache)
-  t.ok(lsResults[KEY], 'should have entry')
-  t.equal(
-    index.delete.sync(cache, KEY),
-    null,
-    'should return null on successful deletion'
-  )
-  const emptyResults = await index.ls(cache)
-  t.notOk(Object.keys(emptyResults).length, 'should have no entries')
-})
-
-t.test('delete.sync: removeFully deletes the index entirely', async (t) => {
-  const cache = t.testdir(cacheContent)
-  const bucket = index.bucketPath(cache, KEY)
-  await index.insert(cache, KEY, INTEGRITY)
-  const entries = await index.bucketEntries(bucket)
-  t.equal(entries.length, 1, 'has an entry')
-
-  // do a normal delete first, this appends a null integrity
-  index.delete.sync(cache, KEY)
-  const delEntries = await index.bucketEntries(bucket)
-  t.equal(delEntries.length, 2, 'should now have 2 entries')
-  t.equal(delEntries[1].integrity, null, 'has a null integrity last')
-
-  // then a full delete
-  index.delete.sync(cache, KEY, { removeFully: true })
-  await t.rejects(
-    index.bucketEntries(bucket),
-    { code: 'ENOENT' },
-    'rejects with ENOENT because file is gone'
-  )
-})
-
 t.test('delete: removeFully deletes the index entirely', async (t) => {
   const cache = t.testdir(cacheContent)
   const bucket = index.bucketPath(cache, KEY)
@@ -277,55 +241,6 @@ t.test('find: unknown error on finding entries', (t) => {
   )
 })
 
-t.test('find.sync: retrieve from bucket containing multiple entries', (t) => {
-  const cache = t.testdir(cacheContent)
-  const entries = [
-    '\na7eb00332fe51ff62b1bdb1564855f2624f16f34\t{"key":"foo", "integrity": "foo"}',
-    '\n46b1607f427665a99668c02d3a4cc52061afd83a\t{"key":"bar", "integrity": "bar"}',
-  ]
-  const { find } = getEntryIndex(t, {
-    '@npmcli/fs': Object.assign({}, require('@npmcli/fs'), {
-      readFileSync: (path, encode) => entries.join(''),
-    }),
-  })
-
-  t.match(
-    find.sync(cache, 'foo'),
-    { key: 'foo' },
-    'should retrieve entry using key'
-  )
-  t.end()
-})
-
-t.test('find.sync: unknown error on finding entries', (t) => {
-  const cache = t.testdir(cacheContent)
-  const { find } = getEntryIndexReadFileFailure(t, genericError)
-
-  t.throws(
-    () => find.sync(cache, KEY),
-    genericError,
-    'should throw the unknown error'
-  )
-  t.end()
-})
-
-t.test('find.sync: retrieve entry with invalid content', (t) => {
-  const cache = t.testdir(cacheContent)
-  const { find } = getEntryIndex(t, {
-    '@npmcli/fs': Object.assign({}, require('@npmcli/fs'), {
-      readFileSync: (path, encode) =>
-        '\nb6589fc6ab0dc82cf12099d1c2d40ab994e8410c\t0',
-    }),
-  })
-
-  t.match(
-    find.sync(cache, 'foo'),
-    null,
-    'should return null'
-  )
-  t.end()
-})
-
 t.test('insert: missing files on fixing ownership', (t) => {
   const cache = t.testdir(cacheContent)
   const { insert } = getEntryIndexFixOwnerFailure(missingFileError)
@@ -349,57 +264,32 @@ t.test('insert: unknown errors on fixing ownership', (t) => {
   )
 })
 
-t.test('insert.sync: missing files on fixing ownership', (t) => {
+t.test('lsStream: unknown error reading files', async (t) => {
   const cache = t.testdir(cacheContent)
-  const { insert } = getEntryIndexFixOwnerFailure(missingFileError)
-
-  t.plan(1)
-  t.doesNotThrow(
-    () => insert.sync(cache, KEY, INTEGRITY),
-    'should insert entry with no errors'
-  )
-})
-
-t.test('insert.sync: unknown errors on fixing ownership', (t) => {
-  const cache = t.testdir(cacheContent)
-  const { insert } = getEntryIndexFixOwnerFailure(genericError)
-
-  t.throws(
-    () => insert.sync(cache, KEY, INTEGRITY),
-    genericError,
-    'should throw the unknown error'
-  )
-  t.end()
-})
-
-t.test('lsStream: unknown error reading files', (t) => {
-  const cache = t.testdir(cacheContent)
-  index.insert.sync(cache, KEY, INTEGRITY)
+  await index.insert(cache, KEY, INTEGRITY)
 
   const { lsStream } = getEntryIndexReadFileFailure(t, genericError)
 
-  lsStream(cache)
-    .on('error', err => {
-      t.equal(err, genericError, 'should emit an error')
-      t.end()
-    })
+  return new Promise((resolve) => {
+    lsStream(cache)
+      .on('error', err => {
+        t.equal(err, genericError, 'should emit an error')
+        resolve()
+      })
+  })
 })
 
-t.test('lsStream: missing files error', (t) => {
+t.test('lsStream: missing files error', async (t) => {
   const cache = t.testdir(cacheContent)
-  index.insert.sync(cache, KEY, INTEGRITY)
+  await index.insert(cache, KEY, INTEGRITY)
 
   const { lsStream } = getEntryIndexReadFileFailure(t, missingFileError)
 
-  lsStream(cache)
-    .on('error', () => {
-      t.fail('should not error')
-      t.end()
-    })
-    .on('end', () => {
-      t.ok('should end successfully')
-      t.end()
-    })
+  return new Promise((resolve, reject) => {
+    lsStream(cache)
+      .on('error', reject)
+      .on('end', resolve)
+  })
 })
 
 t.test('lsStream: unknown error reading dirs', (t) => {
