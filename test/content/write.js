@@ -1,10 +1,9 @@
 'use strict'
 
 const events = require('events')
-const fs = require('@npmcli/fs')
+const fs = require('fs')
 const Minipass = require('minipass')
 const path = require('path')
-const rimraf = require('rimraf')
 const ssri = require('ssri')
 const t = require('tap')
 
@@ -211,7 +210,7 @@ t.test('exits normally if file already open', (t) => {
       .promise()
     t.same(integrity, INTEGRITY, 'returns a matching digest')
     fs.closeSync(fd)
-    rimraf.sync(contentPath(CACHE, INTEGRITY))
+    fs.rmSync(contentPath(CACHE, INTEGRITY), { recursive: true, force: true })
     t.end()
   })
 })

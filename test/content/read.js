@@ -1,6 +1,6 @@
 'use strict'
 
-const fs = require('@npmcli/fs')
+const fs = require('fs')
 const path = require('path')
 const ssri = require('ssri')
 const t = require('tap')
@@ -18,14 +18,18 @@ permissionError.code = 'EPERM'
 // helpers
 const getRead = (t, opts) => t.mock('../../lib/content/read', opts)
 const getReadStatFailure = (t, err) => getRead(t, {
-  '@npmcli/fs': Object.assign({}, require('@npmcli/fs'), {
-    async stat (path) {
+  fs: {
+    ...fs,
+    statSync: () => {
       throw err
     },
-    statSync () {
+  },
+  'fs/promises': {
+    ...fs.promises,
+    stat: async (path) => {
       throw err
     },
-  }),
+  },
 })
 
 t.test('read: returns a Promise with cache content data', async t => {
@@ -215,11 +219,12 @@ t.test('read: returns only first result if other hashes fails', function (t) {
 t.test('read: opening large files', function (t) {
   const CACHE = t.testdir()
   const mockedRead = getRead(t, {
-    '@npmcli/fs': Object.assign({}, require('@npmcli/fs'), {
-      async stat (path) {
+    'fs/promises': {
+      ...fs.promises,
+      stat: async (path) => {
         return { size: Number.MAX_SAFE_INTEGER }
       },
-    }),
+    },
     'fs-minipass': {
       ReadStream: class {
         constructor (path, opts) {
@@ -307,6 +312,6 @@ t.test('copy: copies content to a destination path', async t => {
   )
   const DEST = path.join(CACHE, 'foobar-file')
   await read.copy(CACHE, INTEGRITY, DEST)
-  const data = await fs.readFile(DEST)
+  const data = await fs.promises.readFile(DEST)
   t.same(data, CONTENT, 'file successfully copied')
 })

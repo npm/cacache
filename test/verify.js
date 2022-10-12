@@ -2,7 +2,7 @@
 
 const contentPath = require('../lib/content/path')
 const index = require('../lib/entry-index')
-const fs = require('@npmcli/fs')
+const fs = require('fs/promises')
 const path = require('path')
 const t = require('tap')
 const ssri = require('ssri')
@@ -211,13 +211,11 @@ t.test('writes a file with last verification time', async t => {
   t.equal(+fromLastRun, +fromFile, 'last verified was writen')
 })
 
-t.test('fixes permissions and users on cache contents')
-
 t.test('missing file error when validating cache content', async t => {
   const missingFileError = new Error('ENOENT')
   missingFileError.code = 'ENOENT'
   const mockVerify = getVerify(t, {
-    '@npmcli/fs': Object.assign({}, fs, {
+    'fs/promises': Object.assign({}, fs, {
       stat: async (path) => {
         throw missingFileError
       },
@@ -239,7 +237,7 @@ t.test('missing file error when validating cache content', async t => {
 
 t.test('unknown error when validating content', async t => {
   const mockVerify = getVerify(t, {
-    '@npmcli/fs': Object.assign({}, fs, {
+    'fs/promises': Object.assign({}, fs, {
       stat: async (path) => {
         throw genericError
       },
@@ -275,7 +273,7 @@ t.test('unknown error when rebuilding bucket', async t => {
   // shouldFail controls the right time to mock the error
   let shouldFail = false
   const mockVerify = getVerify(t, {
-    '@npmcli/fs': Object.assign({}, fs, {
+    'fs/promises': Object.assign({}, fs, {
       stat: async (path) => {
         if (shouldFail) {
           throw genericError

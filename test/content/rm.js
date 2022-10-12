@@ -1,7 +1,7 @@
 'use strict'
 
 const contentPath = require('../../lib/content/path')
-const fs = require('@npmcli/fs')
+const fs = require('fs/promises')
 const t = require('tap')
 
 const CacheContent = require('../fixtures/cache-content')
