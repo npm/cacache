@@ -63,16 +63,6 @@ t.test('get.info index entry lookup', async t => {
   t.same(entry, indexInsert, 'get.info() returned the right entry')
 })
 
-t.test('get.sync will throw ENOENT if not found', (t) => {
-  try {
-    get.sync('foo', 'bar')
-  } catch (err) {
-    t.same(err.message, 'No cache entry for bar found in foo')
-    t.same(err.code, 'ENOENT')
-    t.end()
-  }
-})
-
 t.test('get will throw ENOENT if not found', (t) => {
   const CACHE = t.testdir()
   return get(CACHE, KEY)
@@ -114,95 +104,13 @@ t.test('basic bulk get', async t => {
   )
 })
 
-t.test('get.sync.byDigest without memoization', (t) => {
-  const CACHE = t.testdir(
-    CacheContent({
-      [INTEGRITY]: CONTENT,
-    })
-  )
-  index.insert.sync(CACHE, KEY, INTEGRITY, opts())
-  const res = get.sync(CACHE, KEY)
-  t.same(
-    res,
-    {
-      metadata: METADATA,
-      data: CONTENT,
-      integrity: INTEGRITY,
-      size: SIZE,
-    },
-    'bulk key get returned proper data'
-  )
-  const resByDig = get.sync.byDigest(CACHE, INTEGRITY)
-  t.same(resByDig, CONTENT, 'byDigest returned proper data')
-  t.end()
-})
-
-t.test('get.sync.byDigest with memoization', (t) => {
-  const CACHE = t.testdir(
-    CacheContent({
-      [INTEGRITY]: CONTENT,
-    })
-  )
-  index.insert.sync(CACHE, KEY, INTEGRITY, opts())
-  const res = get.sync(CACHE, KEY, { memoize: true })
-  t.same(
-    res,
-    {
-      metadata: METADATA,
-      data: CONTENT,
-      integrity: INTEGRITY,
-      size: SIZE,
-    },
-    'bulk key get returned proper data'
-  )
-  memo.clearMemoized()
-  t.same(memo.get.byDigest(CACHE, INTEGRITY), undefined)
-  const resByDig = get.sync.byDigest(CACHE, INTEGRITY, { memoize: true })
-  t.same(resByDig, CONTENT, 'byDigest returned proper data')
-  t.notSame(memo.get.byDigest(CACHE, INTEGRITY), undefined)
-  const resByDig2 = get.sync.byDigest(CACHE, INTEGRITY, { memoize: true })
-  t.same(resByDig2, CONTENT, 'byDigest returned proper data')
-  t.end()
-})
-
-t.test('get.sync with memoization', (t) => {
-  const CACHE = t.testdir(
-    CacheContent({
-      [INTEGRITY]: CONTENT,
-    })
-  )
-  index.insert.sync(CACHE, KEY, INTEGRITY, opts())
-  memo.clearMemoized()
-  t.same(memo.get(CACHE, KEY), undefined)
-  const res = get.sync(CACHE, KEY, { memoize: true })
-  t.same(
-    res,
-    {
-      metadata: METADATA,
-      data: CONTENT,
-      integrity: INTEGRITY,
-      size: SIZE,
-    },
-    'bulk key get returned proper data'
-  )
-  t.notSame(memo.get(CACHE, KEY), undefined)
-  const resByDig = get.sync(CACHE, KEY, { memoize: true })
-  t.same(resByDig, {
-    metadata: METADATA,
-    data: CONTENT,
-    integrity: INTEGRITY,
-    size: SIZE,
-  }, 'get returned proper data')
-  t.end()
-})
-
 t.test('get.byDigest without memoization', async t => {
   const CACHE = t.testdir(
     CacheContent({
       [INTEGRITY]: CONTENT,
     })
   )
-  index.insert.sync(CACHE, KEY, INTEGRITY, opts())
+  await index.insert(CACHE, KEY, INTEGRITY, opts())
   const res = await get(CACHE, KEY)
   t.same(
     res,
@@ -230,7 +138,7 @@ t.test('get.byDigest with memoization', async t => {
       [INTEGRITY]: CONTENT,
     })
   )
-  index.insert.sync(CACHE, KEY, INTEGRITY, opts())
+  await index.insert(CACHE, KEY, INTEGRITY, opts())
   const res = await get(CACHE, KEY)
   t.same(
     res,
@@ -258,7 +166,7 @@ t.test('get without memoization', async t => {
       [INTEGRITY]: CONTENT,
     })
   )
-  index.insert.sync(CACHE, KEY, INTEGRITY, opts())
+  await index.insert(CACHE, KEY, INTEGRITY, opts())
   const res = await get(CACHE, KEY)
   t.same(
     res,
@@ -296,7 +204,7 @@ t.test('get with memoization', async t => {
       [INTEGRITY]: CONTENT,
     })
   )
-  index.insert.sync(CACHE, KEY, INTEGRITY, opts())
+  await index.insert(CACHE, KEY, INTEGRITY, opts())
   const res = await get(CACHE, KEY)
   t.same(
     res,
@@ -352,37 +260,32 @@ t.test('basic stream get', async t => {
   t.same(byDigest.data, CONTENT, 'got correct data from digest fetch')
 })
 
-t.test('get.stream add new listeners post stream creation', (t) => {
+t.test('get.stream add new listeners post stream creation', async (t) => {
   const CACHE = t.testdir(
     CacheContent({
       [INTEGRITY]: CONTENT,
     })
   )
 
-  t.plan(3)
   return index.insert(CACHE, KEY, INTEGRITY, opts()).then(() => {
     const OPTS = { memoize: false, size: CONTENT.length }
     const stream = get.stream(CACHE, KEY, OPTS)
-
-    // Awaits index.find in order to synthetically retrieve a point in runtime
-    // in which the stream has already been created and has the entry data
-    // available, allowing for the validation of the newListener event handler
-    return index.find(CACHE, KEY)
-      // we additionally wait for setTimeout because we want to be as sure as
-      // we can the event loop has ticked over after the i/o cycle completes
-      .then(() => new Promise((resolve) => setTimeout(resolve, 0)))
-      .then(() => {
-        [
-          'integrity',
-          'metadata',
-          'size',
-        ].forEach(ev => {
-          stream.on(ev, () => {
-            t.ok(`${ev} listener added`)
-          })
+    return Promise.all([
+      new Promise((resolve) => stream.on('integrity', resolve)),
+      new Promise((resolve) => stream.on('metadata', resolve)),
+      new Promise((resolve) => stream.on('size', resolve)),
+    ]).then(() => {
+      [
+        'integrity',
+        'metadata',
+        'size',
+      ].forEach(ev => {
+        stream.on(ev, () => {
+          t.ok(`${ev} listener added`)
         })
-        return stream.concat()
       })
+      return stream.concat()
+    })
   })
 })
 

@@ -40,19 +40,6 @@ t.test('read: returns a Promise with cache content data', async t => {
   t.same(data, CONTENT, 'cache contents read correctly')
 })
 
-t.test('read.sync: reads synchronously', (t) => {
-  const CONTENT = Buffer.from('foobarbaz')
-  const INTEGRITY = ssri.fromData(CONTENT)
-  const CACHE = t.testdir(
-    CacheContent({
-      [INTEGRITY]: CONTENT,
-    })
-  )
-  const data = read.sync(CACHE, INTEGRITY)
-  t.same(data, CONTENT, 'cache contents read correctly')
-  t.end()
-})
-
 t.test('read.stream: returns a stream with cache content data', async t => {
   const CONTENT = Buffer.from('foobarbaz')
   const INTEGRITY = ssri.fromData(CONTENT)
@@ -254,64 +241,6 @@ t.test('read: opening large files', function (t) {
   mockedRead(CACHE, 'sha1-deadbeef')
 })
 
-t.test('read.sync: unknown error parsing nested integrity data', (t) => {
-  const CACHE = t.testdir()
-  const INTEGRITY = 'sha1-deadbeef sha1-13371337'
-
-  // patches method in order to force a last error scenario
-  const mockedRead = getRead(t, {
-    ssri: {
-      parse (sri) {
-        if (sri !== INTEGRITY) {
-          throw genericError
-        }
-
-        return ssri.parse(sri)
-      },
-    },
-  })
-
-  t.throws(
-    () => mockedRead.sync(CACHE, INTEGRITY),
-    genericError,
-    'should throw last error found when parsing multiple hashes'
-  )
-  t.end()
-})
-
-t.test('read.sync: cache contains mismatching data', (t) => {
-  const CONTENT = Buffer.from('foobarbaz')
-  const INTEGRITY = ssri.fromData(CONTENT)
-  const CACHE = t.testdir(
-    CacheContent({
-      [INTEGRITY]: CONTENT.slice(3),
-    })
-  )
-  t.throws(
-    () => read.sync(CACHE, INTEGRITY),
-    { code: 'EINTEGRITY' },
-    'should throw integrity error'
-  )
-  t.end()
-})
-
-t.test('read.sync: content size value does not match option', (t) => {
-  const CONTENT = Buffer.from('foobarbaz')
-  const INTEGRITY = ssri.fromData(CONTENT)
-  const CACHE = t.testdir(
-    CacheContent({
-      [INTEGRITY]: CONTENT.slice(3),
-    })
-  )
-
-  t.throws(
-    () => read.sync(CACHE, INTEGRITY, { size: CONTENT.length }),
-    { code: 'EBADSIZE' },
-    'should throw size error'
-  )
-  t.end()
-})
-
 t.test('hasContent: tests content existence', async t => {
   const CACHE = t.testdir(
     CacheContent({
@@ -368,62 +297,6 @@ t.test('hasContent: no integrity provided', (t) => {
   t.end()
 })
 
-t.test('hasContent.sync: checks content existence synchronously', (t) => {
-  const CACHE = t.testdir(
-    CacheContent({
-      'sha1-deadbeef': '',
-    })
-  )
-  const content = read.hasContent.sync(CACHE, 'sha1-deadbeef')
-  t.ok(content.sri, 'returned sri for this content')
-  t.equal(content.size, 0, 'returned the right size for this content')
-  t.ok(content.stat.isFile(), 'returned actual stat object')
-  t.equal(
-    read.hasContent.sync(CACHE, 'sha1-not-there'),
-    false,
-    'returned false for missing content'
-  )
-  t.equal(
-    read.hasContent.sync(CACHE, 'sha1-not-here sha1-also-not-here'),
-    false,
-    'multi-content hash failures work ok'
-  )
-  t.end()
-})
-
-t.test('hasContent.sync: permission error', (t) => {
-  const CACHE = t.testdir()
-  const mockedRead = getReadStatFailure(t, permissionError)
-
-  t.throws(
-    () => mockedRead.hasContent.sync(CACHE, 'sha1-deadbeef sha1-13371337'),
-    permissionError,
-    'should throw on permission errors'
-  )
-  t.end()
-})
-
-t.test('hasContent.sync: generic error', (t) => {
-  const CACHE = t.testdir()
-  const mockedRead = getReadStatFailure(t, genericError)
-
-  t.notOk(
-    mockedRead.hasContent.sync(CACHE, 'sha1-deadbeef sha1-13371337'),
-    'should not throw on generic errors'
-  )
-  t.end()
-})
-
-t.test('hasContent.sync: no integrity provided', (t) => {
-  const CACHE = t.testdir()
-  t.equal(
-    read.hasContent.sync(CACHE, ''),
-    false,
-    'should returns false if no integrity provided'
-  )
-  t.end()
-})
-
 t.test('copy: copies content to a destination path', async t => {
   const CONTENT = Buffer.from('foobarbaz')
   const INTEGRITY = ssri.fromData(CONTENT)
@@ -436,18 +309,4 @@ t.test('copy: copies content to a destination path', async t => {
   await read.copy(CACHE, INTEGRITY, DEST)
   const data = await fs.readFile(DEST)
   t.same(data, CONTENT, 'file successfully copied')
-})
-
-t.test('copy.sync: copies content to a destination path synchronously', (t) => {
-  const CONTENT = Buffer.from('foobarbaz')
-  const INTEGRITY = ssri.fromData(CONTENT)
-  const CACHE = t.testdir(
-    CacheContent({
-      [INTEGRITY]: CONTENT,
-    })
-  )
-  const DEST = path.join(CACHE, 'foobar-file')
-  read.copy.sync(CACHE, INTEGRITY, DEST)
-  t.same(fs.readFileSync(DEST), CONTENT, 'file successfully copied')
-  t.end()
 })
