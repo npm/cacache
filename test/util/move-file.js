@@ -1,6 +1,13 @@
 'use strict'
 
-const fs = require('@npmcli/fs')
+const {
+  chmod,
+  open,
+  readFile,
+  readdir,
+  stat,
+} = require('fs/promises')
+const fs = require('fs')
 const path = require('path')
 const t = require('tap')
 
@@ -12,11 +19,11 @@ t.test('move a file', function (t) {
   })
   return moveFile(testDir + '/src', testDir + '/dest')
     .then(() => {
-      return fs.readFile(testDir + '/dest', 'utf8')
+      return readFile(testDir + '/dest', 'utf8')
     })
     .then((data) => {
       t.equal(data, 'foo', 'file data correct')
-      return fs.stat(testDir + '/src').catch((err) => {
+      return stat(testDir + '/src').catch((err) => {
         t.ok(err, 'src read error')
         t.equal(err.code, 'ENOENT', 'src does not exist')
       })
@@ -30,11 +37,11 @@ t.test('does not clobber existing files', function (t) {
   })
   return moveFile(testDir + '/src', testDir + '/dest')
     .then(() => {
-      return fs.readFile(testDir + '/dest', 'utf8')
+      return readFile(testDir + '/dest', 'utf8')
     })
     .then((data) => {
       t.equal(data, 'bar', 'conflicting file left intact')
-      return fs.stat(testDir + '/src').catch((err) => {
+      return stat(testDir + '/src').catch((err) => {
         t.ok(err, 'src read error')
         t.equal(err.code, 'ENOENT', 'src file still deleted')
       })
@@ -47,7 +54,7 @@ t.test('does not move a file into an existing directory', async t => {
     dest: {},
   })
   await moveFile(testDir + '/src', testDir + '/dest')
-  const files = await fs.readdir(testDir + '/dest')
+  const files = await readdir(testDir + '/dest')
   t.equal(files.length, 0, 'directory remains empty')
 })
 
@@ -57,17 +64,17 @@ t.test('does not error if destination file is open', function (t) {
     dest: 'bar',
   })
 
-  return fs.open(testDir + '/dest', 'r+').then((fd) => {
+  return open(testDir + '/dest', 'r+').then((fh) => {
     return moveFile(testDir + '/src', testDir + '/dest')
       .then(() => {
-        return fs.close(fd)
+        return fh.close()
       })
       .then(() => {
-        return fs.readFile(testDir + '/dest', 'utf8')
+        return readFile(testDir + '/dest', 'utf8')
       })
       .then((data) => {
         t.equal(data, 'bar', 'destination left intact')
-        return fs.stat(testDir + '/src').catch((err) => {
+        return stat(testDir + '/src').catch((err) => {
           t.ok(err, 'src read error')
           t.equal(err.code, 'ENOENT', 'src does not exist')
         })
@@ -83,7 +90,7 @@ t.test('fallback to renaming on missing files post-move', async t => {
   const missingFileError = new Error('ENOENT')
   missingFileError.code = 'ENOENT'
   const mockFS = {
-    ...fs,
+    ...fs.promises,
     async unlink (path) {
       throw missingFileError
     },
@@ -92,14 +99,14 @@ t.test('fallback to renaming on missing files post-move', async t => {
     },
   }
   const mockedMoveFile = t.mock('../../lib/util/move-file', {
-    '@npmcli/fs': mockFS,
+    'fs/promises': mockFS,
   })
 
   await mockedMoveFile(testDir + '/src', testDir + '/dest')
-  const data = await fs.readFile(testDir + '/dest', 'utf8')
+  const data = await readFile(testDir + '/dest', 'utf8')
   t.equal(data, 'foo', 'file data correct')
   await t.rejects(
-    fs.stat(testDir + '/src'),
+    stat(testDir + '/src'),
     { code: 'ENOENT' },
     './src does not exist'
   )
@@ -115,7 +122,7 @@ t.test('non ENOENT error on move fallback', async function (t) {
   const otherError = new Error('UNKNOWN')
   otherError.code = 'OTHER'
   const mockFS = {
-    ...fs,
+    ...fs.promises,
     async unlink (path) {
       throw missingFileError
     },
@@ -125,7 +132,7 @@ t.test('non ENOENT error on move fallback', async function (t) {
 
   }
   const mockedMoveFile = t.mock('../../lib/util/move-file', {
-    '@npmcli/fs': mockFS,
+    'fs/promises': mockFS,
   })
 
   await t.rejects(
@@ -141,28 +148,32 @@ t.test('verify weird EPERM on Windows behavior', t => {
   t.teardown(() => {
     Object.defineProperty(process, 'platform', { value: processPlatform })
   })
-  const gfsLink = fs.link
-  const gfs = require('@npmcli/fs')
-  let calledMonkeypatch = false
-  gfs.link = async (src, dest) => {
-    calledMonkeypatch = true
-    gfs.link = gfsLink
-    throw Object.assign(new Error('yolo'), {
-      code: 'EPERM',
-    })
+
+  let calledMonkeyPatch = false
+  const mockFS = {
+    ...fs.promises,
+    link: async (src, dest) => {
+      calledMonkeyPatch = true
+      throw Object.assign(new Error('yolo'), { code: 'EPERM' })
+    },
   }
+
+  const mockedMoveFile = t.mock('../../lib/util/move-file.js', {
+    'fs/promises': mockFS,
+  })
+
   const testDir = t.testdir({
     eperm: {
       src: 'epermmy',
     },
   })
 
-  return moveFile(testDir + '/eperm/src', testDir + '/eperm/dest')
-    .then(() => t.ok(calledMonkeypatch, 'called the patched fs.link fn'))
-    .then(() => t.rejects(fs.readFile('eperm/dest'), {
+  return mockedMoveFile(testDir + '/eperm/src', testDir + '/eperm/dest')
+    .then(() => t.ok(calledMonkeyPatch, 'called the patched fs.link fn'))
+    .then(() => t.rejects(readFile('eperm/dest'), {
       code: 'ENOENT',
     }, 'destination file did not get written'))
-    .then(() => t.rejects(fs.readFile('eperm/src'), {
+    .then(() => t.rejects(readFile('eperm/src'), {
       code: 'ENOENT',
     }, 'src file did get deleted'))
 })
@@ -178,14 +189,14 @@ t.test(
       dest: {},
     })
 
-    await fs.chmod(testDir + '/dest', parseInt('400', 8))
+    await chmod(testDir + '/dest', parseInt('400', 8))
     await t.rejects(
       moveFile(testDir + '/src', path.join(testDir + '/dest', 'file')),
       { code: 'EACCES' },
       'error is about permissions'
     )
 
-    const data = await fs.readFile(testDir + '/src', 'utf8')
+    const data = await readFile(testDir + '/src', 'utf8')
     t.equal(data, 'foo', 'src contents left intact')
   }
 )

@@ -1,6 +1,6 @@
 'use strict'
 
-const fs = require('@npmcli/fs')
+const fs = require('fs/promises')
 const index = require('../lib/entry-index')
 const memo = require('../lib/memoization')
 const t = require('tap')

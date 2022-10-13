@@ -1,12 +1,9 @@
 'use strict'
 
-const util = require('util')
-
-const fs = require('@npmcli/fs')
+const fs = require('fs/promises')
 const index = require('../lib/entry-index')
 const memo = require('../lib/memoization')
 const path = require('path')
-const rimraf = util.promisify(require('rimraf'))
 const t = require('tap')
 const ssri = require('ssri')
 
@@ -326,13 +323,13 @@ t.test('get.copy with fs.copyfile', (t) => {
     })
     .then((data) => {
       t.same(data, CONTENT, 'data copied by key matches')
-      return rimraf(DEST)
+      return fs.rm(DEST, { recursive: true, force: true })
     })
     .then(() => get.copy.byDigest(CACHE, INTEGRITY, DEST))
     .then(() => fs.readFile(DEST))
     .then((data) => {
       t.same(data, CONTENT, 'data copied by digest matches')
-      return rimraf(DEST)
+      return fs.rm(DEST, { recursive: true, force: true })
     })
 })
 
@@ -368,7 +365,7 @@ t.test('memoizes data on bulk read', (t) => {
           },
           'data inserted into memoization cache'
         )
-        return rimraf(CACHE)
+        return fs.rm(CACHE, { recursive: true, force: true })
       })
       .then(() => {
         return get(CACHE, KEY)
@@ -467,7 +464,7 @@ t.test('memoizes data on stream read', async t => {
     null,
     'entry memoization filtered by cache'
   )
-  await rimraf(CACHE)
+  await fs.rm(CACHE, { recursive: true, force: true })
   await t.resolveMatch(
     streamGet(false, CACHE, KEY),
     {

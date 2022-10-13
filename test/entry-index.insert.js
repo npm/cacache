@@ -2,7 +2,7 @@
 
 const CacheIndex = require('./fixtures/cache-index')
 const contentPath = require('../lib/content/path')
-const fs = require('@npmcli/fs')
+const fs = require('fs/promises')
 const t = require('tap')
 
 const index = require('../lib/entry-index')
@@ -220,5 +220,34 @@ t.test('extremely long keys', async t => {
   )
 })
 
+t.test('ENOENT from appendFile is ignored', async (t) => {
+  const cache = t.testdir()
+
+  const indexMocked = t.mock('../lib/entry-index.js', {
+    'fs/promises': {
+      ...fs,
+      appendFile: async () => {
+        throw Object.assign(new Error('fake enoent'), { code: 'ENOENT' })
+      },
+    },
+  })
+
+  await t.resolves(() => indexMocked.insert(cache, key, integrity, { size }))
+})
+
+t.test('generic error from appendFile rejects', async (t) => {
+  const cache = t.testdir()
+
+  const indexMocked = t.mock('../lib/entry-index.js', {
+    'fs/promises': {
+      ...fs,
+      appendFile: async () => {
+        throw Object.assign(new Error('fake eperm'), { code: 'EPERM' })
+      },
+    },
+  })
+
+  await t.rejects(() => indexMocked.insert(cache, key, integrity, { size }), { code: 'EPERM' })
+})
+
 t.test('concurrent writes')
-t.test('correct ownership')

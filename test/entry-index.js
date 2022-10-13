@@ -1,6 +1,6 @@
 'use strict'
 
-const fs = require('@npmcli/fs')
+const fs = require('fs')
 const path = require('path')
 
 const ssri = require('ssri')
@@ -17,28 +17,19 @@ missingFileError.code = 'ENOENT'
 
 const getEntryIndex = (t, opts) => t.mock('../lib/entry-index', opts)
 const getEntryIndexReadFileFailure = (t, err) => getEntryIndex(t, {
-  '@npmcli/fs': Object.assign({}, fs, {
+  'fs/promises': {
+    ...fs.promises,
     readFile: async (path, encode) => {
       throw err
     },
+  },
+  fs: {
+    ...fs,
     readFileSync: () => {
       throw genericError
     },
-  }),
+  },
 })
-
-const getEntryIndexFixOwnerFailure = (err) => {
-  const chownr = () => Promise.reject(err)
-  chownr.sync = () => {
-    throw err
-  }
-  return getEntryIndex(t, {
-    '../lib/util/fix-owner': {
-      mkdirfix: require('../lib/util/fix-owner').mkdirfix,
-      chownr,
-    },
-  })
-}
 
 // helpers
 const CONTENT = Buffer.from('foobarbaz', 'utf8')
@@ -140,35 +131,6 @@ t.test('compact: validateEntry allows for keeping null integrity', async (t) => 
   t.equal(newEntries.length, 1, 'bucket was deduplicated')
 })
 
-t.test('compact: ENOENT in chownr does not cause failure', async (t) => {
-  const cache = t.testdir(cacheContent)
-  await Promise.all([
-    index.insert(cache, KEY, INTEGRITY, { metadata: { rev: 1 } }),
-    index.insert(cache, KEY, INTEGRITY, { metadata: { rev: 2 } }),
-    index.insert(cache, KEY, INTEGRITY, { metadata: { rev: 2 } }),
-    index.insert(cache, KEY, INTEGRITY, { metadata: { rev: 1 } }),
-  ])
-
-  const { compact } = getEntryIndexFixOwnerFailure(missingFileError)
-  const filter = (entryA, entryB) => entryA.metadata.rev === entryB.metadata.rev
-  const compacted = await compact(cache, KEY, filter)
-  t.equal(compacted.length, 2, 'deduplicated')
-})
-
-t.test('compact: generic error in chownr does cause failure', async (t) => {
-  const cache = t.testdir(cacheContent)
-  await Promise.all([
-    index.insert(cache, KEY, INTEGRITY, { metadata: { rev: 1 } }),
-    index.insert(cache, KEY, INTEGRITY, { metadata: { rev: 2 } }),
-    index.insert(cache, KEY, INTEGRITY, { metadata: { rev: 2 } }),
-    index.insert(cache, KEY, INTEGRITY, { metadata: { rev: 1 } }),
-  ])
-
-  const { compact } = getEntryIndexFixOwnerFailure(genericError)
-  const filter = (entryA, entryB) => entryA.metadata.rev === entryB.metadata.rev
-  return t.rejects(compact(cache, KEY, filter), { code: 'ERR' }, 'promise rejected')
-})
-
 t.test('compact: error in moveFile removes temp', async (t) => {
   const cache = t.testdir(cacheContent)
   await Promise.all([
@@ -241,33 +203,9 @@ t.test('find: unknown error on finding entries', (t) => {
   )
 })
 
-t.test('insert: missing files on fixing ownership', (t) => {
-  const cache = t.testdir(cacheContent)
-  const { insert } = getEntryIndexFixOwnerFailure(missingFileError)
-
-  t.plan(1)
-  t.resolves(
-    insert(cache, KEY, INTEGRITY),
-    'should insert entry with no errors'
-  )
-})
-
-t.test('insert: unknown errors on fixing ownership', (t) => {
-  const cache = t.testdir(cacheContent)
-  const { insert } = getEntryIndexFixOwnerFailure(genericError)
-
-  t.plan(1)
-  t.rejects(
-    insert(cache, KEY, INTEGRITY),
-    genericError,
-    'should throw the unknown error'
-  )
-})
-
 t.test('lsStream: unknown error reading files', async (t) => {
   const cache = t.testdir(cacheContent)
   await index.insert(cache, KEY, INTEGRITY)
-
   const { lsStream } = getEntryIndexReadFileFailure(t, genericError)
 
   return new Promise((resolve) => {
@@ -295,11 +233,12 @@ t.test('lsStream: missing files error', async (t) => {
 t.test('lsStream: unknown error reading dirs', (t) => {
   const cache = t.testdir(cacheContent)
   const { lsStream } = getEntryIndex(t, {
-    '@npmcli/fs': Object.assign({}, require('@npmcli/fs'), {
+    'fs/promises': {
+      ...fs.promises,
       readdir: async (path) => {
         throw genericError
       },
-    }),
+    },
   })
 
   lsStream(cache)

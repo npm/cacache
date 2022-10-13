@@ -1,17 +1,11 @@
 'use strict'
 
-const fs = require('@npmcli/fs')
+const fs = require('fs/promises')
 const path = require('path')
 const t = require('tap')
 
 const CACHE = t.testdir()
-
-const mockedFixOwner = () => Promise.resolve(1)
-// temporarily points to original mkdirfix implementation
-mockedFixOwner.mkdirfix = require('../../lib/util/fix-owner').mkdirfix
-const tmp = t.mock('../../lib/util/tmp', {
-  '../../lib/util/fix-owner': mockedFixOwner,
-})
+const tmp = require('../../lib/util/tmp.js')
 
 t.test('creates a unique tmpdir inside the cache', async t => {
   const dir = await tmp.mkdir(CACHE)
@@ -52,9 +46,4 @@ t.test('withTmp should accept both opts and cb params', async t => {
   await tmp.withTmp(CACHE, { tmpPrefix: 'foo' }, dir => {
     t.ok(dir, 'dir should contain a valid response')
   })
-})
-
-t.test('provides a function for fixing ownership in the tmp dir', async t => {
-  const res = await tmp.fix(CACHE)
-  t.ok(res, 'fixOwner is successfully called')
 })
