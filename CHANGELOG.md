@@ -1,5 +1,19 @@
 # Changelog
 
+## [17.0.0](https://github.com/npm/cacache/compare/v16.1.3...v17.0.0) (2022-10-13)
+
+### ⚠️ BREAKING CHANGES
+
+* this module no longer attempts to change file ownership automatically
+* this package is now async only, all synchronous methods have been removed
+* `cacache` is now compatible with the following semver range for node: `^14.17.0 || ^16.13.0 || >=18.0.0`
+
+### Features
+
+* [`479b135`](https://github.com/npm/cacache/commit/479b1352a72ea3a6bc403545e269d3add985c6ee) [#141](https://github.com/npm/cacache/pull/141) do not alter file ownership (#141) (@nlf)
+* [`f57bb4d`](https://github.com/npm/cacache/commit/f57bb4d3ec6147843fac673c6578c3d231f336df) [#140](https://github.com/npm/cacache/pull/140) remove sync methods (#140) (@nlf)
+* [`cfebcde`](https://github.com/npm/cacache/commit/cfebcdea59e3fc1ff33fbe4b3fa6f05aa765326f) [#133](https://github.com/npm/cacache/pull/133) postinstall for dependabot template-oss PR (@lukekarrys)
+
 ## [16.1.3](https://github.com/npm/cacache/compare/v16.1.2...v16.1.3) (2022-08-23)
 
 
