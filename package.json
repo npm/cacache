@@ -46,7 +46,7 @@
   "license": "ISC",
   "dependencies": {
     "@npmcli/fs": "^3.0.0",
-    "@npmcli/move-file": "^2.0.0",
+    "@npmcli/move-file": "^3.0.0",
     "fs-minipass": "^2.1.0",
     "glob": "^8.0.1",
     "lru-cache": "^7.7.1",
