@@ -58,7 +58,7 @@
     "promise-inflight": "^1.0.1",
     "ssri": "^9.0.0",
     "tar": "^6.1.11",
-    "unique-filename": "^2.0.0"
+    "unique-filename": "^3.0.0"
   },
   "devDependencies": {
     "@npmcli/eslint-config": "^3.0.1",
