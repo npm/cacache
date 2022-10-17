@@ -1,5 +1,13 @@
 # Changelog
 
+## [17.0.1](https://github.com/npm/cacache/compare/v17.0.0...v17.0.1) (2022-10-17)
+
+### Dependencies
+
+* [`d3515de`](https://github.com/npm/cacache/commit/d3515dec8ee6305d564389f5e52363637666f718) [#146](https://github.com/npm/cacache/pull/146) bump unique-filename from 2.0.1 to 3.0.0
+* [`e57ebd9`](https://github.com/npm/cacache/commit/e57ebd9edcd4ac93df7ccbe1eee66a7a2c41c0a7) [#143](https://github.com/npm/cacache/pull/143) bump ssri from 9.0.1 to 10.0.0
+* [`9dd537a`](https://github.com/npm/cacache/commit/9dd537a5ab53f5f84e16ff9e69ebd9f28e3f8c54) [#144](https://github.com/npm/cacache/pull/144) bump @npmcli/move-file from 2.0.1 to 3.0.0
+
 ## [17.0.0](https://github.com/npm/cacache/compare/v16.1.3...v17.0.0) (2022-10-13)
 
 ### ⚠️ BREAKING CHANGES
