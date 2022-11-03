@@ -141,7 +141,7 @@ t.test('compact: error in moveFile removes temp', async (t) => {
   ])
 
   const { compact } = getEntryIndex(t, {
-    '@npmcli/move-file': () => Promise.reject(new Error('foo')),
+    '@npmcli/fs': { moveFile: () => Promise.reject(new Error('foo')) },
   })
   const filter = (entryA, entryB) => entryA.metadata.rev === entryB.metadata.rev
   await t.rejects(compact(cache, KEY, filter), { message: 'foo' }, 'promise rejected')
