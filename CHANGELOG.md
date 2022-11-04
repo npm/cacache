@@ -1,5 +1,11 @@
 # Changelog
 
+## [17.0.2](https://github.com/npm/cacache/compare/v17.0.1...v17.0.2) (2022-11-04)
+
+### Bug Fixes
+
+* [`4a7382f`](https://github.com/npm/cacache/commit/4a7382f5e6c72c59587d45167346c1b6e81a3cde) [#152](https://github.com/npm/cacache/pull/152) replace @npmcli/move-file with @npmcli/fs (@lukekarrys)
+
 ## [17.0.1](https://github.com/npm/cacache/compare/v17.0.0...v17.0.1) (2022-10-17)
 
 ### Dependencies
