@@ -1,5 +1,11 @@
 # Changelog
 
+## [17.0.3](https://github.com/npm/cacache/compare/v17.0.2...v17.0.3) (2022-12-07)
+
+### Dependencies
+
+* [`0dc98f7`](https://github.com/npm/cacache/commit/0dc98f7ca0940ea010ef3ba5257887e36083b3a2) [#156](https://github.com/npm/cacache/pull/156) bump minipass from 3.3.6 to 4.0.0
+
 ## [17.0.2](https://github.com/npm/cacache/compare/v17.0.1...v17.0.2) (2022-11-04)
 
 ### Bug Fixes
