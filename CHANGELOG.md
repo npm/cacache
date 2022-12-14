@@ -1,5 +1,11 @@
 # Changelog
 
+## [17.0.4](https://github.com/npm/cacache/compare/v17.0.3...v17.0.4) (2022-12-14)
+
+### Dependencies
+
+* [`fe71fab`](https://github.com/npm/cacache/commit/fe71fabaacadc8a06b8142141a1d0e63fbed537c) [#159](https://github.com/npm/cacache/pull/159) bump fs-minipass from 2.1.0 to 3.0.0
+
 ## [17.0.3](https://github.com/npm/cacache/compare/v17.0.2...v17.0.3) (2022-12-07)
 
 ### Dependencies
