@@ -112,7 +112,11 @@ t.test('fallback to renaming on missing files post-move', async t => {
   )
 })
 
-t.test('non ENOENT error on move fallback', async function (t) {
+t.test('non ENOENT error on move fallback', {
+  skip: process.platform === 'android'
+    ? 'The move fallback is unreachable on Android.'
+    : false,
+}, async function (t) {
   const testDir = t.testdir({
     src: 'foo',
   })
