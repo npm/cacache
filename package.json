@@ -47,7 +47,7 @@
   "dependencies": {
     "@npmcli/fs": "^3.1.0",
     "fs-minipass": "^3.0.0",
-    "glob": "^8.0.1",
+    "glob": "^9.0.2",
     "lru-cache": "^7.7.1",
     "minipass": "^4.0.0",
     "minipass-collect": "^1.0.2",
