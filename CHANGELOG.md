@@ -1,5 +1,11 @@
 # Changelog
 
+## [17.0.5](https://github.com/npm/cacache/compare/v17.0.4...v17.0.5) (2023-03-21)
+
+### Dependencies
+
+* [`a6dd005`](https://github.com/npm/cacache/commit/a6dd005da900de139f575caab660046e88974e0a) [#176](https://github.com/npm/cacache/pull/176) bump glob from 8.1.0 to 9.3.1 (#176)
+
 ## [17.0.4](https://github.com/npm/cacache/compare/v17.0.3...v17.0.4) (2022-12-14)
 
 ### Dependencies
