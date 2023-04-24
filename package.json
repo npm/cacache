@@ -53,7 +53,7 @@
     "minipass-collect": "^1.0.2",
     "minipass-flush": "^1.0.5",
     "minipass-pipeline": "^1.2.4",
-    "p-map": "^4.0.0",
+    "p-map": "^6.0.0",
     "promise-inflight": "^1.0.1",
     "ssri": "^10.0.0",
     "tar": "^6.1.11",
