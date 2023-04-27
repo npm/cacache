@@ -2,7 +2,7 @@
 
 const events = require('events')
 const fs = require('fs')
-const Minipass = require('minipass')
+const { Minipass } = require('minipass')
 const path = require('path')
 const ssri = require('ssri')
 const t = require('tap')
