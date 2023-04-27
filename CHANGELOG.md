@@ -1,5 +1,12 @@
 # Changelog
 
+## [17.0.6](https://github.com/npm/cacache/compare/v17.0.5...v17.0.6) (2023-04-27)
+
+### Dependencies
+
+* [`46b8457`](https://github.com/npm/cacache/commit/46b845730cdba25e8d2da9a58a60c47ae7648863) [#191](https://github.com/npm/cacache/pull/191) bump glob from 9.3.5 to 10.2.2 (#191)
+* [`5e9e825`](https://github.com/npm/cacache/commit/5e9e8251a1e83124113cc7e9edad5ea71dd789e7) [#182](https://github.com/npm/cacache/pull/182) bump minipass from 4.2.7 to 5.0.0 (#182)
+
 ## [17.0.5](https://github.com/npm/cacache/compare/v17.0.4...v17.0.5) (2023-03-21)
 
 ### Dependencies
