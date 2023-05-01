@@ -233,6 +233,22 @@ t.test('cleans up tmp on successful completion', async t => {
   })
 })
 
+t.test('Handles moveFile error other than EEXIST', async t => {
+  const write = t.mock('../../lib/content/write.js', {
+    '@npmcli/fs': {
+      moveFile: async () => {
+        throw new Error('Unknown error')
+      },
+    },
+  })
+  const CONTENT = 'foobarbaz'
+  const CACHE = t.testdir()
+  await t.rejects(
+    write.stream(CACHE).end(CONTENT).promise(),
+    { message: 'Unknown error' }
+  )
+})
+
 t.test('cleans up tmp on streaming error', (t) => {
   const CONTENT = 'foobarbaz'
   const CACHE = t.testdir()
