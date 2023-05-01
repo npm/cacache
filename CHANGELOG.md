@@ -1,5 +1,15 @@
 # Changelog
 
+## [17.0.7](https://github.com/npm/cacache/compare/v17.0.6...v17.0.7) (2023-05-01)
+
+### Bug Fixes
+
+* [`265e4ae`](https://github.com/npm/cacache/commit/265e4aeb9b6cbfcd07c75059508b7617b5169d73) [#195](https://github.com/npm/cacache/pull/195) Trust the filesystem to move files (@wraithgar)
+
+### Dependencies
+
+* [`11fc035`](https://github.com/npm/cacache/commit/11fc0353cb748abeee76ecbce11b6c18d351fb19) [#195](https://github.com/npm/cacache/pull/195) remove promise-inflight
+
 ## [17.0.6](https://github.com/npm/cacache/compare/v17.0.5...v17.0.6) (2023-04-27)
 
 ### Dependencies
