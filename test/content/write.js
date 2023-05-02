@@ -329,11 +329,18 @@ t.test('checks the size of stream data if opts.size provided', (t) => {
   })
 })
 
-t.test('only one algorithm for now', async t => {
+t.test('accepts multiple algorithms', async t => {
   const CACHE = t.testdir()
-  await t.rejects(() => write(CACHE, 'foo', { algorithms: [1, 2] }), {
-    message: 'opts.algorithms only supports a single algorithm for now',
-  })
+  const CONTENT = 'multiple algorithms!'
+  const { integrity } = await write(CACHE, CONTENT, { algorithms: ['sha512', 'sha1'] })
+  const cpath512 = contentPath(CACHE, integrity.sha512.toString())
+  t.ok(fs.lstatSync(cpath512).isFile(), 'sha512 content written')
+  const cpath1 = contentPath(CACHE, integrity.sha1.toString())
+  t.ok(fs.lstatSync(cpath1).isFile(), 'sha1 content written')
+  t.equal(fs.readFileSync(cpath512, 'utf8'),
+    CONTENT, 'sha512 contents are identical to inserted content')
+  t.equal(fs.readFileSync(cpath1, 'utf8'),
+    CONTENT, 'sha1 contents are identical to inserted content')
 })
 
 t.test('writes to cache with default options', t => {
