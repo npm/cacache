@@ -14,7 +14,8 @@ const KEY = 'my-test-key'
 const INTEGRITY = ssri.fromData(CONTENT)
 const METADATA = { foo: 'bar' }
 
-const verify = require('..').verify
+const cacache = require('..')
+const verify = cacache.verify
 
 // defines reusable errors
 const genericError = new Error('ERR')
@@ -384,4 +385,18 @@ t.test('hash collisions excluded', async t => {
     },
     'should resolve while also excluding filtered out entries'
   )
+})
+
+t.test('handles multiple hashes of the same content', async t => {
+  const cache = t.testdir()
+  let integrity
+  // anything other than the default (currently sha512)
+  await cacache.put.stream(cache, 'test', { algorithms: ['sha256'] }).on('integrity', i => {
+    integrity = i
+  }).end('CONTENT!').promise()
+  await cacache.put.stream(cache, 'test', { integrity }).end('CONTENT!').promise()
+  await cacache.verify(cache)
+  const ls = await cacache.ls(cache)
+  t.match(ls.test.integrity, 'sha512')
+  t.match(ls.test.integrity, 'sha256')
 })
