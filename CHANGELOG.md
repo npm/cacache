@@ -1,5 +1,20 @@
 # Changelog
 
+## [17.1.0](https://github.com/npm/cacache/compare/v17.0.7...v17.1.0) (2023-05-02)
+
+### Features
+
+* [`2e83cfc`](https://github.com/npm/cacache/commit/2e83cfc4013f37359ea7f49d23bc659b76f9f356) [#200](https://github.com/npm/cacache/pull/200) write: accept multiple integrity algorithms (#200) (@wraithgar)
+
+### Bug Fixes
+
+* [`62b2d8d`](https://github.com/npm/cacache/commit/62b2d8d06ae0a762d74a12bac17fc50a42731ee3) [#199](https://github.com/npm/cacache/pull/199) don't clobber time when verifying cache (#199) (@wraithgar)
+* [`e227c50`](https://github.com/npm/cacache/commit/e227c5006a4cd9648ab684f1ea13ce19f9508a23) [#197](https://github.com/npm/cacache/pull/197) verify: allow for entries with multiple hashes (#197) (@wraithgar)
+
+### Documentation
+
+* [`1b3774e`](https://github.com/npm/cacache/commit/1b3774e5c6be2608ac8d9513f9a13307015f457a) [#201](https://github.com/npm/cacache/pull/201) update readme links (#201) (@wraithgar)
+
 ## [17.0.7](https://github.com/npm/cacache/compare/v17.0.6...v17.0.7) (2023-05-01)
 
 ### Bug Fixes
