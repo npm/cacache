@@ -400,3 +400,13 @@ t.test('handles multiple hashes of the same content', async t => {
   t.match(ls.test.integrity, 'sha512')
   t.match(ls.test.integrity, 'sha256')
 })
+
+t.test('does not clobber entry time', async t => {
+  const cache = t.testdir()
+  const content = Buffer.from('CONTENT!', 'utf8')
+  await cacache.put(cache, 'test', content)
+  const entryBefore = await cacache.get.info(cache, 'test')
+  await cacache.verify(cache)
+  const entryAfter = await cacache.get.info(cache, 'test')
+  t.equal(entryBefore.time, entryAfter.time, 'time does not change')
+})
