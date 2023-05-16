@@ -1,6 +1,7 @@
 'use strict'
 
 const fs = require('fs/promises')
+const path = require('path')
 const index = require('../lib/entry-index')
 const memo = require('../lib/memoization')
 const t = require('tap')
@@ -127,4 +128,19 @@ t.test('signals error if error writing to cache', async t => {
   ])
   t.equal(bulkErr.code, 'EBADSIZE', 'got error from bulk write')
   t.equal(streamErr.code, 'EBADSIZE', 'got error from stream write')
+})
+
+t.test('concurrent puts', async t => {
+  const CACHE = t.testdir()
+  await Promise.all([
+    put(CACHE, KEY, CONTENT),
+    put(CACHE, KEY, CONTENT),
+    put(CACHE, KEY, CONTENT),
+    put(CACHE, KEY, CONTENT),
+    put(CACHE, KEY, CONTENT),
+    put(CACHE, KEY, CONTENT),
+    put(CACHE, KEY, CONTENT),
+  ])
+  const tmpFiles = await fs.readdir(path.join(CACHE, 'tmp'))
+  t.strictSame(tmpFiles, [], 'Nothing left in tmp')
 })
