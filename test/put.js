@@ -130,16 +130,21 @@ t.test('signals error if error writing to cache', async t => {
   t.equal(streamErr.code, 'EBADSIZE', 'got error from stream write')
 })
 
-t.test('concurrent puts', async t => {
+t.test('concurrent puts with identical content', async t => {
   const CACHE = t.testdir()
   await Promise.all([
     put(CACHE, KEY, CONTENT),
+    put(CACHE, `${KEY}2`, CONTENT),
     put(CACHE, KEY, CONTENT),
+    put(CACHE, `${KEY}2`, CONTENT),
     put(CACHE, KEY, CONTENT),
+    put(CACHE, `${KEY}2`, CONTENT),
     put(CACHE, KEY, CONTENT),
+    put(CACHE, `${KEY}2`, CONTENT),
     put(CACHE, KEY, CONTENT),
+    put(CACHE, `${KEY}2`, CONTENT),
     put(CACHE, KEY, CONTENT),
-    put(CACHE, KEY, CONTENT),
+    put(CACHE, `${KEY}2`, CONTENT),
   ])
   const tmpFiles = await fs.readdir(path.join(CACHE, 'tmp'))
   t.strictSame(tmpFiles, [], 'Nothing left in tmp')
