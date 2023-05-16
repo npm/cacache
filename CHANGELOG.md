@@ -1,5 +1,11 @@
 # Changelog
 
+## [17.1.2](https://github.com/npm/cacache/compare/v17.1.1...v17.1.2) (2023-05-16)
+
+### Bug Fixes
+
+* [`bd846d0`](https://github.com/npm/cacache/commit/bd846d02205d21aa199798351cb427bcae53ea4a) [#206](https://github.com/npm/cacache/pull/206) catch eexists in moveOperations promise (#206) (@wraithgar)
+
 ## [17.1.1](https://github.com/npm/cacache/compare/v17.1.0...v17.1.1) (2023-05-16)
 
 ### Bug Fixes
