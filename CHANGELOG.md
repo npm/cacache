@@ -1,5 +1,11 @@
 # Changelog
 
+## [17.1.1](https://github.com/npm/cacache/compare/v17.1.0...v17.1.1) (2023-05-16)
+
+### Bug Fixes
+
+* [`988d77a`](https://github.com/npm/cacache/commit/988d77aa7f71917f16d9f27210544029c15c8f98) [#203](https://github.com/npm/cacache/pull/203) deduplicate move operations (#203) (@wraithgar)
+
 ## [17.1.0](https://github.com/npm/cacache/compare/v17.0.7...v17.1.0) (2023-05-02)
 
 ### Features
