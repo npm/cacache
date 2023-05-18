@@ -1,5 +1,11 @@
 # Changelog
 
+## [17.1.3](https://github.com/npm/cacache/compare/v17.1.2...v17.1.3) (2023-05-18)
+
+### Bug Fixes
+
+* [`a0a5e58`](https://github.com/npm/cacache/commit/a0a5e581fb0405c2e4cbc9b3b8eb745eb8143a86) [#209](https://github.com/npm/cacache/pull/209) normalize win32 paths to use on glob expressions (#209) (@supita)
+
 ## [17.1.2](https://github.com/npm/cacache/compare/v17.1.1...v17.1.2) (2023-05-16)
 
 ### Bug Fixes
