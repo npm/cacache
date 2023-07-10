@@ -49,7 +49,7 @@
     "fs-minipass": "^3.0.0",
     "glob": "^10.2.2",
     "lru-cache": "^7.7.1",
-    "minipass": "^5.0.0",
+    "minipass": "^7.0.1",
     "minipass-collect": "^1.0.2",
     "minipass-flush": "^1.0.5",
     "minipass-pipeline": "^1.2.4",
