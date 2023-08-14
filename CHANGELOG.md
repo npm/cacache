@@ -1,5 +1,20 @@
 # Changelog
 
+## [18.0.0](https://github.com/npm/cacache/compare/v17.1.4...v18.0.0) (2023-08-14)
+
+### ⚠️ BREAKING CHANGES
+
+* support for node 14 has been removed
+
+### Bug Fixes
+
+* [`bdff8ca`](https://github.com/npm/cacache/commit/bdff8cab5bb6446599fb25b9a9f408d157db81be) [#219](https://github.com/npm/cacache/pull/219) use lru-cache named export (@lukekarrys)
+* [`0db9bcb`](https://github.com/npm/cacache/commit/0db9bcbb58bce80384de2c0d384a5f1311fa5428) [#219](https://github.com/npm/cacache/pull/219) drop node14 support (@lukekarrys)
+
+### Dependencies
+
+* [`0850b54`](https://github.com/npm/cacache/commit/0850b5437e9e3b099575f629d6a69d6ab47eefde) [#219](https://github.com/npm/cacache/pull/219) bump lru-cache from 7.18.3 to 10.0.1
+
 ## [17.1.4](https://github.com/npm/cacache/compare/v17.1.3...v17.1.4) (2023-08-14)
 
 ### Dependencies
