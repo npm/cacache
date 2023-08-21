@@ -50,7 +50,7 @@
     "glob": "^10.2.2",
     "lru-cache": "^10.0.1",
     "minipass": "^7.0.3",
-    "minipass-collect": "^1.0.2",
+    "minipass-collect": "^2.0.1",
     "minipass-flush": "^1.0.5",
     "minipass-pipeline": "^1.2.4",
     "p-map": "^4.0.0",
