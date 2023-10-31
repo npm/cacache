@@ -32,7 +32,7 @@ t.test('basic put, providing external integrity emitter', async (t) => {
   const CONTENT = 'foobarbaz'
   const INTEGRITY = ssri.fromData(CONTENT)
 
-  const write = t.mock('../../lib/content/write.js', {
+  const write = t.mockRequire('../../lib/content/write.js', {
     ssri: {
       ...ssri,
       integrityStream: () => {
@@ -234,7 +234,7 @@ t.test('cleans up tmp on successful completion', async t => {
 })
 
 t.test('Handles moveFile error other than EEXIST', async t => {
-  const write = t.mock('../../lib/content/write.js', {
+  const write = t.mockRequire('../../lib/content/write.js', {
     '@npmcli/fs': {
       moveFile: async () => {
         throw new Error('Unknown error')

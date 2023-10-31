@@ -22,7 +22,7 @@ const genericError = new Error('ERR')
 genericError.code = 'ERR'
 
 // helpers
-const getVerify = (t, opts) => t.mock('../lib/verify', opts)
+const getVerify = (t, opts) => t.mockRequire('../lib/verify', opts)
 
 async function mockCache (t) {
   const cacheContent = CacheContent({

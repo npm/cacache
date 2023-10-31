@@ -223,7 +223,7 @@ t.test('extremely long keys', async t => {
 t.test('ENOENT from appendFile is ignored', async (t) => {
   const cache = t.testdir()
 
-  const indexMocked = t.mock('../lib/entry-index.js', {
+  const indexMocked = t.mockRequire('../lib/entry-index.js', {
     'fs/promises': {
       ...fs,
       appendFile: async () => {
@@ -238,7 +238,7 @@ t.test('ENOENT from appendFile is ignored', async (t) => {
 t.test('generic error from appendFile rejects', async (t) => {
   const cache = t.testdir()
 
-  const indexMocked = t.mock('../lib/entry-index.js', {
+  const indexMocked = t.mockRequire('../lib/entry-index.js', {
     'fs/promises': {
       ...fs,
       appendFile: async () => {
