@@ -53,7 +53,6 @@ just as easily be used on its own.
 const cacache = require('cacache')
 const fs = require('fs')
 
-const tarball = '/path/to/mytar.tgz'
 const cachePath = '/tmp/my-toy-cache'
 const key = 'my-unique-key-1234'
 
