@@ -15,7 +15,7 @@ genericError.code = 'ERR'
 const missingFileError = new Error('ENOENT')
 missingFileError.code = 'ENOENT'
 
-const getEntryIndex = (t, opts) => t.mock('../lib/entry-index', opts)
+const getEntryIndex = (t, opts) => t.mockRequire('../lib/entry-index', opts)
 const getEntryIndexReadFileFailure = (t, err) => getEntryIndex(t, {
   'fs/promises': {
     ...fs.promises,

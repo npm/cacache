@@ -16,7 +16,7 @@ const permissionError = new Error('EPERM')
 permissionError.code = 'EPERM'
 
 // helpers
-const getRead = (t, opts) => t.mock('../../lib/content/read', opts)
+const getRead = (t, opts) => t.mockRequire('../../lib/content/read', opts)
 const getReadStatFailure = (t, err) => getRead(t, {
   fs: {
     ...fs,
