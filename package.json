@@ -16,7 +16,7 @@
     "snap": "tap",
     "coverage": "tap",
     "test-docker": "docker run -it --rm --name pacotest -v \"$PWD\":/tmp -w /tmp node:latest npm test",
-    "lint": "eslint \"**/*.js\"",
+    "lint": "eslint \"**/*.{js,cjs,ts,mjs,jsx,tsx}\"",
     "npmclilint": "npmcli-lint",
     "lintfix": "npm run lint -- --fix",
     "postsnap": "npm run lintfix --",
@@ -69,7 +69,7 @@
   "templateOSS": {
     "//@npmcli/template-oss": "This file is partially managed by @npmcli/template-oss. Edits may be overwritten.",
     "windowsCI": false,
-    "version": "4.19.0",
+    "version": "4.21.1",
     "publish": "true"
   },
   "author": "GitHub Inc.",
