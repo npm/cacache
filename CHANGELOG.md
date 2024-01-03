@@ -1,5 +1,18 @@
 # Changelog
 
+## [18.0.2](https://github.com/npm/cacache/compare/v18.0.1...v18.0.2) (2024-01-03)
+
+### Bug Fixes
+
+* [`b9f488d`](https://github.com/npm/cacache/commit/b9f488d8667e76aefb9c25d2ff51c81fd9f8539c) [#255](https://github.com/npm/cacache/pull/255) Speed up cache reads (#255) (@thecodrr)
+
+### Chores
+
+* [`7eab139`](https://github.com/npm/cacache/commit/7eab1395432d3a85fad394b810c9aa6929473e25) [#252](https://github.com/npm/cacache/pull/252) postinstall for dependabot template-oss PR (@lukekarrys)
+* [`44bedb2`](https://github.com/npm/cacache/commit/44bedb24525fc24d1140c9b434ab23f35bbc70b8) [#252](https://github.com/npm/cacache/pull/252) bump @npmcli/template-oss from 4.21.1 to 4.21.3 (@dependabot[bot])
+* [`a12bdf3`](https://github.com/npm/cacache/commit/a12bdf3a3bede99fb3024adeb770ef3f8495240b) [#248](https://github.com/npm/cacache/pull/248) postinstall for dependabot template-oss PR (@lukekarrys)
+* [`62e5a94`](https://github.com/npm/cacache/commit/62e5a9499103a23a4701077008017516d2f794bf) [#248](https://github.com/npm/cacache/pull/248) bump @npmcli/template-oss from 4.19.0 to 4.21.1 (@dependabot[bot])
+
 ## [18.0.1](https://github.com/npm/cacache/compare/v18.0.0...v18.0.1) (2023-11-27)
 
 ### Bug Fixes
