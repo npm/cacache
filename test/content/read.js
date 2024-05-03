@@ -26,7 +26,7 @@ const getReadStatFailure = (t, err) => getRead(t, {
   },
   'fs/promises': {
     ...fs.promises,
-    stat: async (path) => {
+    stat: async () => {
       throw err
     },
   },
@@ -153,7 +153,7 @@ t.test('read: error while parsing provided integrity data', function (t) {
   const INTEGRITY = 'sha1-deadbeef'
   const mockedRead = getRead(t, {
     ssri: {
-      parse (sri) {
+      parse () {
         throw genericError
       },
     },
@@ -221,7 +221,7 @@ t.test('read: opening large files', function (t) {
   const mockedRead = getRead(t, {
     'fs/promises': {
       ...fs.promises,
-      stat: async (path) => {
+      stat: async () => {
         return { size: Number.MAX_SAFE_INTEGER }
       },
     },

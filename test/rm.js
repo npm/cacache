@@ -50,7 +50,7 @@ t.test('rm.content removes content, not entries', (t) => {
     .then(() => {
       return get(cache, KEY)
     })
-    .then((res) => {
+    .then(() => {
       throw new Error('unexpected success')
     })
     .catch((err) => {
