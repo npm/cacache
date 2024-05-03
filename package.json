@@ -26,7 +26,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/npm/cacache.git"
+    "url": "git+https://github.com/npm/cacache.git"
   },
   "keywords": [
     "cache",
@@ -69,7 +69,7 @@
   "templateOSS": {
     "//@npmcli/template-oss": "This file is partially managed by @npmcli/template-oss. Edits may be overwritten.",
     "windowsCI": false,
-    "version": "4.21.4",
+    "version": "4.22.0",
     "publish": "true"
   },
   "author": "GitHub Inc.",
