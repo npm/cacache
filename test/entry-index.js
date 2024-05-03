@@ -19,7 +19,7 @@ const getEntryIndex = (t, opts) => t.mock('../lib/entry-index', opts)
 const getEntryIndexReadFileFailure = (t, err) => getEntryIndex(t, {
   'fs/promises': {
     ...fs.promises,
-    readFile: async (path, encode) => {
+    readFile: async () => {
       throw err
     },
   },
@@ -177,7 +177,7 @@ t.test('find: error on parsing json data', (t) => {
   // mocks readFile in order to return a borked json payload
   const { find } = getEntryIndex(t, {
     '@npmcli/fs': Object.assign({}, require('@npmcli/fs'), {
-      readFile: async (path, encode) => {
+      readFile: async () => {
         return '\ncec8d2e4685534ed189b563c8ee1cb1cb7c72874\t{"""// foo'
       },
     }),
@@ -235,7 +235,7 @@ t.test('lsStream: unknown error reading dirs', (t) => {
   const { lsStream } = getEntryIndex(t, {
     'fs/promises': {
       ...fs.promises,
-      readdir: async (path) => {
+      readdir: async () => {
         throw genericError
       },
     },

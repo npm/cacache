@@ -217,7 +217,7 @@ t.test('missing file error when validating cache content', async t => {
   missingFileError.code = 'ENOENT'
   const mockVerify = getVerify(t, {
     'fs/promises': Object.assign({}, fs, {
-      stat: async (path) => {
+      stat: async () => {
         throw missingFileError
       },
     }),
@@ -239,7 +239,7 @@ t.test('missing file error when validating cache content', async t => {
 t.test('unknown error when validating content', async t => {
   const mockVerify = getVerify(t, {
     'fs/promises': Object.assign({}, fs, {
-      stat: async (path) => {
+      stat: async () => {
         throw genericError
       },
     }),
