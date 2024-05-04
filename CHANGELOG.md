@@ -1,5 +1,17 @@
 # Changelog
 
+## [18.0.3](https://github.com/npm/cacache/compare/v18.0.2...v18.0.3) (2024-05-04)
+
+### Bug Fixes
+
+* [`326c7a3`](https://github.com/npm/cacache/commit/326c7a34829810f934ba8dd51d010ef03d619702) [#269](https://github.com/npm/cacache/pull/269) linting: no-unused-vars (@lukekarrys)
+
+### Chores
+
+* [`b685cb5`](https://github.com/npm/cacache/commit/b685cb51ef8de7f570f42c9053e8cbaa6ae09c6a) [#269](https://github.com/npm/cacache/pull/269) bump @npmcli/template-oss to 4.22.0 (@lukekarrys)
+* [`4a66453`](https://github.com/npm/cacache/commit/4a66453c237fe4573fcb725a3435b3ccc9bf20c2) [#269](https://github.com/npm/cacache/pull/269) postinstall for dependabot template-oss PR (@lukekarrys)
+* [`4359f2c`](https://github.com/npm/cacache/commit/4359f2c9189a89e200f945d9edfc1eda96fcdd17) [#264](https://github.com/npm/cacache/pull/264) bump @npmcli/template-oss from 4.21.3 to 4.21.4 (@dependabot[bot])
+
 ## [18.0.2](https://github.com/npm/cacache/compare/v18.0.1...v18.0.2) (2024-01-03)
 
 ### Bug Fixes
