@@ -53,7 +53,6 @@
     "minipass-collect": "^2.0.1",
     "minipass-flush": "^1.0.5",
     "minipass-pipeline": "^1.2.4",
-    "p-map": "^4.0.0",
     "ssri": "^10.0.0",
     "tar": "^6.1.11",
     "unique-filename": "^3.0.0"
