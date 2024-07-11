@@ -1,5 +1,11 @@
 # Changelog
 
+## [18.0.4](https://github.com/npm/cacache/compare/v18.0.3...v18.0.4) (2024-07-11)
+
+### Bug Fixes
+
+* [`5f2166a`](https://github.com/npm/cacache/commit/5f2166a37b82fc027c2ed5c5df3b42f2e3d96e2f) [#285](https://github.com/npm/cacache/pull/285) Limit concurrent open files during `lsstream` (#285) (@oikumene)
+
 ## [18.0.3](https://github.com/npm/cacache/compare/v18.0.2...v18.0.3) (2024-05-04)
 
 ### Bug Fixes
