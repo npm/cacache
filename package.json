@@ -49,7 +49,7 @@
     "@npmcli/fs": "^3.1.0",
     "fs-minipass": "^3.0.0",
     "glob": "^10.2.2",
-    "lru-cache": "^10.0.1",
+    "lru-cache": "^11.0.1",
     "minipass": "^7.0.3",
     "minipass-collect": "^2.0.1",
     "minipass-flush": "^1.0.5",
