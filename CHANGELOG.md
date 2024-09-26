@@ -1,5 +1,21 @@
 # Changelog
 
+## [19.0.0](https://github.com/npm/cacache/compare/v18.0.4...v19.0.0) (2024-09-26)
+### ⚠️ BREAKING CHANGES
+* `cacache` now supports node `^18.17.0 || >=20.5.0`
+### Bug Fixes
+* [`cc9eee3`](https://github.com/npm/cacache/commit/cc9eee342bb6be30613d8ca2090d404221ee6b59) [#300](https://github.com/npm/cacache/pull/300) align to npm 10 node engine range (@reggi)
+### Dependencies
+* [`beaab7c`](https://github.com/npm/cacache/commit/beaab7c85bf487b90f9248ed76bfbccbc93e75b5) [#291](https://github.com/npm/cacache/pull/291) bump tar from 6.2.1 to 7.4.3 (#291)
+* [`81b6e34`](https://github.com/npm/cacache/commit/81b6e34e2a6ea2055d430e2e818d7648fcf338a8) [#300](https://github.com/npm/cacache/pull/300) `unique-filename@4.0.0`
+* [`dcab1af`](https://github.com/npm/cacache/commit/dcab1af53f5ec8bda75f1084572df19e8611a87d) [#300](https://github.com/npm/cacache/pull/300) `ssri@12.0.0`
+* [`ba3a3b8`](https://github.com/npm/cacache/commit/ba3a3b8d9f1395103a7fb090d3bd62b1be88f5ba) [#300](https://github.com/npm/cacache/pull/300) `@npmcli/fs@4.0.0`
+### Chores
+* [`73ce729`](https://github.com/npm/cacache/commit/73ce729c05453b3d8264daf06598f9de5acfe5a7) [#300](https://github.com/npm/cacache/pull/300) run template-oss-apply (@reggi)
+* [`f663562`](https://github.com/npm/cacache/commit/f663562addcb9bf56eda9764c05b5de42d294672) [#294](https://github.com/npm/cacache/pull/294) bump @npmcli/eslint-config from 4.0.5 to 5.0.0 (@dependabot[bot])
+* [`74ac800`](https://github.com/npm/cacache/commit/74ac800263888fcc621fd03b220b5fbd2a7c7ce9) [#295](https://github.com/npm/cacache/pull/295) postinstall for dependabot template-oss PR (@hashtagchris)
+* [`ae95894`](https://github.com/npm/cacache/commit/ae9589421cc9e70381f589d63afdeabec36261ce) [#295](https://github.com/npm/cacache/pull/295) bump @npmcli/template-oss from 4.23.1 to 4.23.3 (@dependabot[bot])
+
 ## [18.0.4](https://github.com/npm/cacache/compare/v18.0.3...v18.0.4) (2024-07-11)
 
 ### Bug Fixes
