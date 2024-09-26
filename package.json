@@ -57,7 +57,7 @@
     "p-map": "^4.0.0",
     "ssri": "^12.0.0",
     "tar": "^6.1.11",
-    "unique-filename": "^3.0.0"
+    "unique-filename": "^4.0.0"
   },
   "devDependencies": {
     "@npmcli/eslint-config": "^5.0.0",
