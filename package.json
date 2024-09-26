@@ -54,7 +54,7 @@
     "minipass-collect": "^2.0.1",
     "minipass-flush": "^1.0.5",
     "minipass-pipeline": "^1.2.4",
-    "p-map": "^4.0.0",
+    "p-map": "^7.0.2",
     "ssri": "^12.0.0",
     "tar": "^7.4.3",
     "unique-filename": "^4.0.0"
