@@ -1,5 +1,9 @@
 # Changelog
 
+## [19.0.1](https://github.com/npm/cacache/compare/v19.0.0...v19.0.1) (2024-09-26)
+### Dependencies
+* [`e56c7fc`](https://github.com/npm/cacache/commit/e56c7fc776c94937763ffe2f8ed9f92cac4f50a6) [#302](https://github.com/npm/cacache/pull/302) update p-map from ^4.0.0 to ^7.0.2 (#302)
+
 ## [19.0.0](https://github.com/npm/cacache/compare/v18.0.4...v19.0.0) (2024-09-26)
 ### ⚠️ BREAKING CHANGES
 * `cacache` now supports node `^18.17.0 || >=20.5.0`
