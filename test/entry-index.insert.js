@@ -224,7 +224,7 @@ t.test('ENOENT from appendFile is ignored', async (t) => {
   const cache = t.testdir()
 
   const indexMocked = t.mock('../lib/entry-index.js', {
-    'fs/promises': {
+    'fs-extra': {
       ...fs,
       appendFile: async () => {
         throw Object.assign(new Error('fake enoent'), { code: 'ENOENT' })
@@ -239,7 +239,7 @@ t.test('generic error from appendFile rejects', async (t) => {
   const cache = t.testdir()
 
   const indexMocked = t.mock('../lib/entry-index.js', {
-    'fs/promises': {
+    'fs-extra': {
       ...fs,
       appendFile: async () => {
         throw Object.assign(new Error('fake eperm'), { code: 'EPERM' })

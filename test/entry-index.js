@@ -17,7 +17,7 @@ missingFileError.code = 'ENOENT'
 
 const getEntryIndex = (t, opts) => t.mock('../lib/entry-index', opts)
 const getEntryIndexReadFileFailure = (t, err) => getEntryIndex(t, {
-  'fs/promises': {
+  'fs-extra': {
     ...fs.promises,
     readFile: async () => {
       throw err
@@ -233,7 +233,7 @@ t.test('lsStream: missing files error', async (t) => {
 t.test('lsStream: unknown error reading dirs', (t) => {
   const cache = t.testdir(cacheContent)
   const { lsStream } = getEntryIndex(t, {
-    'fs/promises': {
+    'fs-extra': {
       ...fs.promises,
       readdir: async () => {
         throw genericError
