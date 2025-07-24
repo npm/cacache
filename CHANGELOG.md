@@ -1,5 +1,18 @@
 # Changelog
 
+## [20.0.0](https://github.com/npm/cacache/compare/v19.0.1...v20.0.0) (2025-07-24)
+### ⚠️ BREAKING CHANGES
+* `cacache` now supports node `^20.17.0 || >=22.9.0`
+### Bug Fixes
+* [`de558cb`](https://github.com/npm/cacache/commit/de558cb45560aa1560fff12b8e3f49784c2ef920) [#310](https://github.com/npm/cacache/pull/310) align to npm 11 node engine range (@owlstronaut)
+### Dependencies
+* [`7d2cfd1`](https://github.com/npm/cacache/commit/7d2cfd16f680a0787dcb045b3db12ef5748cd362) [#310](https://github.com/npm/cacache/pull/310) `@npmcli/template-oss@4.25.0`
+* [`caf9538`](https://github.com/npm/cacache/commit/caf953852b0c5d3b91484c5021c712032d8c4b02) [#310](https://github.com/npm/cacache/pull/310) `lru-cache@11.1.0`
+* [`bdc28cf`](https://github.com/npm/cacache/commit/bdc28cf6c7cb7287e52abfb1cbcb294dfa29a0ad) [#310](https://github.com/npm/cacache/pull/310) `glob@11.0.3`
+### Chores
+* [`7d005df`](https://github.com/npm/cacache/commit/7d005dfc07fff670753deb54c3ce67903b2f6859) [#310](https://github.com/npm/cacache/pull/310) template-oss apply fix (@owlstronaut)
+* [`49e75b8`](https://github.com/npm/cacache/commit/49e75b8809f3de5fd96865c398d84a4375f2653d) [#304](https://github.com/npm/cacache/pull/304) bump @npmcli/template-oss from 4.23.3 to 4.23.4 (#304) (@dependabot[bot], @npm-cli-bot)
+
 ## [19.0.1](https://github.com/npm/cacache/compare/v19.0.0...v19.0.1) (2024-09-26)
 ### Dependencies
 * [`e56c7fc`](https://github.com/npm/cacache/commit/e56c7fc776c94937763ffe2f8ed9f92cac4f50a6) [#302](https://github.com/npm/cacache/pull/302) update p-map from ^4.0.0 to ^7.0.2 (#302)
