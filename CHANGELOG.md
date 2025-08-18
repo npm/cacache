@@ -1,5 +1,9 @@
 # Changelog
 
+## [20.0.1](https://github.com/npm/cacache/compare/v20.0.0...v20.0.1) (2025-08-18)
+### Dependencies
+* [`b237808`](https://github.com/npm/cacache/commit/b2378084aa51149e6a00d16096b13135162d7c10) [#314](https://github.com/npm/cacache/pull/314) remove tar (#314)
+
 ## [20.0.0](https://github.com/npm/cacache/compare/v19.0.1...v20.0.0) (2025-07-24)
 ### ⚠️ BREAKING CHANGES
 * `cacache` now supports node `^20.17.0 || >=22.9.0`
