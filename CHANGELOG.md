@@ -1,5 +1,9 @@
 # Changelog
 
+## [20.0.2](https://github.com/npm/cacache/compare/v20.0.1...v20.0.2) (2025-11-17)
+### Dependencies
+* [`79d843c`](https://github.com/npm/cacache/commit/79d843c53392d6ae3749f70fab18af38b47556f5) [#316](https://github.com/npm/cacache/pull/316) `ssri@13.0.0` (#316)
+
 ## [20.0.1](https://github.com/npm/cacache/compare/v20.0.0...v20.0.1) (2025-08-18)
 ### Dependencies
 * [`b237808`](https://github.com/npm/cacache/commit/b2378084aa51149e6a00d16096b13135162d7c10) [#314](https://github.com/npm/cacache/pull/314) remove tar (#314)
