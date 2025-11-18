@@ -216,7 +216,7 @@ t.test('missing file error when validating cache content', async t => {
   const missingFileError = new Error('ENOENT')
   missingFileError.code = 'ENOENT'
   const mockVerify = getVerify(t, {
-    'fs/promises': Object.assign({}, fs, {
+    'fs-extra': Object.assign({}, fs, {
       stat: async () => {
         throw missingFileError
       },
@@ -238,7 +238,7 @@ t.test('missing file error when validating cache content', async t => {
 
 t.test('unknown error when validating content', async t => {
   const mockVerify = getVerify(t, {
-    'fs/promises': Object.assign({}, fs, {
+    'fs-extra': Object.assign({}, fs, {
       stat: async () => {
         throw genericError
       },
@@ -274,7 +274,7 @@ t.test('unknown error when rebuilding bucket', async t => {
   // shouldFail controls the right time to mock the error
   let shouldFail = false
   const mockVerify = getVerify(t, {
-    'fs/promises': Object.assign({}, fs, {
+    'fs-extra': Object.assign({}, fs, {
       stat: async (path) => {
         if (shouldFail) {
           throw genericError

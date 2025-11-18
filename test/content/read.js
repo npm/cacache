@@ -24,7 +24,7 @@ const getReadStatFailure = (t, err) => getRead(t, {
       throw err
     },
   },
-  'fs/promises': {
+  'fs-extra': {
     ...fs.promises,
     stat: async () => {
       throw err
@@ -219,7 +219,7 @@ t.test('read: returns only first result if other hashes fails', function (t) {
 t.test('read: opening large files', function (t) {
   const CACHE = t.testdir()
   const mockedRead = getRead(t, {
-    'fs/promises': {
+    'fs-extra': {
       ...fs.promises,
       stat: async () => {
         return { size: Number.MAX_SAFE_INTEGER }
