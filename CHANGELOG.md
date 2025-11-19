@@ -1,5 +1,14 @@
 # Changelog
 
+## [20.0.3](https://github.com/npm/cacache/compare/v20.0.2...v20.0.3) (2025-11-19)
+### Dependencies
+* [`f3a2cdd`](https://github.com/npm/cacache/commit/f3a2cdd8886097190f12d5770009fc27d3dd9496) [#322](https://github.com/npm/cacache/pull/322) bump glob from 11.1.0 to 13.0.0 (#322) (@dependabot[bot])
+* [`6f96e0f`](https://github.com/npm/cacache/commit/6f96e0f5233b66b681035f5bc096d81669ce1d1b) [#319](https://github.com/npm/cacache/pull/319) bump @npmcli/fs from 4.0.0 to 5.0.0 (#319) (@dependabot[bot])
+* [`49565c9`](https://github.com/npm/cacache/commit/49565c946702ecd2d6c3766c7f3ffa8df6a5723f) [#320](https://github.com/npm/cacache/pull/320) bump unique-filename from 4.0.0 to 5.0.0 (#320) (@dependabot[bot])
+### Chores
+* [`f813148`](https://github.com/npm/cacache/commit/f81314803953a1f5e203f06fde1b434a61dd17e4) [#321](https://github.com/npm/cacache/pull/321) bump @npmcli/eslint-config from 5.1.0 to 6.0.1 (#321) (@dependabot[bot])
+* [`57fc04f`](https://github.com/npm/cacache/commit/57fc04fc00836ba5aaa32a035574f8a575c9b982) [#323](https://github.com/npm/cacache/pull/323) bump @npmcli/template-oss from 4.25.0 to 4.28.0 (#323) (@dependabot[bot], @npm-cli-bot)
+
 ## [20.0.2](https://github.com/npm/cacache/compare/v20.0.1...v20.0.2) (2025-11-17)
 ### Dependencies
 * [`79d843c`](https://github.com/npm/cacache/commit/79d843c53392d6ae3749f70fab18af38b47556f5) [#316](https://github.com/npm/cacache/pull/316) `ssri@13.0.0` (#316)
