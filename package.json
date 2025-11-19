@@ -46,7 +46,7 @@
   ],
   "license": "ISC",
   "dependencies": {
-    "@npmcli/fs": "^4.0.0",
+    "@npmcli/fs": "^5.0.0",
     "fs-minipass": "^3.0.0",
     "glob": "^11.0.3",
     "lru-cache": "^11.1.0",
