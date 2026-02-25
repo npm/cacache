@@ -55,8 +55,7 @@
     "minipass-flush": "^1.0.5",
     "minipass-pipeline": "^1.2.4",
     "p-map": "^7.0.2",
-    "ssri": "^13.0.0",
-    "unique-filename": "^5.0.0"
+    "ssri": "^13.0.0"
   },
   "devDependencies": {
     "@npmcli/eslint-config": "^6.0.1",
