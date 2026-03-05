@@ -47,3 +47,16 @@ t.test('withTmp should accept both opts and cb params', async t => {
     t.ok(dir, 'dir should contain a valid response')
   })
 })
+
+t.test('tmpName returns a path inside tmp', t => {
+  const name = tmp.tmpName(CACHE)
+  t.match(path.relative(CACHE, name), /^tmp[\\/]/, 'path is inside cache tmp dir')
+  t.end()
+})
+
+t.test('tmpName applies prefix', t => {
+  const name = tmp.tmpName(CACHE, 'my-prefix')
+  const base = path.basename(name)
+  t.ok(base.startsWith('my-prefix-'), 'filename starts with prefix')
+  t.end()
+})
