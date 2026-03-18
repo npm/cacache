@@ -1,5 +1,11 @@
 # Changelog
 
+## [20.0.4](https://github.com/npm/cacache/compare/v20.0.3...v20.0.4) (2026-03-18)
+### Dependencies
+* [`dd3ff61`](https://github.com/npm/cacache/commit/dd3ff617dea9f5d1610b44ffd2d196e4839a1251) [#328](https://github.com/npm/cacache/pull/328) remove unique-filename
+### Chores
+* [`1cf5e0c`](https://github.com/npm/cacache/commit/1cf5e0c52f67c73dc324e509b65f868bc4bb0780) [#326](https://github.com/npm/cacache/pull/326) bump @npmcli/template-oss from 4.28.1 to 4.29.0 (#326) (@dependabot[bot], @npm-cli-bot)
+
 ## [20.0.3](https://github.com/npm/cacache/compare/v20.0.2...v20.0.3) (2025-11-19)
 ### Dependencies
 * [`f3a2cdd`](https://github.com/npm/cacache/commit/f3a2cdd8886097190f12d5770009fc27d3dd9496) [#322](https://github.com/npm/cacache/pull/322) bump glob from 11.1.0 to 13.0.0 (#322) (@dependabot[bot])
