@@ -52,7 +52,7 @@
     "lru-cache": "^11.1.0",
     "minipass": "^7.0.3",
     "minipass-collect": "^2.0.1",
-    "minipass-flush": "^1.0.5",
+    "minipass-flush": "^2.0.0",
     "minipass-pipeline": "^1.2.4",
     "p-map": "^7.0.2",
     "ssri": "^13.0.0"
