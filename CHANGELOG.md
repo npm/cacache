@@ -1,5 +1,21 @@
 # Changelog
 
+## [21.0.0](https://github.com/npm/cacache/compare/v20.0.4...v21.0.0) (2026-05-18)
+### ⚠️ BREAKING CHANGES
+* `cacache` now supports node `^22.22.2 || ^24.15.0 || >=26.0.0`
+* template-oss-apply
+### Features
+* [`224c45a`](https://github.com/npm/cacache/commit/224c45a0d283034668907680ff454deb5e70c314) [#339](https://github.com/npm/cacache/pull/339) bump to new node engine range (@owlstronaut)
+* [`2929aa5`](https://github.com/npm/cacache/commit/2929aa53e23fe20d8ed3aa4ea1d161cac51e924e) [#339](https://github.com/npm/cacache/pull/339) template-oss-apply (@owlstronaut)
+### Dependencies
+* [`4a9b643`](https://github.com/npm/cacache/commit/4a9b643485e389e1766a1879db768b6a6a40807d) [#339](https://github.com/npm/cacache/pull/339) `ssri@14.0.0`
+* [`23f4ca7`](https://github.com/npm/cacache/commit/23f4ca79a0ff1f69d17c92ad5a5d4b14b8551bfc) [#339](https://github.com/npm/cacache/pull/339) `@npmcli/fs@6.0.0`
+### Chores
+* [`8f85b88`](https://github.com/npm/cacache/commit/8f85b881b1b649b92f8046e70344328863d9fbb3) [#339](https://github.com/npm/cacache/pull/339) template-oss-apply (@owlstronaut)
+* [`af6256e`](https://github.com/npm/cacache/commit/af6256e4b5ca67d4b67b97ab843fae9fc95ef086) [#339](https://github.com/npm/cacache/pull/339) bumping @npmcli/template-oss from 4.30.0 to 5.1.0 (@owlstronaut)
+* [`c1a85be`](https://github.com/npm/cacache/commit/c1a85be7ad9c53bb35319c408bbc9c2044602797) [#330](https://github.com/npm/cacache/pull/330) template-oss-apply (#330) (@owlstronaut)
+* [`5929444`](https://github.com/npm/cacache/commit/59294444ba06f106a1e385dc5ee20576e1b8909f) [#331](https://github.com/npm/cacache/pull/331) bump @npmcli/template-oss from 4.29.0 to 4.30.0 (#331) (@dependabot[bot], @npm-cli-bot)
+
 ## [20.0.4](https://github.com/npm/cacache/compare/v20.0.3...v20.0.4) (2026-03-18)
 ### Dependencies
 * [`dd3ff61`](https://github.com/npm/cacache/commit/dd3ff617dea9f5d1610b44ffd2d196e4839a1251) [#328](https://github.com/npm/cacache/pull/328) remove unique-filename
