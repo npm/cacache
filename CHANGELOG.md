@@ -1,5 +1,11 @@
 # Changelog
 
+## [21.0.1](https://github.com/npm/cacache/compare/v21.0.0...v21.0.1) (2026-06-09)
+### Bug Fixes
+* [`bff2f4f`](https://github.com/npm/cacache/commit/bff2f4ff89912273089a7565ea55be6f535a2ca0) [#343](https://github.com/npm/cacache/pull/343) create cache directory tags (@gezzz)
+### Chores
+* [`7a10e56`](https://github.com/npm/cacache/commit/7a10e56aacfddcd99fa590f4f0511c4ecdde293b) [#337](https://github.com/npm/cacache/pull/337) bump @npmcli/eslint-config from 6.0.1 to 7.0.0 (#337) (@dependabot[bot])
+
 ## [21.0.0](https://github.com/npm/cacache/compare/v20.0.4...v21.0.0) (2026-05-18)
 ### ⚠️ BREAKING CHANGES
 * `cacache` now supports node `^22.22.2 || ^24.15.0 || >=26.0.0`
