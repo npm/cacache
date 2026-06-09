@@ -24,6 +24,17 @@ t.test('basic bulk insertion', async t => {
   t.same(data, CONTENT, 'content was correctly inserted')
 })
 
+t.test('creates a CACHEDIR.TAG marker on bulk insertion', async t => {
+  const CACHE = t.testdir()
+  await put(CACHE, KEY, CONTENT)
+  const tag = await fs.readFile(path.join(CACHE, 'CACHEDIR.TAG'), 'utf8')
+  t.match(
+    tag,
+    /^Signature: 8a477f597d28d172789f06886806bc55\n/,
+    'cache directory is tagged'
+  )
+})
+
 t.test('basic stream insertion', async t => {
   const CACHE = t.testdir()
   let int
