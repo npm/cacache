@@ -60,7 +60,7 @@
   "devDependencies": {
     "@npmcli/eslint-config": "^7.0.0",
     "@npmcli/template-oss": "5.1.1",
-    "tap": "^16.0.0"
+    "tap": "^20.0.3"
   },
   "engines": {
     "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
