@@ -353,7 +353,11 @@ with an `EBADSIZE` error.
 
 #### <a name="put-data"></a> `> cacache.put(cache, key, data, [opts]) -> Promise`
 
-Inserts data passed to it into the cache. The returned Promise resolves with a
+Inserts data passed to it into the cache. `data` may be a `String`, `Buffer`,
+`Uint8Array`, `ArrayBuffer`, `Blob`, a `fetch` `Response`, or a stream. Fetch
+`Response` and `Blob` values are read with `arrayBuffer()`; `Response.body`
+can also be passed to use the existing stream put path.
+The returned Promise resolves with a
 digest (generated according to [`opts.algorithms`](#optsalgorithms)) after the
 cache entry has been successfully written.
 

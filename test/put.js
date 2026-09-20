@@ -24,6 +24,103 @@ t.test('basic bulk insertion', async t => {
   t.same(data, CONTENT, 'content was correctly inserted')
 })
 
+t.test('basic bulk insertion from a string', async t => {
+  const CACHE = t.testdir()
+  const integrity = await put(CACHE, KEY, CONTENT.toString('utf8'))
+  t.equal(integrity.toString(), INTEGRITY, 'returned content integrity')
+  const data = await fs.readFile(contentPath(CACHE, integrity))
+  t.same(data, CONTENT, 'string content was correctly inserted')
+})
+
+t.test('accepts a Uint8Array', async t => {
+  const CACHE = t.testdir()
+  const integrity = await put(CACHE, KEY, new Uint8Array(CONTENT))
+  t.equal(integrity.toString(), INTEGRITY, 'returned content integrity')
+  const data = await fs.readFile(contentPath(CACHE, integrity))
+  t.same(data, CONTENT, 'Uint8Array content was correctly inserted')
+})
+
+t.test('accepts an ArrayBuffer', async t => {
+  const CACHE = t.testdir()
+  const integrity = await put(CACHE, KEY, Uint8Array.from(CONTENT).buffer)
+  t.equal(integrity.toString(), INTEGRITY, 'returned content integrity')
+  const data = await fs.readFile(contentPath(CACHE, integrity))
+  t.same(data, CONTENT, 'ArrayBuffer content was correctly inserted')
+})
+
+t.test('accepts a fetch Response', async t => {
+  const CACHE = t.testdir()
+  const integrity = await put(CACHE, KEY, new Response(CONTENT))
+  t.equal(integrity.toString(), INTEGRITY, 'returned content integrity')
+  const data = await fs.readFile(contentPath(CACHE, integrity))
+  t.same(data, CONTENT, 'Response body was correctly inserted')
+})
+
+t.test('accepts a duck-typed fetch Response', async t => {
+  const CACHE = t.testdir()
+  const integrity = await put(CACHE, KEY, {
+    status: 200,
+    ok: true,
+    body: null,
+    arrayBuffer: async () => Uint8Array.from(CONTENT).buffer,
+  })
+  t.equal(integrity.toString(), INTEGRITY, 'returned content integrity')
+  const data = await fs.readFile(contentPath(CACHE, integrity))
+  t.same(data, CONTENT, 'duck-typed Response body was correctly inserted')
+})
+
+t.test('accepts a Response.body web stream', async t => {
+  const CACHE = t.testdir()
+  const integrity = await put(CACHE, KEY, new Response(CONTENT).body)
+  t.equal(integrity.toString(), INTEGRITY, 'returned content integrity')
+  const data = await fs.readFile(contentPath(CACHE, integrity))
+  t.same(data, CONTENT, 'streamed Response body was correctly inserted')
+})
+
+t.test('accepts a fetch Response with a null body via arrayBuffer()', async t => {
+  const CACHE = t.testdir()
+  const empty = Buffer.alloc(0)
+  const integrity = await put(CACHE, KEY, new Response(null))
+  t.equal(integrity.toString(), ssri.fromData(empty).toString(), 'hashed empty body')
+  const data = await fs.readFile(contentPath(CACHE, integrity))
+  t.same(data, empty, 'empty Response was correctly inserted')
+})
+
+t.test('accepts a Blob', async t => {
+  const CACHE = t.testdir()
+  const integrity = await put(CACHE, KEY, new Blob([CONTENT]))
+  t.equal(integrity.toString(), INTEGRITY, 'returned content integrity')
+  const data = await fs.readFile(contentPath(CACHE, integrity))
+  t.same(data, CONTENT, 'Blob content was correctly inserted')
+})
+
+t.test('optionally memoizes data from a fetch Response', async t => {
+  const CACHE = t.testdir()
+  const integrity = await put(CACHE, KEY, new Response(CONTENT), {
+    metadata: METADATA,
+    memoize: true,
+  })
+  t.equal(integrity.toString(), INTEGRITY, 'integrity returned as usual')
+  const entry = await index.find(CACHE, KEY)
+  t.same(
+    memo.get(CACHE, KEY),
+    {
+      data: CONTENT,
+      entry: entry,
+    },
+    'Response body inserted into memoization cache by key'
+  )
+})
+
+t.test('rejects unsupported data types with a clear error', async t => {
+  const CACHE = t.testdir()
+  await t.rejects(
+    put(CACHE, KEY, { not: 'bytes' }),
+    { code: 'EBADTYPE', message: /Response/ },
+    'got a clear type error instead of ssri hashing failure'
+  )
+})
+
 t.test('creates a CACHEDIR.TAG marker on bulk insertion', async t => {
   const CACHE = t.testdir()
   await put(CACHE, KEY, CONTENT)
