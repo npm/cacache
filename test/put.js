@@ -2,6 +2,7 @@
 
 const fs = require('fs/promises')
 const path = require('path')
+const { Readable } = require('stream')
 const index = require('../lib/entry-index')
 const memo = require('../lib/memoization')
 const t = require('tap')
@@ -69,6 +70,18 @@ t.test('accepts a duck-typed fetch Response', async t => {
   t.same(data, CONTENT, 'duck-typed Response body was correctly inserted')
 })
 
+t.test('accepts a duck-typed fetch Response identified by ok', async t => {
+  const CACHE = t.testdir()
+  const integrity = await put(CACHE, KEY, {
+    ok: true,
+    body: null,
+    arrayBuffer: async () => Uint8Array.from(CONTENT).buffer,
+  })
+  t.equal(integrity.toString(), INTEGRITY, 'returned content integrity')
+  const data = await fs.readFile(contentPath(CACHE, integrity))
+  t.same(data, CONTENT, 'ok-only duck-typed Response was correctly inserted')
+})
+
 t.test('accepts a Response.body web stream', async t => {
   const CACHE = t.testdir()
   const integrity = await put(CACHE, KEY, new Response(CONTENT).body)
@@ -92,6 +105,41 @@ t.test('accepts a Blob', async t => {
   t.equal(integrity.toString(), INTEGRITY, 'returned content integrity')
   const data = await fs.readFile(contentPath(CACHE, integrity))
   t.same(data, CONTENT, 'Blob content was correctly inserted')
+})
+
+t.test('accepts a duck-typed Blob', async t => {
+  const CACHE = t.testdir()
+  const integrity = await put(CACHE, KEY, {
+    size: CONTENT.length,
+    type: 'application/octet-stream',
+    slice () {},
+    arrayBuffer: async () => Uint8Array.from(CONTENT).buffer,
+  })
+  t.equal(integrity.toString(), INTEGRITY, 'returned content integrity')
+  const data = await fs.readFile(contentPath(CACHE, integrity))
+  t.same(data, CONTENT, 'duck-typed Blob content was correctly inserted')
+})
+
+t.test('accepts a Node stream', async t => {
+  const CACHE = t.testdir()
+  const integrity = await put(CACHE, KEY, Readable.from([CONTENT]))
+  t.equal(integrity.toString(), INTEGRITY, 'returned content integrity')
+  const data = await fs.readFile(contentPath(CACHE, integrity))
+  t.same(data, CONTENT, 'Node stream content was correctly inserted')
+})
+
+t.test('rejects when a Node stream errors', async t => {
+  const CACHE = t.testdir()
+  const stream = new Readable({
+    read () {
+      this.destroy(new Error('boom'))
+    },
+  })
+  await t.rejects(
+    put(CACHE, KEY, stream),
+    { message: /boom/ },
+    'stream errors are forwarded from put()'
+  )
 })
 
 t.test('optionally memoizes data from a fetch Response', async t => {
@@ -118,6 +166,23 @@ t.test('rejects unsupported data types with a clear error', async t => {
     put(CACHE, KEY, { not: 'bytes' }),
     { code: 'EBADTYPE', message: /Response/ },
     'got a clear type error instead of ssri hashing failure'
+  )
+  await t.rejects(
+    put(CACHE, KEY, null),
+    { code: 'EBADTYPE', message: /Received null/ },
+    'null is rejected with a clear type error'
+  )
+  await t.rejects(
+    put(CACHE, KEY, 42),
+    { code: 'EBADTYPE', message: /Received number/ },
+    'numbers are rejected with a clear type error'
+  )
+  const nameless = Object.create(null)
+  nameless.not = 'bytes'
+  await t.rejects(
+    put(CACHE, KEY, nameless),
+    { code: 'EBADTYPE', message: /Received Object/ },
+    'null-prototype objects are rejected with a clear type error'
   )
 })
 
