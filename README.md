@@ -478,8 +478,10 @@ Removes the index entry for `key`. Content will still be accessible if
 requested directly by content address ([`get.stream.byDigest`](#get-stream)).
 
 By default, this appends a new entry to the index with an integrity of `null`.
-If `opts.removeFully` is set to `true` then the index file itself will be
-physically deleted rather than appending a `null`.
+If `opts.removeFully` is set to `true`, the index file for `key` is deleted
+instead. The index stores a separate file per key, so this removes only the
+entry for `key`: entries for other keys, and all content (including content
+shared with other keys), are left untouched.
 
 To remove the content itself (which might still be used by other entries), use
 [`rm.content`](#rm-content). Or, to safely vacuum any unused content, use

@@ -38,6 +38,24 @@ t.test('rm.entry removes entries, not content', async t => {
   t.same(data, CONTENT, 'content remains in cache')
 })
 
+t.test('rm.entry with removeFully removes only that key', async t => {
+  const OTHER_KEY = 'my-other-key'
+  const cache = t.testdir(cacheContent)
+  await index.insert(cache, KEY, INTEGRITY, { metadata: METADATA })
+  await index.insert(cache, OTHER_KEY, INTEGRITY, { metadata: METADATA })
+  await rm.entry(cache, KEY, { removeFully: true })
+  await t.rejects(fs.stat(index.bucketPath(cache, KEY)), { code: 'ENOENT' },
+    'index file for removed key is deleted')
+  await t.resolves(fs.stat(index.bucketPath(cache, OTHER_KEY)),
+    'index file for other key still exists')
+  t.equal(await get.info(cache, KEY), null, 'removed key is gone')
+  const other = await get.info(cache, OTHER_KEY)
+  t.equal(other.key, OTHER_KEY, 'other key is still found')
+  t.equal(other.integrity, INTEGRITY.toString(), 'other key keeps its integrity')
+  const data = await get.byDigest(cache, INTEGRITY)
+  t.same(data, CONTENT, 'shared content remains readable')
+})
+
 t.test('rm.content removes content, not entries', (t) => {
   const cache = t.testdir(cacheContent)
   return index
