@@ -1,5 +1,11 @@
 # Changelog
 
+## [21.0.2](https://github.com/npm/cacache/compare/v21.0.1...v21.0.2) (2026-11-11)
+### Dependencies
+* [`a66cf14`](https://github.com/npm/cacache/commit/a66cf144312e7789cddf2be52c79d88cb30795d9) [#350](https://github.com/npm/cacache/pull/350) bump glob from 13.0.0 to 14.0.3 (#350) (@jeffkl, @Copilot)
+### Chores
+* [`6e8eb4d`](https://github.com/npm/cacache/commit/6e8eb4d7e82694149c34fbb0fbe5441628fc1703) [#345](https://github.com/npm/cacache/pull/345) bump @npmcli/template-oss from 5.1.0 to 5.1.1 (#345) (@dependabot[bot], @npm-cli-bot)
+
 ## [21.0.1](https://github.com/npm/cacache/compare/v21.0.0...v21.0.1) (2026-06-09)
 ### Bug Fixes
 * [`bff2f4f`](https://github.com/npm/cacache/commit/bff2f4ff89912273089a7565ea55be6f535a2ca0) [#343](https://github.com/npm/cacache/pull/343) create cache directory tags (@gezzz)
