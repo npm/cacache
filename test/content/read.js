@@ -239,7 +239,7 @@ t.test('read: opening large files', function (t) {
         }
       },
     },
-    'minipass-pipeline': Array,
+    'minipass-pipeline': { Pipeline: Array },
   })
 
   t.plan(1)
