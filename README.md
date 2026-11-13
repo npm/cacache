@@ -474,12 +474,14 @@ cacache.rm.all(cachePath).then(() => {
 
 Alias: `cacache.rm`
 
-Removes the index entry for `key`. Content will still be accessible if
-requested directly by content address ([`get.stream.byDigest`](#get-stream)).
+Removes the index entry for `key`. Other keys are unaffected, even if they
+reference the same content. The content is still accessible by digest through
+[`get.byDigest`](#get-data) or [`get.stream.byDigest`](#get-stream).
 
-By default, this appends a new entry to the index with an integrity of `null`.
-If `opts.removeFully` is set to `true` then the index file itself will be
-physically deleted rather than appending a `null`.
+Each key has its own index file. By default, this appends an entry with a `null`
+integrity to that file, leaving the key's previous entries in place. With
+`opts.removeFully` set to `true`, this deletes the key's index file and its
+entire history.
 
 To remove the content itself (which might still be used by other entries), use
 [`rm.content`](#rm-content). Or, to safely vacuum any unused content, use
